@@ -1,10 +1,11 @@
 # BroadcastChannel
 
+![stock.david888.com](image.png)
 **將您的 Telegram 頻道轉變為微型部落格 (MicroBlog)**
 
 這是一個基於 Astro 框架的開源專案，可以自動抓取 Telegram 公開頻道的內容，並生成一個 SEO 友善、無需 JavaScript 即可瀏覽的靜態網站。
 
-[English](./README.en.md) | 繁體中文
+
 
 ## ✨ 功能特色 (Features)
 
@@ -56,7 +57,7 @@ docker stop broadcastchannel && docker rm broadcastchannel && docker build -t br
 
 ### Serverless 部署
 
-1. [Fork](https://github.com/miantiao-me/BroadcastChannel/fork) 本專案到您的 GitHub
+1. [Fork](https://github.com/tbdavid2019/BroadcastChannel/fork) 本專案到您的 GitHub
 2. 在 Cloudflare Pages / Netlify / Vercel 建立新專案
 3. 選擇 `BroadcastChannel` 儲存庫與 `Astro` 框架
 4. 設定環境變數 `CHANNEL` 為您的頻道 ID
