@@ -78,20 +78,42 @@ docker stop broadcastchannel && docker rm broadcastchannel && docker build -t br
 
 | 變數名稱 (Variable) | 說明 (Description) | 範例 (Example) |
 | :--- | :--- | :--- |
-| `CHANNEL` | **必填**。資料來源 (Data Source)，即 Telegram 頻道 ID (t.me/ 後面的字串)。 | `miantiao_me` |
+| `CHANNEL` | **必填**。資料來源 (Data Source)，即 Telegram 頻道 ID (t.me/ 後面的字串)。 | `olifamily` |
 | `LOCALE` | 語言設定 (影響日期顯示) | `zh-tw` |
 | `TIMEZONE` | 時區設定 | `Asia/Taipei` |
-| `TELEGRAM` | 社群連結 (Social Icon)，Telegram 用戶名 (顯示於 Header 圖示)。若留空則不顯示。 | `miantiao-me` |
-| `TWITTER` | Twitter 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
-| `GITHUB` | GitHub 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
+| `TELEGRAM` | 社群連結 (Social Icon)，Telegram 用戶名 (顯示於 Header 圖示)。若留空則不顯示。 | `olifamily` |
+| `TWITTER` | Twitter 用戶名 (顯示於 Header 圖示) | `oobwei` |
+| `GITHUB` | GitHub 用戶名 (顯示於 Header 圖示) | `tbdavid2019` |
 | `TAGS` | 啟用標籤頁面，使用逗號分隔 | `美股,台股,AI` |
 | `LINKS` | 啟用友鏈頁面 (標題,網址;標題,網址) | `Google,https://abcd.com;Blog,https://blog.com` |
 | `NAVS` | 自訂導航連結 (標題,網址;標題,網址) | `關於我,https://me.com;作品集,https://port.com` |
 | `COMMENTS` | 啟用留言顯示 (需配合 HEADER_INJECT 注入腳本) | `true` |
 | `RSS_BEAUTIFY` | 啟用 RSS 美化 (XSLT) | `true` |
 | `STATIC_PROXY` | Telegram 圖片代理前綴。預設留空使用內建 `/static/`。 | `https://wsrv.nl/?url=` |
-| `GOOGLE_SEARCH_SITE` | 啟用 Google 站內搜尋，填入您的網域 | `memo.miantiao.me` |
-| `HEADER_INJECT` | 注入 HTML 到 `<head>` (如 GA 分析代碼、CSS) | `<style>...</style>` |
+| `GOOGLE_SEARCH_SITE` | 啟用 Google 站內搜尋，填入您的網域 | `stock.david888.com` |
+| `HEADER_INJECT` | 注入 HTML 到 `<head>` (如 GA 分析代碼、CSS, AdSense 腳本) | `<script ...></script>` |
 | `FOOTER_INJECT` | 注入 HTML 到 `</body>` 前 (如 JS 腳本) | `<script>...</script>` |
+| `SIDEBAR_INJECT` | 注入 HTML 到側邊欄「連結 (Links)」下方 (如 AdSense 廣告單元) | `<ins ...></ins><script>...</script>` |
 | `NOINDEX` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要索引此網站。 | `true` |
 | `NOFOLLOW` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要追蹤此網站上的連結。 | `true` |
+
+### 📢 Google AdSense 設定範例
+
+您可以在 `.env` 中設定以下變數來啟用廣告：
+
+**1. 全域腳本 (`HEADER_INJECT`)**
+將 AdSense 提供的 `<script async ...>` 程式碼放入此處。
+
+```env
+HEADER_INJECT='<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>'
+```
+
+**2. 側邊欄廣告 (`SIDEBAR_INJECT`)**
+將廣告單元代碼放入此處，會在側邊欄「連結」下方顯示。
+
+```env
+SIDEBAR_INJECT='<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>'
+```
+
+> ⚠️ **注意**：`.env` 變數值建議使用單引號 `'` 包裹，若內容包含單引號請自行轉義。
+

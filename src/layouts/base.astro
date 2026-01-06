@@ -93,7 +93,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }}
       {...seoParams}
     />
-
+    <Fragment set:html={getEnv(import.meta.env, Astro, 'HEADER_INJECT')} />
   </head>
 
   <body>
@@ -130,7 +130,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
                 )
               }
               
-              {
+            {
                 links.length > 0 && (
                   <div class="sidebar-group">
                     <a href={`${SITE_URL}links`} class={`nav-link header-link ${Astro.url.pathname === '/links' ? 'current' : ''}`}>Links</a>
@@ -142,6 +142,12 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
                   </div>
                 )
               }
+              
+              {
+                 getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT') && (
+                   <div class="sidebar-group" set:html={getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT')} />
+                 )
+              }
             </div>
           
           </slot>
@@ -151,5 +157,6 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <a href="#wrapper" id="back-to-top" aria-label="Back to top">
       <img {...backToTopIcon} alt="Back to Top" />
     </a>
+    <Fragment set:html={getEnv(import.meta.env, Astro, 'FOOTER_INJECT')} />
   </body>
 </html>

@@ -15,7 +15,7 @@ COPY . .
 
 
 
-RUN export $(cat .env.example) && \
+RUN export $(grep -v '^#' .env.example | xargs) && \
     export DOCKER=true && \
     pnpm run build
 
