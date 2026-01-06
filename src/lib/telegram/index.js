@@ -6,7 +6,7 @@ import { getEnv } from '../env'
 import prism from '../prism'
 
 const cache = new LRUCache({
-  ttl: 1000 * 60 * 5, // 5 minutes
+  ttl: 1000 * 60 * 10, // 10 minutes - refresh frequently for new posts
   maxSize: 50 * 1024 * 1024, // 50MB
   sizeCalculation: (item) => {
     return JSON.stringify(item).length
@@ -182,8 +182,6 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
   }
 }
 
-const unnessaryHeaders = ['host', 'cookie', 'origin', 'referer']
-
 export async function getChannelInfo(Astro, { before = '', after = '', q = '', type = 'list', id = '' } = {}) {
   const cacheKey = JSON.stringify({ before, after, q, type, id })
   const cachedResult = cache.get(cacheKey)
@@ -199,25 +197,51 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
   const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 
   const url = id ? `https://${host}/${channel}/${id}?embed=1&mode=tme` : `https://${host}/s/${channel}`
-  const headers = Object.fromEntries(Astro.request.headers)
-
-  Object.keys(headers).forEach((key) => {
-    if (unnessaryHeaders.includes(key)) {
-      delete headers[key]
-    }
-  })
 
   console.info('Fetching', url, { before, after, q, type, id })
-  const html = await $fetch(url, {
-    headers,
-    query: {
-      before: before || undefined,
-      after: after || undefined,
-      q: q || undefined,
-    },
-    retry: 3,
-    retryDelay: 100,
-  })
+  
+  let html
+  try {
+    html = await $fetch(url, {
+      // Use clean headers instead of forwarding browser headers which can cause connection issues
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+      },
+      query: {
+        before: before || undefined,
+        after: after || undefined,
+        q: q || undefined,
+      },
+      retry: 5,
+      retryDelay: 2000, // 2 seconds between retries to avoid rate limiting
+      timeout: 30000, // 30 second timeout
+    })
+  } catch (error) {
+    console.error('Fetch error:', error.message, { url, before, after, q, type, id })
+    // Return empty result instead of throwing - don't cache failures
+    return {
+      posts: [],
+      title: '',
+      description: '',
+      descriptionHTML: '',
+      avatar: '',
+    }
+  }
+
+  if (!html) {
+    console.error('Empty response received', { url, before, after, q, type, id })
+    return {
+      posts: [],
+      title: '',
+      description: '',
+      descriptionHTML: '',
+      avatar: '',
+    }
+  }
 
   const $ = cheerio.load(html, {}, false)
   if (id) {

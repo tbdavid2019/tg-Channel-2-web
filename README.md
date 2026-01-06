@@ -1,17 +1,34 @@
 # BroadcastChannel
 
+## 🔧 Recent Improvements (2026-01-05)
 
-```
+### Cache and Fetch Optimization
 
- docker build -t broadcastchannel .
+To handle Telegram's rate limiting and improve reliability:
 
+**Cache Configuration:**
+- Extended cache TTL from 5 minutes to **6 hours**
+- Rationale: Channels typically update only 2x per day, reducing unnecessary API calls
 
+**Fetch Configuration:**
+- Added User-Agent header to mimic real browsers
+- Increased retry attempts from 3 to **5 times**
+- Extended retry delay from 100ms to **2 seconds** to avoid rate limiting
+- Added 30-second timeout for better error handling
+
+**Build and Run:**
+```bash
+# Build local image
+docker build -t broadcastchannel .
+
+# Run with environment file
 docker run -d \
   --name broadcastchannel \
   -p 3333:4321 \
   --env-file .env \
   broadcastchannel
 
+# Optional: Add DNS servers if needed
 docker run -d \
   --name broadcastchannel \
   --dns 8.8.8.8 \
@@ -19,10 +36,11 @@ docker run -d \
   -p 3333:4321 \
   --env-file .env \
   broadcastchannel
-
 ```
 
+**Note:** Some intermittent fetch errors may still occur due to Telegram's anti-bot mechanisms, but the extended cache ensures most requests are served from cache, maintaining good user experience.
 
+---
 
 **Turn your Telegram Channel into a MicroBlog.**
 
