@@ -78,10 +78,10 @@ docker stop broadcastchannel && docker rm broadcastchannel && docker build -t br
 
 | 變數名稱 (Variable) | 說明 (Description) | 範例 (Example) |
 | :--- | :--- | :--- |
-| `CHANNEL` | **必填**。Telegram 頻道 ID (t.me/ 後面的字串) | `miantiao_me` |
+| `CHANNEL` | **必填**。資料來源 (Data Source)，即 Telegram 頻道 ID (t.me/ 後面的字串)。 | `miantiao_me` |
 | `LOCALE` | 語言設定 (影響日期顯示) | `zh-tw` |
 | `TIMEZONE` | 時區設定 | `Asia/Taipei` |
-| `TELEGRAM` | Telegram 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
+| `TELEGRAM` | 社群連結 (Social Icon)，Telegram 用戶名 (顯示於 Header 圖示)。若留空則不顯示。 | `miantiao-me` |
 | `TWITTER` | Twitter 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
 | `GITHUB` | GitHub 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
 | `TAGS` | 啟用標籤頁面，使用逗號分隔 | `美股,台股,AI` |
@@ -93,3 +93,5 @@ docker stop broadcastchannel && docker rm broadcastchannel && docker build -t br
 | `GOOGLE_SEARCH_SITE` | 啟用 Google 站內搜尋，填入您的網域 | `memo.miantiao.me` |
 | `HEADER_INJECT` | 注入 HTML 到 `<head>` (如 GA 分析代碼、CSS) | `<style>...</style>` |
 | `FOOTER_INJECT` | 注入 HTML 到 `</body>` 前 (如 JS 腳本) | `<script>...</script>` |
+| `NOINDEX` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要索引此網站。 | `true` |
+| `NOFOLLOW` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要追蹤此網站上的連結。 | `true` |

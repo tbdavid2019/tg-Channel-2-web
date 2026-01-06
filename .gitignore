@@ -27,3 +27,4 @@ pnpm-debug.log*
 .netlify
 .wrangler
 .edgeone
+.env2
