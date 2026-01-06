@@ -26,19 +26,24 @@ const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 ---
 
 <div id="header">
-  <a href={SITE_URL} title={channel?.title}>
-    <img
-      src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : voidFile.src}
-      alt={channel?.title}
-      loading="eager"
-      class="header-avatar"
-    />
-  </a>
-  <div class="header-title">
-    <a href={SITE_URL} class="site-title" title={channel?.title}>
-      {channel?.title}
+  <div class="header-main">
+    <a href={SITE_URL} title={channel?.title} class="avatar-link">
+      <img
+        src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : voidFile.src}
+        alt={channel?.title}
+        loading="eager"
+        class="header-avatar"
+      />
     </a>
+    <div class="header-title">
+      <a href={SITE_URL} class="site-title" title={channel?.title}>
+        {channel?.title}
+      </a>
+    </div>
   </div>
+
+
+
   <div class="header-icons">
     <a href={RSS_URL} target="_blank" rel="alternate" type="application/rss+xml" title="RSS Feed">
       <img {...rss} alt="RSS" class="social-icon" width="1em" />
@@ -101,6 +106,13 @@ const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
     }
   </div>
 </div>
+
+<style>
+  .header-main {
+    display: flex;
+    align-items: center;
+  }
+</style>
 
 {
   hideDescription !== 'true' && channel?.descriptionHTML && channel?.descriptionHTML.length > 0 && (

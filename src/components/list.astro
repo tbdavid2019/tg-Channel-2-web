@@ -1,21 +1,54 @@
 ---
 import Layout from '../layouts/base.astro'
 import Header from '../components/header.astro'
+import Calendar from '../components/calendar.astro'
 import Item from '../components/item.astro'
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+import { getEnv } from '../lib/env'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const { SITE_URL } = Astro.locals
-const { channel, before = true, after = true, isItem = false } = Astro.props
+const { channel, before = true, after = true, isItem = false, showCalendar = true } = Astro.props
 const posts = channel.posts ?? []
+const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
 
+// Save posts to database for indexing
+let savePosts
+try {
+  const db = await import('../lib/db')
+  savePosts = db.savePosts
+  if (posts.length > 0) {
+    savePosts(posts)
+  }
+} catch (e) {
+  console.error('Failed to save posts to database:', e.message)
+}
+
+// Get unique dates from posts for date-based pagination
+const postDates = [...new Set(posts.map(post => 
+  dayjs(post.datetime).tz(tz).format('YYYY-MM-DD')
+))].sort().reverse()
+
+// Get today and yesterday for pagination
+const today = dayjs().tz(tz).format('YYYY-MM-DD')
+const yesterday = dayjs().tz(tz).subtract(1, 'day').format('YYYY-MM-DD')
+
+// For cursor-based pagination fallback
 const beforeCursor = posts[posts.length - 1]?.id
 const afterCursor = posts[0]?.id
-// const cursor = +Astro.params.cursor
 ---
 
 <Layout channel={channel} id="main-container">
   <slot name="header">
     <Header channel={channel} />
   </slot>
+  
+  {showCalendar && <Calendar />}
+  
   <div class="items">
     {posts.map((post) => <Item post={post} isItem={isItem} />)}
   </div>
@@ -23,19 +56,25 @@ const afterCursor = posts[0]?.id
   <div class="pages-container">
     {
       before && beforeCursor > 1 ? (
-        <a href={`${SITE_URL}before/${beforeCursor}`} title="Before" class="page">
-          Before
+        <a href={`${SITE_URL}before/${beforeCursor}`} title="更早" class="page">
+          ← 更早
         </a>
       ) : (
         <span class="page-placeholder">&nbsp;</span>
       )
     }
 
-    <div class="pages-info"></div>
+    <div class="pages-info">
+      {postDates.length > 0 && (
+        <a href={`${SITE_URL}date/${postDates[0]}`} class="date-link" title="按日期瀏覽">
+          📅 {dayjs(String(postDates[0])).format('M/D')}
+        </a>
+      )}
+    </div>
     {
       after && afterCursor ? (
-        <a href={`${SITE_URL}after/${afterCursor}`} title="After" class="page">
-          After
+        <a href={`${SITE_URL}after/${afterCursor}`} title="更新" class="page">
+          更新 →
         </a>
       ) : (
         <span class="page-placeholder">&nbsp;</span>
@@ -43,3 +82,16 @@ const afterCursor = posts[0]?.id
     }
   </div>
 </Layout>
+
+<style>
+  .date-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9em;
+  }
+  
+  .date-link:hover {
+    text-decoration: underline;
+  }
+</style>
+

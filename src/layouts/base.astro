@@ -51,19 +51,24 @@ const seoParams = {
 const GOOGLE_SEARCH_SITE = getEnv(import.meta.env, Astro, 'GOOGLE_SEARCH_SITE')
 const searchAction = GOOGLE_SEARCH_SITE ? 'https://www.google.com/search' : '/search/result'
 
-const HEADER_INJECT = getEnv(import.meta.env, Astro, 'HEADER_INJECT')
-const FOOTER_INJECT = getEnv(import.meta.env, Astro, 'FOOTER_INJECT')
 const TAGS = getEnv(import.meta.env, Astro, 'TAGS')
+const tags = TAGS ? TAGS.split(',').filter(Boolean) : []
+
 const LINKS = getEnv(import.meta.env, Astro, 'LINKS')
+const links = (LINKS || '')
+  .split(';')
+  .filter(Boolean)
+  .map((link) => {
+    const [title, href] = link.split(',')
+    return { title, href }
+  })
+
 const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
   .split(';')
   .filter(Boolean)
   .map((link) => {
-    link = link.split(',')
-    return {
-      title: link[0],
-      href: link[1],
-    }
+    const [title, href] = link.split(',')
+    return { title, href }
   })
 ---
 
@@ -88,64 +93,56 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }}
       {...seoParams}
     />
-    <Fragment set:html={HEADER_INJECT} />
+
   </head>
 
   <body>
     <div id="wrapper">
+      <!-- Slot for Full Width Header -->
+      <slot name="header" />
+      
       <div id="container">
         <div id="main-container">
           <slot />
         </div>
         <div id="aside-container">
           <slot name="aside">
-            <div class="nav">
-              <div class="nav-item">
-                <a href={SITE_URL} title={channel?.title} class={`nav-link ${pathname === '/' ? 'current' : ''}`}>
-                  Home
-                </a>
-              </div>
-              {
-                TAGS ? (
-                  <div class="nav-item">
-                    <a
-                      href={`${SITE_URL}tags`}
-                      title="Tags"
-                      class={`nav-link ${pathname === '/tags' ? 'current' : ''}`}
-                    >
-                      Tags
-                    </a>
-                  </div>
-                ) : null
-              }
-              {
-                LINKS ? (
-                  <div class="nav-item">
-                    <a
-                      href={`${SITE_URL}links`}
-                      title="Links"
-                      class={`nav-link ${pathname === '/links' ? 'current' : ''}`}
-                    >
-                      Links
-                    </a>
-                  </div>
-                ) : null
-              }
-              {
-                navs.map((nav) => (
-                  <div class="nav-item">
-                    <a href={nav.href} title={nav.title} target="_blank" rel="noopener" class="nav-link">
-                      {nav.title}
-                    </a>
-                  </div>
-                ))
-              }
-            </div>
+            
             <input class="search-icon" name="icon" type="checkbox" placeholder="Search" />
             <form class="search-form" action={searchAction} method="get">
               {GOOGLE_SEARCH_SITE ? <input type="hidden" name="as_sitesearch" value={GOOGLE_SEARCH_SITE} /> : null}
               <input type="text" name="q" placeholder="Search" />
             </form>
+
+            <div class="nav-sidebar">
+              <a href={SITE_URL} class={`nav-link ${Astro.url.pathname === '/' ? 'current' : ''}`}>Home</a>
+              
+              {
+                tags.length > 0 && (
+                  <div class="sidebar-group">
+                    <a href={`${SITE_URL}tags`} class={`nav-link header-link ${Astro.url.pathname === '/tags' ? 'current' : ''}`}>Tags</a>
+                    <div class="sidebar-tags">
+                      {tags.map((tag) => (
+                        <a href={`/search/result?q=${encodeURIComponent(tag)}`} class="sidebar-tag-item">#{tag}</a>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+              
+              {
+                links.length > 0 && (
+                  <div class="sidebar-group">
+                    <a href={`${SITE_URL}links`} class={`nav-link header-link ${Astro.url.pathname === '/links' ? 'current' : ''}`}>Links</a>
+                    <div class="sidebar-links">
+                      {links.map((link) => (
+                        <a href={link.href} target="_blank" rel="noopener" class="sidebar-link-item">{link.title}</a>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+            </div>
           
           </slot>
         </div>
@@ -154,6 +151,5 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <a href="#wrapper" id="back-to-top" aria-label="Back to top">
       <img {...backToTopIcon} alt="Back to Top" />
     </a>
-    <Fragment set:html={FOOTER_INJECT} />
   </body>
 </html>

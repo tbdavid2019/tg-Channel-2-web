@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 import flourite from 'flourite'
 import { LRUCache } from 'lru-cache'
+import { marked } from 'marked'
 import { $fetch } from 'ofetch'
 import { getEnv } from '../env'
 import prism from '../prism'
@@ -146,7 +147,7 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
   const id = $(item).attr('data-post')?.replace(new RegExp(`${channel}/`, 'i'), '')
 
   const tags = $(content).find('a[href^="?q="]')?.each((_index, a) => {
-    $(a)?.attr('href', `/search/${encodeURIComponent($(a)?.text())}`)
+    $(a)?.attr('href', `/search/result?q=${encodeURIComponent($(a)?.text()?.replace(/^#/, ''))}`)
   })?.map((_index, a) => $(a)?.text()?.replace('#', ''))?.get()
 
   return {
@@ -161,7 +162,7 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
       getImages($, item, { staticProxy, id, index, title }),
       getVideo($, item, { staticProxy, id, index, title }),
       getAudio($, item, { staticProxy, id, index, title }),
-      content?.html(),
+      content?.html() ? marked.parse(content.html().replace(/<br\s*\/?>/gi, '\n'), { breaks: true }) : '',
       getImageStickers($, item, { staticProxy, index }),
       getVideoStickers($, item, { staticProxy, index }),
       // $(item).find('.tgme_widget_message_sticker_wrap')?.html(),

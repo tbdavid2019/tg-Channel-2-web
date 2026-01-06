@@ -1,201 +1,94 @@
 # BroadcastChannel
 
-## 🔧 Recent Improvements (2026-01-05)
+**將您的 Telegram 頻道轉變為微型部落格 (MicroBlog)**
 
-### Cache and Fetch Optimization
+這是一個基於 Astro 框架的開源專案，可以自動抓取 Telegram 公開頻道的內容，並生成一個 SEO 友善、無需 JavaScript 即可瀏覽的靜態網站。
 
-To handle Telegram's rate limiting and improve reliability:
+[English](./README.en.md) | 繁體中文
 
-**Cache Configuration:**
-- Extended cache TTL from 5 minutes to **6 hours**
-- Rationale: Channels typically update only 2x per day, reducing unnecessary API calls
+## ✨ 功能特色 (Features)
 
-**Fetch Configuration:**
-- Added User-Agent header to mimic real browsers
-- Increased retry attempts from 3 to **5 times**
-- Extended retry delay from 100ms to **2 seconds** to avoid rate limiting
-- Added 30-second timeout for better error handling
+- **自動同步**：自動抓取 Telegram 頻道內容 (無需 Bot)
+- **SEO 友善**：自動生成 `/sitemap.xml` 和 Meta 標籤
+- **極致效能**：瀏覽器端 0 JS (純靜態 HTML/CSS)，載入速度極快
+- **RSS 支援**：提供 `/rss.xml` 和 `/rss.json` 訂閱源
+- **現代化 UI**：響應式設計，支援深色模式
+- **日曆導航**：(本版本新增) 支援依照月份瀏覽歷史文章
+-  安裝了 marked 解析器。
+-  修改了渲染邏輯，現在會自動將文章內容進行 Markdown 解析。
 
-**Build and Run:**
+## � 近期優化 (2026-01-05)
+
+針對 Telegram 限制與使用體驗進行了以下增強：
+
+- **快取優化**：API 快取時間調整為 **10 分鐘**，確保內容即時性同時減少請求。
+- **請求模擬**：加入模擬瀏覽器 Header 與重試機制 (Retry)，解決 `FetchError` 問題。
+- **介面升級**：擴展為寬版佈局 (1200px)，新增頂部導航與日曆月份切換功能。
+
+## 🧱 技術堆疊 (Tech Stack)
+
+- **框架**: [Astro](https://astro.build/)
+- **資料源**: [Telegram Channels](https://telegram.org/tour/channels)
+- **樣板**: [Sepia](https://github.com/Planetable/SiteTemplateSepia)
+
+## 🏗️ 部署方式 (Deployment)
+
+### Docker 部署 (推薦)
+
 ```bash
-# Build local image
+# 1. 建立映像檔 (Build)
 docker build -t broadcastchannel .
 
-# Run with environment file
+# 2. 啟動容器 (Run)
+# 建議使用 .env 檔案管理設定，並掛載 volume 以保存資料
 docker run -d \
   --name broadcastchannel \
   -p 3333:4321 \
   --env-file .env \
+  -v broadcastchannel-data:/app/data \
   broadcastchannel
 
-# Optional: Add DNS servers if needed
-docker run -d \
-  --name broadcastchannel \
-  --dns 8.8.8.8 \
-  --dns 8.8.4.4 \
-  -p 3333:4321 \
-  --env-file .env \
-  broadcastchannel
+# 3. rebuild
+docker stop broadcastchannel && docker rm broadcastchannel && docker build -t broadcastchannel . && docker run -d --name broadcastchannel --env-file .env -p 3333:4321 -v broadcastchannel-data:/app/data broadcastchannel
+
+
 ```
 
-**Note:** Some intermittent fetch errors may still occur due to Telegram's anti-bot mechanisms, but the extended cache ensures most requests are served from cache, maintaining good user experience.
+### Serverless 部署
+
+1. [Fork](https://github.com/miantiao-me/BroadcastChannel/fork) 本專案到您的 GitHub
+2. 在 Cloudflare Pages / Netlify / Vercel 建立新專案
+3. 選擇 `BroadcastChannel` 儲存庫與 `Astro` 框架
+4. 設定環境變數 `CHANNEL` 為您的頻道 ID
+5. 儲存並部署
+
+## ❤️ 特別致謝 (Credits)
+
+本專案修改自 **[Miantiao-me](https://github.com/miantiao-me)** 開發的 **[BroadcastChannel](https://github.com/miantiao-me/BroadcastChannel)**。
+
+感謝原作者的開源貢獻，讓 Telegram 內容能以如此優雅的方式呈現於 Web 端。
+
+- 原作者網站：[面条实验室](https://memo.miantiao.me/)
+- 原專案儲存庫：[GitHub - BroadcastChannel](https://github.com/miantiao-me/BroadcastChannel)
 
 ---
 
-**Turn your Telegram Channel into a MicroBlog.**
-
----
-
-English | [简体中文](./README.zh-cn.md)
-
-## ✨ Features
-
-- **Turn your Telegram Channel into a MicroBlog**
-- **SEO friendly** `/sitemap.xml`
-- **0 JS on the browser side**
-- **RSS and RSS JSON** `/rss.xml` `/rss.json`
-
-## 🪧 Demo
-
-### Real users
-
-- [面条实验室](https://memo.miantiao.me/)
-- [Find Blog👁发现博客](https://broadcastchannel.pages.dev/)
-- [Memos 广场 🎪](https://now.memobbs.app/)
-- [APPDO 数字生活指南](https://mini.appdo.xyz/)
-- [85.60×53.98卡粉订阅/提醒](https://tg.docofcard.com/)
-- [新闻在花频道](https://tg.istore.app/)
-- [ALL About RSS](https://blog.rss.tips/)
-- [Charles Chin's Whisper](https://memo.eallion.com/)
-- [PlayStation 新闻转发](https://playstationnews.pages.dev)
-- [Yu's Life](https://daily.pseudoyu.com/)
-- [Leslie 和朋友们](https://tg.imlg.co/)
-- [OKHK 分享](https://tg.okhk.net/)
-- [gledos 的微型博客](https://microblogging.gledos.science)
-- [Steve Studio](https://tgc.surgeee.me/)
-- [LiFePO4:沙雕吐槽](https://lifepo4.top)
-- [Hotspot Hourly](https://hourly.top/)
-- [大河马中文财经新闻分享](https://a.xiaomi318.com/)
-- [\_My. Tricks 🎩 Collection](https://channel.mykeyvans.com)
-- [小报童专栏精选](https://xiaobaotong.genaiprism.site/)
-- [Fake news](https://fake-news.csgo.ovh/)
-- [miyi23's Geekhub资源分享](https://gh.miyi23.top/)
-- [Magazine｜期刊杂志｜财新周刊](https://themagazine.top)
-- [Remote Jobs & Cooperation](https://share-remote-jobs.vercel.app/)
-- [甬哥侃侃侃--频道发布](https://ygkkktg.pages.dev)
-- [Fugoou.log](https://fugoou.xyz)
-- [Bboysoul的博客](https://tg.bboy.app/)
-- [MakerHunter](https://share.makerhunter.com/)
-- [ChatGPT/AI新闻聚合](https://g4f.icu/)
-- [Abner's memos](https://memos.abnerz6.top/)
-- [Appinn Talk](https://talk.appinn.net/)
-- [小报童优惠与排行榜](https://youhui.xiaobaoto.com/)
-
-### Platform
-
-1. [Cloudflare](https://broadcast-channel.pages.dev/)
-2. [Netlify](https://broadcast-channel.netlify.app/)
-3. [Vercel](https://broadcast-channel.vercel.app/)
-
-BroadcastChannel supports deployment on serverless platforms like Cloudflare, Netlify, Vercel that support Node.js SSR, or on a VPS.
-For detailed tutorials, see [Deploy your Astro site](https://docs.astro.build/en/guides/deploy/).
-
-## 🧱 Tech Stack
-
-- Framework: [Astro](https://astro.build/)
-- CMS: [Telegram Channels](https://telegram.org/tour/channels)
-- Template: [Sepia](https://github.com/Planetable/SiteTemplateSepia)
-
-## 🏗️ Deployment
-
-### Docker
-
-1. `docker pull ghcr.io/miantiao-me/broadcastchannel:main`
-2. `docker run -d --name broadcastchannel -p 4321:4321 -e CHANNEL=miantiao_me ghcr.io/miantiao-me/broadcastchannel:main`
 
 
-
-### Serverless
-
-1. [Fork](https://github.com/miantiao-me/BroadcastChannel/fork) this project to your GitHub
-2. Create a project on Cloudflare/Netlify/Vercel
-3. Select the `BroadcastChannel` project and the `Astro` framework
-4. Configure the environment variable `CHANNEL` with your channel name. This is the minimal configuration, for more configurations see the options below
-5. Save and deploy
-6. Bind a domain (optional).
-7. Update code, refer to the official GitHub documentation [Syncing a fork branch from the web UI](https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork#syncing-a-fork-branch-from-the-web-ui).
-
-## ⚒️ Configuration
-
-```env
-## Telegram Channel Username, must be configured. The string of characters following t.me/
-CHANNEL=miantiao_me
-
-## Language and timezone settings, language options see [dayjs](https://github.com/iamkun/dayjs/tree/dev/src/locale)
-LOCALE=en
-TIMEZONE=America/New_York
-
-## Social media usernames
-TELEGRAM=miantiao-me
-TWITTER=miantiao-me
-GITHUB=miantiao-me
-MASTODON=mastodon.social/@Mastodon
-BLUESKY=bsky.app
-
-## The following two social media need to be URLs
-DISCORD=https://DISCORD.com
-PODCAST=https://PODCAST.com
-
-## Header and footer code injection, supports HTML
-FOOTER_INJECT=FOOTER_INJECT
-HEADER_INJECT=HEADER_INJECT
-
-## SEO configuration options, can prevent search engines from indexing content
-NO_FOLLOW=false
-NO_INDEX=false
-
-## Hide Telegram channel description
-HIDE_DESCRIPTION=false
-
-## Sentry configuration options, collect server-side errors
-SENTRY_AUTH_TOKEN=SENTRY_AUTH_TOKEN
-SENTRY_DSN=SENTRY_DSN
-SENTRY_PROJECT=SENTRY_PROJECT
-
-## Telegram host name and static resource proxy, not recommended to modify
-HOST=telegram.dog
-STATIC_PROXY=
-
-## Enable Google Site Search
-GOOGLE_SEARCH_SITE=memo.miantiao.me
-
-## Enable tags page, separate tags with commas
-TAGS=tag1,tag2,tag3
-
-## Show comments
-COMMENTS=true
-
-## List of links in the Links page, Separate using commas and semicolons
-LINKS=Title1,URL1;Title2,URL3;Title3,URL3;
-
-## Sidebar Navigation Item, Separate using commas and semicolons
-NAVS=Title1,URL1;Title2,URL3;Title3,URL3;
-
-## Enable RSS beautify
-RSS_BEAUTIFY=true
-```
-
-## 🙋🏻 FAQs
-
-1. Why is the content empty after deployment?
-   - Check if the channel is public, it must be public
-   - The channel username is a string, not a number
-   - Turn off the "Restricting Saving Content" setting in the channel
-   - Redeploy after modifying environment variables
-   - Telegram blocks public display of some sensitive channels, you can verify by visiting `https://t.me/s/channelusername`.
-
-## ☕ Sponsor
-
-1. [Follow me on Telegram](https://t.me/miantiao_me)
-2. [Follow me on 𝕏](https://404.li/kai)
-3. [Sponsor me on GitHub](https://github.com/sponsors/miantiao-me)
+| 變數名稱 (Variable) | 說明 (Description) | 範例 (Example) |
+| :--- | :--- | :--- |
+| `CHANNEL` | **必填**。Telegram 頻道 ID (t.me/ 後面的字串) | `miantiao_me` |
+| `LOCALE` | 語言設定 (影響日期顯示) | `zh-tw` |
+| `TIMEZONE` | 時區設定 | `Asia/Taipei` |
+| `TELEGRAM` | Telegram 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
+| `TWITTER` | Twitter 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
+| `GITHUB` | GitHub 用戶名 (顯示於 Header 圖示) | `miantiao-me` |
+| `TAGS` | 啟用標籤頁面，使用逗號分隔 | `美股,台股,AI` |
+| `LINKS` | 啟用友鏈頁面 (標題,網址;標題,網址) | `Google,https://abcd.com;Blog,https://blog.com` |
+| `NAVS` | 自訂導航連結 (標題,網址;標題,網址) | `關於我,https://me.com;作品集,https://port.com` |
+| `COMMENTS` | 啟用留言顯示 (需配合 HEADER_INJECT 注入腳本) | `true` |
+| `RSS_BEAUTIFY` | 啟用 RSS 美化 (XSLT) | `true` |
+| `STATIC_PROXY` | Telegram 圖片代理前綴。預設留空使用內建 `/static/`。 | `https://wsrv.nl/?url=` |
+| `GOOGLE_SEARCH_SITE` | 啟用 Google 站內搜尋，填入您的網域 | `memo.miantiao.me` |
+| `HEADER_INJECT` | 注入 HTML 到 `<head>` (如 GA 分析代碼、CSS) | `<style>...</style>` |
+| `FOOTER_INJECT` | 注入 HTML 到 `</body>` 前 (如 JS 腳本) | `<script>...</script>` |

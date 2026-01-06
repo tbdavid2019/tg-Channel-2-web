@@ -1,0 +1,210 @@
+---
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-tw'
+import { getEnv } from '../lib/env'
+import { getDatesWithPosts, getDatesByMonth } from '../lib/db'
+
+const { SITE_URL } = Astro.locals
+const locale = getEnv(import.meta.env, Astro, 'LOCALE') || 'en'
+
+dayjs.locale(locale)
+
+// Get current month from URL or default to today
+const urlMonth = Astro.url.searchParams.get('month')
+const today = dayjs()
+// If month param exists, use it, otherwise use current date
+const targetDate = urlMonth ? dayjs(urlMonth) : today
+const currentMonth = targetDate.startOf('month')
+
+// Get dates with posts for the target month
+let datesWithPosts = []
+try {
+  // We need to fetch all posts for the target month
+  // The DB function expects 'YYYY-MM' format
+  const yearMonth = currentMonth.format('YYYY-MM')
+  // Use the new function we added to db/index.js
+  // If it's not available yet (during transition), fallback to empty
+  if (getDatesByMonth) {
+    datesWithPosts = getDatesByMonth(yearMonth)
+  } else {
+    // Fallback for types that might not have updated yet
+    datesWithPosts = getDatesWithPosts(31) 
+  }
+} catch (e) {
+  console.error('Failed to get dates with posts:', e.message)
+}
+
+// Build a set for quick lookup
+const postDatesSet = new Set(datesWithPosts.map(d => d.date))
+const postCountMap = new Map(datesWithPosts.map(d => [d.date, d.count]))
+
+// Calendar grid calculation
+const daysInMonth = currentMonth.daysInMonth()
+const firstDayOfWeek = currentMonth.day()
+
+// Generate calendar grid using functional approach
+const emptyDays = Array.from({ length: firstDayOfWeek }, () => null)
+const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
+  const day = i + 1
+  const date = currentMonth.date(day).format('YYYY-MM-DD')
+  return {
+    day,
+    date,
+    hasPost: postDatesSet.has(date),
+    count: postCountMap.get(date) || 0,
+    isToday: date === today.format('YYYY-MM-DD')
+  }
+})
+const calendarDays = [...emptyDays, ...monthDays]
+
+const weekDays = locale.startsWith('zh') 
+  ? ['日', '一', '二', '三', '四', '五', '六']
+  : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+// Navigation Links
+const prevMonth = currentMonth.subtract(1, 'month')
+const nextMonth = currentMonth.add(1, 'month')
+const prevLink = `?month=${prevMonth.format('YYYY-MM')}`
+// Only show next link if it's not in the future (optional limitation, but good for UI)
+// Actually we can allow future to see 0 posts.
+const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
+---
+
+<div class="calendar-container">
+  <div class="calendar-header">
+    <a href={prevLink} class="nav-btn" title="上個月">&lt;</a>
+    <span class="calendar-title">
+      📅 {currentMonth.format('YYYY年M月')}
+    </span>
+    <a href={nextLink} class="nav-btn" title="下個月">&gt;</a>
+  </div>
+  
+  <div class="calendar-grid">
+    {weekDays.map(day => (
+      <div class="calendar-weekday">{day}</div>
+    ))}
+    
+    {calendarDays.map(item => (
+      item === null ? (
+        <div class="calendar-day empty"></div>
+      ) : item.hasPost ? (
+        <a 
+          href={`${SITE_URL}date/${item.date}`} 
+          class={`calendar-day has-post ${item.isToday ? 'today' : ''}`}
+          title={`${item.count} 篇文章`}
+        >
+          {item.day}
+          <span class="post-indicator"></span>
+        </a>
+      ) : (
+        <div class={`calendar-day ${item.isToday ? 'today' : ''}`}>
+          {item.day}
+        </div>
+      )
+    ))}
+  </div>
+</div>
+
+<style>
+  .calendar-container {
+    background: var(--code-background-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 0 10px;
+  }
+
+  .calendar-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  
+  .nav-btn {
+    text-decoration: none;
+    color: var(--secondary-color);
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  
+  .nav-btn:hover {
+    background-color: rgba(0,0,0,0.05);
+    color: var(--primary-color);
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .calendar-weekday {
+    text-align: center;
+    font-size: 0.75em;
+    color: var(--secondary-color);
+    padding: 4px;
+    font-weight: 500;
+  }
+
+  .calendar-day {
+    position: relative;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 0.9em;
+    border-radius: 8px;
+    color: var(--secondary-color);
+    transition: all 0.2s ease;
+  }
+
+  .calendar-day.empty {
+    visibility: hidden;
+  }
+
+  .calendar-day.today {
+    background: var(--accent-color);
+    color: white;
+    font-weight: 600;
+  }
+
+  .calendar-day.has-post {
+    color: var(--primary-color);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+
+  .calendar-day.has-post:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: scale(1.1);
+  }
+
+  .calendar-day.has-post .post-indicator {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 50%;
+  }
+
+  .calendar-day.has-post:hover .post-indicator {
+    background: white;
+  }
+
+  .calendar-day.today.has-post .post-indicator {
+    background: white;
+  }
+</style>
