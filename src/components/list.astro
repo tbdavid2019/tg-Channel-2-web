@@ -49,8 +49,10 @@ const afterCursor = posts[0]?.id
   
   {showCalendar && <Calendar />}
   
+  <slot />
+
   <div class="items">
-    {posts.map((post) => <Item post={post} isItem={isItem} />)}
+    {posts.map((post) => <Item post={{ ...post, channel: channel.handle }} isItem={isItem} />)}
   </div>
 
   <div class="pages-container">

@@ -1,0 +1,17 @@
+ANYCHANNEL="true"
+
+
+LOCALE=zh-tw
+TIMEZONE=Asia/Taipei
+TIMEZONE=Asia/Taipei
+
+
+TWITTER=oobwei
+GITHUB=tbdavid2019
+DISCORD=https://discord.gg/RkAnebWzj4
+PODCASRT=https://podcast.david888.com
+LINKS="DAVID888,https://david888.com;Podcast,https://podcast.david888.com"
+HEADER_INJECT='<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5210017545918559" crossorigin="anonymous"></script>'
+FOOTER_INJECT=
+SIDEBAR_INJECT='<!-- stock.david888.com --><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5210017545918559" data-ad-slot="1532362418" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>'
+

@@ -144,6 +144,14 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
               }
               
               {
+                 getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' && Astro.url.pathname !== '/' && (
+                   <div class="sidebar-group">
+                     <a href="/" class="nav-link header-link">🔍 Switch Channel</a>
+                   </div>
+                 )
+              }
+              
+              {
                  getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT') && (
                    <div class="sidebar-group" set:html={getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT')} />
                  )

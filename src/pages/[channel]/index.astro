@@ -1,0 +1,18 @@
+---
+import List from '../../components/list.astro'
+import { getChannelInfo } from '../../lib/telegram'
+
+const { channel: channelName } = Astro.params
+const { before, after } = Astro.params
+
+// Update SITE_URL for local context to point to the channel
+Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
+
+const channel = await getChannelInfo(Astro, { channelName, before, after })
+
+if (!channel || !channel.title) {
+  return Astro.redirect('/')
+}
+---
+
+<List channel={channel} />

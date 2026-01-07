@@ -15,6 +15,7 @@
 - **RSS 支援**：提供 `/rss.xml` 和 `/rss.json` 訂閱源
 - **現代化 UI**：響應式設計，支援深色模式
 - **日曆導航**：(本版本新增) 支援依照月份瀏覽歷史文章
+- **任意頻道**：(本版本新增) 可透過設定開啟「萬用瀏覽器」模式，瀏覽任意 Telegram 公開頻道
 -  安裝了 marked 解析器。
 -  修改了渲染邏輯，現在會自動將文章內容進行 Markdown 解析。
 
@@ -79,6 +80,7 @@ docker stop broadcastchannel && docker rm broadcastchannel && docker build -t br
 | 變數名稱 (Variable) | 說明 (Description) | 範例 (Example) |
 | :--- | :--- | :--- |
 | `CHANNEL` | **必填**。資料來源 (Data Source)，即 Telegram 頻道 ID (t.me/ 後面的字串)。 | `olifamily` |
+| `ANYCHANNEL` | 設為 `true` 以啟用首頁輸入框與多頻道瀏覽模式 | `true` |
 | `LOCALE` | 語言設定 (影響日期顯示) | `zh-tw` |
 | `TIMEZONE` | 時區設定 | `Asia/Taipei` |
 | `TELEGRAM` | 社群連結 (Social Icon)，Telegram 用戶名 (顯示於 Header 圖示)。若留空則不顯示。 | `olifamily` |
@@ -117,3 +119,21 @@ SIDEBAR_INJECT='<ins class="adsbygoogle" style="display:block" data-ad-client="c
 
 > ⚠️ **注意**：`.env` 變數值建議使用單引號 `'` 包裹，若內容包含單引號請自行轉義。
 
+
+
+### 🌍 任意頻道模式 (Any Channel Mode)
+
+啟用此功能後，BroadcastChannel 將變身為 Telegram 萬用瀏覽器，允許使用者在首頁輸入任意公開頻道 ID 進行瀏覽。
+
+**啟用方式：**
+在您的 `.env` 中設定 `ANYCHANNEL="true"`。
+
+**功能行為：**
+1.  **首頁 (`/`)**：會顯示搜尋框，輸入頻道 ID (例如 `telegram`) 即可跳轉。
+2.  **動態路由**：支援 `http://your-site.com/頻道ID` 的網址結構。
+3.  **切換頻道**：在瀏覽特定頻道時，側邊欄會出現「🔍 Switch Channel」連結，點擊即可回到首頁輸入新頻道。
+
+**相容性說明 (Backward Compatibility)：**
+*   **若未設定 `ANYCHANNEL` 或設為 `false`**：網站將維持「單一頻道模式」，讀取 `CHANNEL` 變數作為預設頻道。首頁不會顯示搜尋框，原有連結結構完全不變。舊有的部署環境不受影響。
+
+---

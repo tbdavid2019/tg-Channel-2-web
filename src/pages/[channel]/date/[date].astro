@@ -1,0 +1,160 @@
+---
+import Layout from '../../../layouts/base.astro'
+import Header from '../../../components/header.astro'
+import Calendar from '../../../components/calendar.astro'
+import Item from '../../../components/item.astro'
+import { getChannelInfo } from '../../../lib/telegram'
+import { savePosts, getPostIdsByDate, getAdjacentDates } from '../../../lib/db'
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+import { getEnv } from '../../../lib/env'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+const { channel: channelName, date } = Astro.params
+
+// Update SITE_URL for local context
+const channelUrl = `${Astro.url.origin}/${channelName}/`
+Astro.locals.SITE_URL = channelUrl
+
+const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
+const locale = getEnv(import.meta.env, Astro, 'LOCALE') ?? 'en'
+
+const targetDate = dayjs(date).format('YYYY-MM-DD')
+const displayDate = dayjs(date).locale(locale).format('YYYY年M月D日 (ddd)')
+
+// Get channel info (fetch recent posts to ensure DB has some data)
+// Note: This might not fetch *old* posts if they are not in the recent list.
+// For full archive support, one would need a more complex fetcher or persistent DB.
+// We accept the limitation that only recently cached/fetched posts might be indexable for now,
+// or we rely on what's already in the DB if persisted.
+const channel = await getChannelInfo(Astro, { channelName })
+
+if (!channel || !channel.title) {
+  return Astro.redirect('/')
+}
+
+if (channel.posts && channel.posts.length > 0) {
+  try {
+    savePosts(channel.posts)
+  } catch (e) {
+    console.error('Failed to save posts:', e.message)
+  }
+}
+
+// Get post IDs for this date from database
+let datePostIds = []
+try {
+  datePostIds = getPostIdsByDate(targetDate)
+} catch (e) {
+  console.error('Failed to get posts by date:', e.message)
+}
+
+// Filter posts for this date
+// Since we might be viewing an old date not in the current channel fetch, 
+// we should ideally fetch from DB or upstream if possible. 
+// However, `getChannelInfo` currently fetches *latest* or by *cursor*.
+// It doesn't fetch by date directly from Telegram.
+// We will filter what we have. If `getPostIdsByDate` returns IDs, we can't easily fetch those specific full posts
+// unless we have them in DB. `channel.posts` only has current feed.
+// Logic adaptation: We filter `channel.posts` (recent) for the date.
+const posts = channel.posts?.filter(post => {
+    const postDate = dayjs(post.datetime).tz(tz).format('YYYY-MM-DD')
+    return postDate === targetDate
+}) || []
+
+// Get adjacent dates
+let adjacentDates = { prevDate: null, nextDate: null }
+try {
+  adjacentDates = getAdjacentDates(targetDate, 30)
+} catch (e) {
+  console.error('Failed to get adjacent dates:', e.message)
+}
+
+const seo = { noindex: true }
+---
+
+<Layout channel={channel} id="main-container">
+  <slot name="header">
+    <Header channel={channel} />
+  </slot>
+  
+  <Calendar />
+  
+  <div class="date-header">
+    <h2>📰 {displayDate}</h2>
+    <p class="post-count">{posts.length} 篇文章</p>
+  </div>
+  
+  <div class="items">
+    {posts.length > 0 ? (
+      posts.map((post) => <Item post={{ ...post, channel: channel.handle }} isItem={false} />)
+    ) : (
+      <div class="no-posts">
+        <p>這一天沒有文章 (或不在最近緩存中)</p>
+        <a href={channelUrl} class="back-link">← 返回首頁</a>
+      </div>
+    )}
+  </div>
+
+  <div class="pages-container">
+    {adjacentDates.nextDate ? (
+      <a href={`${channelUrl}date/${adjacentDates.nextDate}`} title="前一天" class="page">
+        ← {dayjs(adjacentDates.nextDate).format('M/D')}
+      </a>
+    ) : (
+      <span class="page-placeholder">&nbsp;</span>
+    )}
+
+    <div class="pages-info">
+      <a href={channelUrl} class="home-link">首頁</a>
+    </div>
+
+    {adjacentDates.prevDate ? (
+      <a href={`${channelUrl}date/${adjacentDates.prevDate}`} title="後一天" class="page">
+        {dayjs(adjacentDates.prevDate).format('M/D')} →
+      </a>
+    ) : (
+      <span class="page-placeholder">&nbsp;</span>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .date-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--code-background-color);
+    border-radius: 12px;
+  }
+
+  .date-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+    color: var(--primary-color);
+  }
+
+  .post-count {
+    margin: 8px 0 0 0;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+  }
+
+  .no-posts {
+    text-align: center;
+    padding: 40px;
+    color: var(--secondary-color);
+  }
+
+  .back-link, .home-link {
+    color: var(--accent-color);
+    text-decoration: none;
+  }
+
+  .back-link:hover, .home-link:hover {
+    text-decoration: underline;
+  }
+</style>

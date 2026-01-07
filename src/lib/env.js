@@ -1,5 +1,5 @@
 export function getEnv(env, Astro, name) {
-  const value = env[name] ?? Astro.locals?.runtime?.env?.[name] ?? (typeof process !== 'undefined' ? process.env?.[name] : undefined)
+  const value = (typeof process !== 'undefined' ? process.env?.[name] : undefined) ?? Astro.locals?.runtime?.env?.[name] ?? env[name]
   
   if (typeof value === 'string') {
     if (value.startsWith('"') && value.endsWith('"')) {

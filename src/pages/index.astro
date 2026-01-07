@@ -1,8 +1,57 @@
 ---
 import List from '../components/list.astro'
 import { getChannelInfo } from '../lib/telegram'
+import { getEnv } from '../lib/env'
 
+const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
 const channel = await getChannelInfo(Astro)
 ---
 
-<List channel={channel} after={false} />
+{
+  ANYCHANNEL ? (
+    <List channel={channel} after={false}>
+       <div class="channel-input-container">
+        <form action="/api/channel" method="get" class="channel-form" onsubmit="event.preventDefault(); window.location.href = '/' + this.channel.value">
+          <input type="text" name="channel" placeholder="Enter Telegram Channel Name (e.g. telegram)" required class="channel-input" />
+          <button type="submit" class="channel-submit">Go</button>
+        </form>
+      </div>
+    </List>
+  ) : (
+    <List channel={channel} after={false} />
+  )
+}
+
+<style>
+  .channel-input-container {
+    padding: 20px;
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .channel-form {
+    display: flex;
+    gap: 10px;
+  }
+  .channel-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  .channel-submit {
+    padding: 10px 20px;
+    background: #3390ec;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .channel-submit:hover {
+    background: #1d78d4;
+  }
+</style>

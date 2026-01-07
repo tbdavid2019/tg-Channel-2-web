@@ -183,23 +183,23 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
   }
 }
 
-export async function getChannelInfo(Astro, { before = '', after = '', q = '', type = 'list', id = '' } = {}) {
-  const cacheKey = JSON.stringify({ before, after, q, type, id })
+export async function getChannelInfo(Astro, { before = '', after = '', q = '', type = 'list', id = '', channelName = '' } = {}) {
+  const cacheKey = JSON.stringify({ before, after, q, type, id, channelName })
   const cachedResult = cache.get(cacheKey)
 
   if (cachedResult) {
-    console.info('Match Cache', { before, after, q, type, id })
+    console.info('Match Cache', { before, after, q, type, id, channelName })
     return JSON.parse(JSON.stringify(cachedResult))
   }
 
   // Where t.me can also be telegram.me, telegram.dog
   const host = getEnv(import.meta.env, Astro, 'TELEGRAM_HOST') ?? 't.me'
-  const channel = getEnv(import.meta.env, Astro, 'CHANNEL')
+  const channel = channelName || getEnv(import.meta.env, Astro, 'CHANNEL')
   const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 
   const url = id ? `https://${host}/${channel}/${id}?embed=1&mode=tme` : `https://${host}/s/${channel}`
 
-  console.info('Fetching', url, { before, after, q, type, id })
+  console.info('Fetching', url, { before, after, q, type, id, channelName })
   
   let html
   try {
@@ -255,6 +255,7 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
   })?.get()?.reverse().filter(post => ['text'].includes(post.type) && post.id && post.content)
 
   const channelInfo = {
+    handle: channel,
     posts,
     title: $('.tgme_channel_info_header_title')?.text(),
     description: $('.tgme_channel_info_description')?.text(),
