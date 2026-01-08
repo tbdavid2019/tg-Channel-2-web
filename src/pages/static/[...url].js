@@ -10,7 +10,9 @@ const targetWhitelist = [
 
 export async function GET({ request, params, url }) {
   try {
-    const target = new URL(params.url + url.search)
+    // params.url already contains the full URL with query string
+    const targetUrl = params.url.includes('?') ? params.url : params.url + url.search
+    const target = new URL(targetUrl)
     if (!targetWhitelist.some(domain => target.hostname.endsWith(domain))) {
       return Response.redirect(target.toString(), 302)
     }

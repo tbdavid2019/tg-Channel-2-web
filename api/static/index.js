@@ -11,16 +11,14 @@ export default function handler(request) {
     return new Response('Not Found', { status: 404 })
   }
 
-  const target = new URL(url)
-  target.searchParams.delete('path')
-
+  // Keep the full URL with query string intact
   return GET({
     request,
     params: {
-      url: target.origin + target.pathname,
+      url: url,
     },
     url: {
-      search: target.search,
+      search: '',
     },
   })
 }

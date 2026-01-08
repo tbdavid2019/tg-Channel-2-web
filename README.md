@@ -26,7 +26,20 @@
 - **快取優化**：API 快取時間調整為 **10 分鐘**，確保內容即時性同時減少請求。
 - **請求模擬**：加入模擬瀏覽器 Header 與重試機制 (Retry)，解決 `FetchError` 問題。
 - **介面升級**：擴展為寬版佈局 (1200px)，新增頂部導航與日曆月份切換功能。
+## 🐛 問題修復 (2026-01-08)
 
+### ANYCHANNEL 模式媒體路徑問題
+
+**問題描述**：啟用 `ANYCHANNEL="true"` 後，訪問 `/[channel]/` 路由時，圖片和視頻等媒體文件無法正常載入。
+
+**根本原因**：在 ANYCHANNEL 模式下，原本使用 proxy 模式 (`/static/`) 存取 Telegram CDN，但 proxy 在某些部署環境下會出現 fetch 失敗的問題。
+
+**解決方案**：
+- 修改 `src/lib/telegram/index.js` 和 `src/components/header.astro`
+- ANYCHANNEL 模式下直接使用 CDN URL，不經過 proxy
+- 單頻道模式維持原有 proxy 機制，確保向下相容
+
+**影響範圍**：僅影響 `ANYCHANNEL="true"` 的部署，單頻道模式不受影響。
 ## 🧱 技術堆疊 (Tech Stack)
 
 - **框架**: [Astro](https://astro.build/)
