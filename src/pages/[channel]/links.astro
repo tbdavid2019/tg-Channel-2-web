@@ -1,0 +1,45 @@
+---
+import Layout from '../../layouts/base.astro'
+import Header from '../../components/header.astro'
+import { getChannelInfo } from '../../lib/telegram'
+import { getEnv } from '../../lib/env'
+
+const { channel: channelName } = Astro.params
+
+// Update SITE_URL and RSS_URL for this channel
+Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
+Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
+
+const channel = await getChannelInfo(Astro, { channelName })
+
+if (!channel || !channel.title) {
+  return Astro.redirect('/')
+}
+
+const links = getEnv(import.meta.env, Astro, 'LINKS')?.split(';').map((link) => {
+  const [name, url] = link.split(',')
+  return { name, url }
+}) || []
+---
+
+<Layout channel={channel} title={`Links - ${channel.title}`}>
+  <Header channel={channel} />
+  <div id="wrapper">
+    <main id="main">
+      <h1>Links</h1>
+      {links.length > 0 ? (
+        <ul>
+          {links.map((link) => (
+            <li>
+              <a href={link.url} target="_blank" rel="noopener">
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No links configured.</p>
+      )}
+    </main>
+  </div>
+</Layout>

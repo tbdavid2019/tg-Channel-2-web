@@ -18,6 +18,8 @@ const { channel: channelName, date } = Astro.params
 // Update SITE_URL for local context
 const channelUrl = `${Astro.url.origin}/${channelName}/`
 Astro.locals.SITE_URL = channelUrl
+// Update RSS_URL for the channel-specific RSS feed
+Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
 
 const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
 const locale = getEnv(import.meta.env, Astro, 'LOCALE') ?? 'en'

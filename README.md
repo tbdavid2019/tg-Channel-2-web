@@ -40,6 +40,32 @@
 - 單頻道模式維持原有 proxy 機制，確保向下相容
 
 **影響範圍**：僅影響 `ANYCHANNEL="true"` 的部署，單頻道模式不受影響。
+
+### ANYCHANNEL 模式缺少路由文件
+
+**問題描述**：在任意頻道模式下，以下功能全部失效：
+- RSS Feed (`/[channel]/rss.xml`, `/[channel]/rss.json`)
+- Links 頁面 (`/[channel]/links`)
+
+**根本原因**：ANYCHANNEL 是後來新增的功能，但只創建了基本的頁面路由，缺少完整的功能路由文件。
+
+**解決方案**：創建以下文件
+- `src/pages/[channel]/rss.xml.js` - RSS XML feed
+- `src/pages/[channel]/rss.json.js` - JSON feed
+- `src/pages/[channel]/links.astro` - Links 頁面
+- 所有 `/[channel]/` 路由頁面中更新 `RSS_URL`
+
+**測試結果**（使用 API Tester skill 驗證）：
+```
+✓ /$CHANNEL/ - Homepage (200)
+✓ /$CHANNEL/rss.xml (200) - Links 正確包含 channel 前綴
+✓ /$CHANNEL/rss.json (200)
+✓ /$CHANNEL/links (200)
+✓ /$CHANNEL/posts/$ID - Single post page (200)
+✓ Media files - Direct CDN access (200)
+```
+
+**影響範圍**：僅影響 `ANYCHANNEL="true"` 的部署，單頻道模式不受影響。
 ## 🧱 技術堆疊 (Tech Stack)
 
 - **框架**: [Astro](https://astro.build/)

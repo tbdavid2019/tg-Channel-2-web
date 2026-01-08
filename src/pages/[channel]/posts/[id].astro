@@ -6,11 +6,23 @@ const { channel: channelName, id } = Astro.params
 
 // Update SITE_URL for local context
 Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
+// Update RSS_URL for the channel-specific RSS feed
+Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
 
-const channel = await getChannelInfo(Astro, { channelName, id })
+// Get single post
+const post = await getChannelInfo(Astro, { channelName, id })
 
-if (!channel || !channel.posts || channel.posts.length === 0) {
-  return Astro.redirect('/')
+if (!post || !post.id) {
+  return Astro.redirect(`/${channelName}/`)
+}
+
+// Get channel info (without id to get the channel metadata)
+const channelInfo = await getChannelInfo(Astro, { channelName })
+
+// Create a channel object with the single post
+const channel = {
+  ...channelInfo,
+  posts: [post]
 }
 ---
 
