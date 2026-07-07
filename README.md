@@ -135,6 +135,7 @@ docker stop broadcastchannel && docker rm broadcastchannel && docker build -t br
 | `HEADER_INJECT` | 注入 HTML 到 `<head>` (如 GA 分析代碼、CSS, AdSense 腳本) | `<script ...></script>` |
 | `FOOTER_INJECT` | 注入 HTML 到 `</body>` 前 (如 JS 腳本) | `<script>...</script>` |
 | `SIDEBAR_INJECT` | 注入 HTML 到側邊欄「連結 (Links)」下方 (如 AdSense 廣告單元) | `<ins ...></ins><script>...</script>` |
+| `GA_MEASUREMENT_ID` | Google Analytics 4 測量 ID。設定後自動注入 `gtag.js` | `G-81JETJSWLW` |
 | `NOINDEX` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要索引此網站。 | `true` |
 | `NOFOLLOW` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要追蹤此網站上的連結。 | `true` |
 

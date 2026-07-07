@@ -2,7 +2,13 @@
 
 ## 2026-07-07
 
+### Added
+
+- Added `GA_MEASUREMENT_ID` environment variable support to inject Google Analytics 4 `gtag.js`
+
 ### Changed
+
+- Configured `stock.david888.com` to use GA4 measurement ID `G-81JETJSWLW`
 
 - Updated the deployment repository remote on `webglsoft.com` from the old `BroadcastChannel.git` location to `https://github.com/tbdavid2019/tg-Channel-2-web`
 - Rebuilt and restarted the public deployments:

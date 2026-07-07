@@ -10,6 +10,7 @@ const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
 const { channel } = Astro.props
 
 const locale = getEnv(import.meta.env, Astro, 'LOCALE')
+const GA_MEASUREMENT_ID = getEnv(import.meta.env, Astro, 'GA_MEASUREMENT_ID')
 
 const seo = channel?.seo
 const reqPathname = Astro.url.pathname.replace(/\/$/, '')
@@ -93,6 +94,19 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }}
       {...seoParams}
     />
+    {
+      GA_MEASUREMENT_ID && (
+        <>
+          <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
+          <script is:inline define:vars={{ GA_MEASUREMENT_ID }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', GA_MEASUREMENT_ID);
+          </script>
+        </>
+      )
+    }
     <Fragment set:html={getEnv(import.meta.env, Astro, 'HEADER_INJECT')} />
   </head>
 
