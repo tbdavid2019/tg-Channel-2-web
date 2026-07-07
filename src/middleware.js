@@ -10,10 +10,17 @@ export async function onRequest(context, next) {
   }
 
   const response = await next()
+  const agentDiscoveryLinks = [
+    '</docs/agent-guide.md>; rel="describedby"; type="text/markdown"',
+    '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"',
+    '</rss.xml>; rel="alternate"; type="application/rss+xml"',
+    '</rss.json>; rel="alternate"; type="application/feed+json"',
+  ]
 
   if (!response.bodyUsed) {
     if (response.headers.get('Content-type') === 'text/html') {
       response.headers.set('Speculation-Rules', '"/rules/prefetch.json"')
+      response.headers.set('Link', agentDiscoveryLinks.join(', '))
     }
 
     if (!response.headers.has('Cache-Control')) {

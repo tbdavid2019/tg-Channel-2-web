@@ -176,3 +176,46 @@ SIDEBAR_INJECT='<ins class="adsbygoogle" style="display:block" data-ad-client="c
 *   **若未設定 `ANYCHANNEL` 或設為 `false`**：網站將維持「單一頻道模式」，讀取 `CHANNEL` 變數作為預設頻道。首頁不會顯示搜尋框，原有連結結構完全不變。舊有的部署環境不受影響。
 
 ---
+
+## 🤖 Agent Discovery 更新 (2026-07-07)
+
+為了改善 agent / crawler 對站點能力的發現性，本專案已補上以下能力：
+
+- 首頁 HTML 回應會附帶 `Link` response headers，指向：
+  - `/.well-known/agent-skills/index.json`
+  - `/docs/agent-guide.md`
+  - `/rss.xml`
+  - `/rss.json`
+- `public/robots.txt` 已加入 AI crawler 規則與 `Content-Signal` 宣告
+- 新增 `/.well-known/agent-skills/index.json`
+- 新增 `/.well-known/agent-skills/broadcastchannel-site/SKILL.md`
+- 新增 `/docs/agent-guide.md`
+
+### 已驗證的公開網址
+
+- `https://telegram.david888.com`
+- `https://stock.david888.com`
+- `https://cost.david888.com`
+- `https://telegram.david888.com/.well-known/agent-skills/index.json`
+- `https://telegram.david888.com/.well-known/agent-skills/broadcastchannel-site/SKILL.md`
+- `https://telegram.david888.com/docs/agent-guide.md`
+
+### 備註
+
+- 目前**沒有**真實的 MCP transport endpoint，因此尚未發布 `/.well-known/mcp/server-card.json`
+- 若未來提供正式 MCP server，再補 Server Card 會比較合理
+
+## 🚀 部署備註 (2026-07-07)
+
+- 伺服器：`ssh david@webglsoft.com`
+- 部署目錄：`/home/david/BroadcastChannel`
+- 公開站點：
+  - `https://stock.david888.com`
+  - `https://cost.david888.com`
+  - `https://telegram.david888.com`
+- 目前 nginx 反代到：
+  - `127.0.0.1:3333` (`broadcastchannel1`) for `stock.david888.com`
+  - `127.0.0.1:3334` (`broadcastchannel2`) for `cost.david888.com`
+  - `127.0.0.1:3335` (`broadcastchannel3`) for `telegram.david888.com`
+- 遠端 repo `origin` 已更新為：
+  - `https://github.com/tbdavid2019/tg-Channel-2-web`

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "broadcastchannel-site",
+      "type": "skill-md",
+      "description": "Discover Telegram channel posts, feeds, and links from telegram.david888.com. Use when you need public channel content from this site.",
+      "url": "/.well-known/agent-skills/broadcastchannel-site/SKILL.md",
+      "digest": "sha256:f537b0741ff80b3be692186112850b110c1156f39eeb850271a068555b0dc630"
+    }
+  ]
+}
