@@ -9,6 +9,8 @@
 ### Changed
 
 - Configured `stock.david888.com` to use GA4 measurement ID `G-81JETJSWLW`
+- Configured `cost.david888.com` to use GA4 measurement ID `G-ZPBDGWPCRS`
+- Configured `telegram.david888.com` to use GA4 measurement ID `G-PHXY1REP68`
 
 - Updated the deployment repository remote on `webglsoft.com` from the old `BroadcastChannel.git` location to `https://github.com/tbdavid2019/tg-Channel-2-web`
 - Rebuilt and restarted the public deployments:

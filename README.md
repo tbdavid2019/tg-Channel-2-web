@@ -206,6 +206,16 @@ SIDEBAR_INJECT='<ins class="adsbygoogle" style="display:block" data-ad-client="c
 - 目前**沒有**真實的 MCP transport endpoint，因此尚未發布 `/.well-known/mcp/server-card.json`
 - 若未來提供正式 MCP server，再補 Server Card 會比較合理
 
+## 📈 Google Analytics 4 設定 (2026-07-07)
+
+本專案支援以 `GA_MEASUREMENT_ID` 環境變數注入 GA4 `gtag.js`。
+
+目前伺服器上的對應設定如下：
+
+- `stock.david888.com` -> `G-81JETJSWLW`
+- `cost.david888.com` -> `G-ZPBDGWPCRS`
+- `telegram.david888.com` -> `G-PHXY1REP68`
+
 ## 🚀 部署備註 (2026-07-07)
 
 - 伺服器：`ssh david@webglsoft.com`
