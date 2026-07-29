@@ -5,3 +5,6 @@ dist
 .gitignore
 *.md
 .env
+.env2
+.env3
+key/

@@ -33,6 +33,23 @@ const postDates = [...new Set(posts.map(post =>
   dayjs(post.datetime).tz(tz).format('YYYY-MM-DD')
 ))].sort().reverse()
 
+const dayGroups = []
+for (const post of posts) {
+  const date = dayjs(post.datetime).tz(tz)
+  const dateKey = date.format('YYYY-MM-DD')
+  const lastGroup = dayGroups.at(-1)
+
+  if (!lastGroup || lastGroup.dateKey !== dateKey) {
+    dayGroups.push({
+      dateKey,
+      dateLabel: date.format('YYYY · MM · DD'),
+      posts: [post],
+    })
+  } else {
+    lastGroup.posts.push(post)
+  }
+}
+
 // Get today and yesterday for pagination
 const today = dayjs().tz(tz).format('YYYY-MM-DD')
 const yesterday = dayjs().tz(tz).subtract(1, 'day').format('YYYY-MM-DD')
@@ -52,7 +69,19 @@ const afterCursor = posts[0]?.id
   <slot />
 
   <div class="items">
-    {posts.map((post) => <Item post={{ ...post, channel: channel.handle }} isItem={isItem} />)}
+    {
+      dayGroups.map((dayGroup) => (
+        <section class="day-group" aria-label={`${dayGroup.dateKey} 的文章`}>
+          <header class="day-marker">
+            <time datetime={dayGroup.dateKey}>{dayGroup.dateLabel}</time>
+            <span>{dayGroup.posts.length} 篇</span>
+          </header>
+          <div class="day-group-items">
+            {dayGroup.posts.map((post) => <Item post={{ ...post, channel: channel.handle }} isItem={isItem} />)}
+          </div>
+        </section>
+      ))
+    }
   </div>
 
   <div class="pages-container">
@@ -96,4 +125,3 @@ const afterCursor = posts[0]?.id
     text-decoration: underline;
   }
 </style>
-

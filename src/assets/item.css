@@ -18,9 +18,20 @@
   }
 
   > pre {
-    width: calc(100% - var(--box-margin));
-    max-width: 456px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 1.25rem 0;
+    padding: 1rem 1.125rem;
+    color: var(--foreground-color);
+    background: var(--cell-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadows);
     overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-color: var(--scrollbar-thumb-color) transparent;
+    scrollbar-gutter: stable;
   }
 
   .tgme_widget_message_link_preview {
@@ -37,9 +48,8 @@
   .tgme_widget_message_link_preview:has(.link_preview_site_name) {
     display: block;
     background: var(--cell-background-color);
-    border-left: 3px solid var(--highlight-color);
-    padding: 6px;
-    padding-left: 10px;
+    border: 1px solid var(--border-color);
+    padding: 10px 12px;
     border-radius: var(--box-border-radius);
 
     .link_preview_title {
@@ -101,9 +111,8 @@
     margin: 16px 0;
     font-size: 0.8em;
     background: var(--cell-background-color);
-    border-left: 3px solid var(--highlight-color);
-    padding: 6px;
-    padding-left: 10px;
+    border: 1px solid var(--border-color);
+    padding: 10px 12px;
     border-radius: var(--box-border-radius);
   }
 
@@ -111,10 +120,8 @@
     margin: 16px 0;
     font-size: 0.8em;
     background: var(--cell-background-color);
-    border-left: 3px solid var(--highlight-color);
-    padding: 6px;
-    padding-left: 10px;
-    padding-right: 30px;
+    border: 1px solid var(--border-color);
+    padding: 10px 30px 10px 12px;
     border-radius: var(--box-border-radius);
     position: relative;
     min-height: 3.6em;
@@ -172,17 +179,15 @@
     .tg-expandable__toggle::after {
       content: '';
       display: block;
-      width: 0;
-      height: 0;
-      border-left: 6px solid var(--secondary-color);
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
+      width: 12px;
+      height: 12px;
+      background: var(--secondary-color);
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       transition: transform 0.2s ease;
-      filter: var(--icon-secondary-filter);
     }
 
     .tg-expandable:has(.tg-expandable__checkbox:checked) .tg-expandable__toggle::after {

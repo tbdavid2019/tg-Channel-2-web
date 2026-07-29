@@ -8,6 +8,12 @@
 - Added JetBrains Mono as the default English and numeric font.
 - Added the bundled font assets under `public/fonts/`.
 
+### Changed
+
+- Expanded data and code blocks to use the available content width; horizontal scrolling now appears only when a viewport is genuinely too narrow.
+- Grouped timeline entries by day with distinct opening and closing boundaries.
+- Refined the reading layout and color system with a wider content column, warm surfaces, and forest-green navigation accents.
+
 ## 2026-07-07
 
 ### Added
