@@ -1,239 +1,110 @@
 # BroadcastChannel
 
-![stock.david888.com](image.png)
-**將您的 Telegram 頻道轉變為微型部落格 (MicroBlog)**
+![BroadcastChannel screenshot](image.png)
 
-這是一個基於 Astro 框架的開源專案，可以自動抓取 Telegram 公開頻道的內容，並生成一個 SEO 友善、無需 JavaScript 即可瀏覽的靜態網站。
+將 Telegram 公開頻道轉換為可搜尋、可訂閱的網站。BroadcastChannel 以 Astro server rendering 建置，提供文章頁、RSS、日期瀏覽與可選的任意頻道模式。
 
+## 功能
 
+- 讀取 Telegram 公開頻道內容，不需要 Bot。
+- 產生文章、標籤、日期、連結與搜尋路由。
+- 提供 RSS XML、RSS JSON 與 sitemap。
+- 支援單一頻道與任意公開頻道瀏覽模式。
+- 內建響應式時間軸、按日期分組的文章清單與日曆導覽。
+- 支援 `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT` 等自訂嵌入內容。
+- 預設使用 GenJyuu Gothic 顯示中文、JetBrains Mono 顯示英文與數字。
 
-## ✨ 功能特色 (Features)
+## 快速開始
 
-- **自動同步**：自動抓取 Telegram 頻道內容 (無需 Bot)
-- **SEO 友善**：自動生成 `/sitemap.xml` 和 Meta 標籤
-- **極致效能**：瀏覽器端 0 JS (純靜態 HTML/CSS)，載入速度極快
-- **RSS 支援**：提供 `/rss.xml` 和 `/rss.json` 訂閱源
-- **現代化 UI**：響應式設計，支援深色模式
-- **日曆導航**：(本版本新增) 支援依照月份瀏覽歷史文章
-- **任意頻道**：(本版本新增) 可透過設定開啟「萬用瀏覽器」模式，瀏覽任意 Telegram 公開頻道
--  安裝了 marked 解析器。
--  修改了渲染邏輯，現在會自動將文章內容進行 Markdown 解析。
-
-### 預設字體
-
-- 中文：`GenJyuuGothic-Medium.woff2`
-- 英文與數字：`JetBrainsMono-Medium.woff2`
-
-字體檔放在 `public/fonts/`，由全站 CSS 依 Unicode range 自動套用。
-
-## � 近期優化 (2026-01-05)
-
-針對 Telegram 限制與使用體驗進行了以下增強：
-
-- **快取優化**：API 快取時間調整為 **10 分鐘**，確保內容即時性同時減少請求。
-- **請求模擬**：加入模擬瀏覽器 Header 與重試機制 (Retry)，解決 `FetchError` 問題。
-- **介面升級**：擴展為寬版佈局 (1200px)，新增頂部導航與日曆月份切換功能。
-## 🐛 問題修復 (2026-01-08)
-
-### ANYCHANNEL 模式媒體路徑問題
-
-**問題描述**：啟用 `ANYCHANNEL="true"` 後，訪問 `/[channel]/` 路由時，圖片和視頻等媒體文件無法正常載入。
-
-**根本原因**：在 ANYCHANNEL 模式下，原本使用 proxy 模式 (`/static/`) 存取 Telegram CDN，但 proxy 在某些部署環境下會出現 fetch 失敗的問題。
-
-**解決方案**：
-- 修改 `src/lib/telegram/index.js` 和 `src/components/header.astro`
-- ANYCHANNEL 模式下直接使用 CDN URL，不經過 proxy
-- 單頻道模式維持原有 proxy 機制，確保向下相容
-
-**影響範圍**：僅影響 `ANYCHANNEL="true"` 的部署，單頻道模式不受影響。
-
-### ANYCHANNEL 模式缺少路由文件
-
-**問題描述**：在任意頻道模式下，以下功能全部失效：
-- RSS Feed (`/[channel]/rss.xml`, `/[channel]/rss.json`)
-- Links 頁面 (`/[channel]/links`)
-
-**根本原因**：ANYCHANNEL 是後來新增的功能，但只創建了基本的頁面路由，缺少完整的功能路由文件。
-
-**解決方案**：創建以下文件
-- `src/pages/[channel]/rss.xml.js` - RSS XML feed
-- `src/pages/[channel]/rss.json.js` - JSON feed
-- `src/pages/[channel]/links.astro` - Links 頁面
-- 所有 `/[channel]/` 路由頁面中更新 `RSS_URL`
-
-**測試結果**（使用 API Tester skill 驗證）：
-```
-✓ /$CHANNEL/ - Homepage (200)
-✓ /$CHANNEL/rss.xml (200) - Links 正確包含 channel 前綴
-✓ /$CHANNEL/rss.json (200)
-✓ /$CHANNEL/links (200)
-✓ /$CHANNEL/posts/$ID - Single post page (200)
-✓ Media files - Direct CDN access (200)
-```
-
-**影響範圍**：僅影響 `ANYCHANNEL="true"` 的部署，單頻道模式不受影響。
-## 🧱 技術堆疊 (Tech Stack)
-
-- **框架**: [Astro](https://astro.build/)
-- **資料源**: [Telegram Channels](https://telegram.org/tour/channels)
-- **樣板**: [Sepia](https://github.com/Planetable/SiteTemplateSepia)
-
-## 🏗️ 部署方式 (Deployment)
-
-### Docker 部署 (推薦)
+需求：Node.js LTS 與 pnpm 10。
 
 ```bash
-# 1. 建立映像檔 (Build)
+corepack enable
+pnpm install --no-frozen-lockfile
+cp .env.example .env
+pnpm dev
+```
+
+開啟 `http://localhost:4321`。修改 `.env` 的 `CHANNEL` 後，重新啟動開發伺服器即可切換資料來源。
+
+## Docker 部署
+
+Docker image 使用 Node adapter，資料庫檔案保存在 `/app/data`。請保留 volume，避免容器重建後遺失快取資料。
+
+```bash
 docker build -t broadcastchannel .
 
-# 2. 啟動容器 (Run)
-# 建議使用 .env 檔案管理設定，並掛載 volume 以保存資料
 docker run -d \
   --name broadcastchannel \
-  -p 3333:4321 \
   --env-file .env \
+  -p 3333:4321 \
   -v broadcastchannel-data:/app/data \
   broadcastchannel
-
-# 3. rebuild
-docker stop broadcastchannel && docker rm broadcastchannel && docker build -t broadcastchannel . && docker run -d --name broadcastchannel --env-file .env -p 3333:4321 -v broadcastchannel-data:/app/data broadcastchannel
-
-
 ```
 
-### Serverless 部署
+更新部署時，重建 image 後以相同的 env file 與 volume 重新建立容器。`.env`、`.env2`、`.env3` 及 `key/` 均被 Docker build context 排除，避免設定值進入 image。
 
-1. [Fork](https://github.com/tbdavid2019/BroadcastChannel/fork) 本專案到您的 GitHub
-2. 在 Cloudflare Pages / Netlify / Vercel 建立新專案
-3. 選擇 `BroadcastChannel` 儲存庫與 `Astro` 框架
-4. 設定環境變數 `CHANNEL` 為您的頻道 ID
-5. 儲存並部署
+## 環境變數
 
-## ❤️ 特別致謝 (Credits)
+複製 `.env.example` 後，依需求調整下列設定。
 
-本專案修改自 **[Miantiao-me](https://github.com/miantiao-me)** 開發的 **[BroadcastChannel](https://github.com/miantiao-me/BroadcastChannel)**。
+| 變數                                                   | 用途                                                        | 範例                       |
+| ------------------------------------------------------ | ----------------------------------------------------------- | -------------------------- |
+| `CHANNEL`                                              | 單一頻道模式的 Telegram channel handle。                    | `oliservice`               |
+| `ANYCHANNEL`                                           | 設為 `true` 時，首頁可輸入任意公開頻道。                    | `true`                     |
+| `LOCALE`                                               | 日期與相對時間語系。                                        | `zh-tw`                    |
+| `TIMEZONE`                                             | 顯示與日期分組使用的時區。                                  | `Asia/Taipei`              |
+| `TELEGRAM`、`TWITTER`、`GITHUB`、`DISCORD`、`PODCASRT` | Header 社群連結。                                           | `oliservice`               |
+| `TAGS`                                                 | 啟用標籤清單，以逗號分隔。                                  | `台股,美股,AI`             |
+| `LINKS`                                                | 側邊欄連結，格式為 `名稱,URL;名稱,URL`。                    | `網站,https://example.com` |
+| `STATIC_PROXY`                                         | Telegram 媒體代理前綴；留空時使用內建 `/static/`。          | `https://wsrv.nl/?url=`    |
+| `GOOGLE_SEARCH_SITE`                                   | 啟用 Google 站內搜尋的網域。                                | `example.com`              |
+| `RSS_BEAUTIFY`                                         | 設定非空值時，RSS XML 使用內建 XSLT 顯示。                  | `true`                     |
+| `COMMENTS`                                             | 設定非空值時，在單篇文章頁顯示 Telegram discussion widget。 | `true`                     |
+| `GA_MEASUREMENT_ID`                                    | Google Analytics 4 measurement ID。                         | `G-XXXXXXXXXX`             |
+| `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT`     | 插入受信任的 HTML 或 script。                               | 見下方說明                 |
 
-感謝原作者的開源貢獻，讓 Telegram 內容能以如此優雅的方式呈現於 Web 端。
+### 嵌入內容
 
-- 原作者網站：[面条实验室](https://memo.miantiao.me/)
-- 原專案儲存庫：[GitHub - BroadcastChannel](https://github.com/miantiao-me/BroadcastChannel)
-
----
-
-
-
-| 變數名稱 (Variable) | 說明 (Description) | 範例 (Example) |
-| :--- | :--- | :--- |
-| `CHANNEL` | **必填**。資料來源 (Data Source)，即 Telegram 頻道 ID (t.me/ 後面的字串)。 | `olifamily` |
-| `ANYCHANNEL` | 設為 `true` 以啟用首頁輸入框與多頻道瀏覽模式 | `true` |
-| `LOCALE` | 語言設定 (影響日期顯示) | `zh-tw` |
-| `TIMEZONE` | 時區設定 | `Asia/Taipei` |
-| `TELEGRAM` | 社群連結 (Social Icon)，Telegram 用戶名 (顯示於 Header 圖示)。若留空則不顯示。 | `olifamily` |
-| `TWITTER` | Twitter 用戶名 (顯示於 Header 圖示) | `oobwei` |
-| `GITHUB` | GitHub 用戶名 (顯示於 Header 圖示) | `tbdavid2019` |
-| `TAGS` | 啟用標籤頁面，使用逗號分隔 | `美股,台股,AI` |
-| `LINKS` | 啟用友鏈頁面 (標題,網址;標題,網址) | `Google,https://abcd.com;Blog,https://blog.com` |
-| `NAVS` | 自訂導航連結 (標題,網址;標題,網址) | `關於我,https://me.com;作品集,https://port.com` |
-| `COMMENTS` | 啟用留言顯示 (需配合 HEADER_INJECT 注入腳本) | `true` |
-| `RSS_BEAUTIFY` | 啟用 RSS 美化 (XSLT) | `true` |
-| `STATIC_PROXY` | Telegram 圖片代理前綴。預設留空使用內建 `/static/`。 | `https://wsrv.nl/?url=` |
-| `GOOGLE_SEARCH_SITE` | 啟用 Google 站內搜尋，填入您的網域 | `stock.david888.com` |
-| `HEADER_INJECT` | 注入 HTML 到 `<head>` (如 GA 分析代碼、CSS, AdSense 腳本) | `<script ...></script>` |
-| `FOOTER_INJECT` | 注入 HTML 到 `</body>` 前 (如 JS 腳本) | `<script>...</script>` |
-| `SIDEBAR_INJECT` | 注入 HTML 到側邊欄「連結 (Links)」下方 (如 AdSense 廣告單元) | `<ins ...></ins><script>...</script>` |
-| `GA_MEASUREMENT_ID` | Google Analytics 4 測量 ID。設定後自動注入 `gtag.js` | `G-81JETJSWLW` |
-| `NOINDEX` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要索引此網站。 | `true` |
-| `NOFOLLOW` | SEO 設定。若設為 `true`，將告訴搜尋引擎不要追蹤此網站上的連結。 | `true` |
-
-### 📢 Google AdSense 設定範例
-
-您可以在 `.env` 中設定以下變數來啟用廣告：
-
-**1. 全域腳本 (`HEADER_INJECT`)**
-將 AdSense 提供的 `<script async ...>` 程式碼放入此處。
+`HEADER_INJECT`、`FOOTER_INJECT` 與 `SIDEBAR_INJECT` 會直接輸出 HTML。只應填入可信任的內容，例如 Analytics、AdSense 或自行維護的 script；不要接受使用者輸入後直接寫入這些設定。
 
 ```env
-HEADER_INJECT='<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>'
+HEADER_INJECT='<script async src="https://example.com/analytics.js"></script>'
+SIDEBAR_INJECT='<ins class="adsbygoogle" data-ad-slot="1234567890"></ins>'
 ```
 
-**2. 側邊欄廣告 (`SIDEBAR_INJECT`)**
-將廣告單元代碼放入此處，會在側邊欄「連結」下方顯示。
+## 路由與訂閱
 
-```env
-SIDEBAR_INJECT='<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>'
+| 路徑                    | 說明                     |
+| ----------------------- | ------------------------ |
+| `/`                     | 頻道首頁與最新文章。     |
+| `/posts/:id`            | 單篇文章。               |
+| `/date/:date`           | 指定日期的文章。         |
+| `/tags`、`/links`       | 標籤與連結頁。           |
+| `/rss.xml`、`/rss.json` | 訂閱來源。               |
+| `/sitemap.xml`          | Sitemap。                |
+| `/:channel/...`         | 任意頻道模式的對應路徑。 |
+
+Agent 與 crawler 可參考 [`public/docs/agent-guide.md`](public/docs/agent-guide.md)；版本異動請看 [CHANGELOG.md](CHANGELOG.md)。
+
+## 字體與介面
+
+- `public/fonts/GenJyuuGothic-Medium.woff2`：中文字型。
+- `public/fonts/JetBrainsMono-Medium.woff2`：英文、數字與資料表字型。
+
+CSS 以 Unicode range 自動分配字型。資料／程式區塊在寬螢幕會使用完整內容欄寬；只有內容實際超出窄螢幕時才顯示水平捲動。
+
+## 專案結構
+
+```text
+src/components/  頁面元件與時間軸
+src/layouts/     全站 layout 與 metadata
+src/lib/         Telegram、資料庫與環境設定
+src/pages/       Astro routes、RSS 與 sitemap
+src/assets/      全站與文章樣式
+public/          靜態資產、字體與 agent 文件
 ```
 
-> ⚠️ **注意**：`.env` 變數值建議使用單引號 `'` 包裹，若內容包含單引號請自行轉義。
+## 致謝
 
-
-
-### 🌍 任意頻道模式 (Any Channel Mode)
-
-啟用此功能後，BroadcastChannel 將變身為 Telegram 萬用瀏覽器，允許使用者在首頁輸入任意公開頻道 ID 進行瀏覽。
-
-**啟用方式：**
-在您的 `.env` 中設定 `ANYCHANNEL="true"`。
-
-**功能行為：**
-1.  **首頁 (`/`)**：會顯示搜尋框，輸入頻道 ID (例如 `telegram`) 即可跳轉。
-2.  **動態路由**：支援 `http://your-site.com/頻道ID` 的網址結構。
-3.  **切換頻道**：在瀏覽特定頻道時，側邊欄會出現「🔍 Switch Channel」連結，點擊即可回到首頁輸入新頻道。
-
-**相容性說明 (Backward Compatibility)：**
-*   **若未設定 `ANYCHANNEL` 或設為 `false`**：網站將維持「單一頻道模式」，讀取 `CHANNEL` 變數作為預設頻道。首頁不會顯示搜尋框，原有連結結構完全不變。舊有的部署環境不受影響。
-
----
-
-## 🤖 Agent Discovery 更新 (2026-07-07)
-
-為了改善 agent / crawler 對站點能力的發現性，本專案已補上以下能力：
-
-- 首頁 HTML 回應會附帶 `Link` response headers，指向：
-  - `/.well-known/agent-skills/index.json`
-  - `/docs/agent-guide.md`
-  - `/rss.xml`
-  - `/rss.json`
-- `public/robots.txt` 已加入 AI crawler 規則與 `Content-Signal` 宣告
-- 新增 `/.well-known/agent-skills/index.json`
-- 新增 `/.well-known/agent-skills/broadcastchannel-site/SKILL.md`
-- 新增 `/docs/agent-guide.md`
-
-### 已驗證的公開網址
-
-- `https://telegram.david888.com`
-- `https://stock.david888.com`
-- `https://cost.david888.com`
-- `https://telegram.david888.com/.well-known/agent-skills/index.json`
-- `https://telegram.david888.com/.well-known/agent-skills/broadcastchannel-site/SKILL.md`
-- `https://telegram.david888.com/docs/agent-guide.md`
-
-### 備註
-
-- 目前**沒有**真實的 MCP transport endpoint，因此尚未發布 `/.well-known/mcp/server-card.json`
-- 若未來提供正式 MCP server，再補 Server Card 會比較合理
-
-## 📈 Google Analytics 4 設定 (2026-07-07)
-
-本專案支援以 `GA_MEASUREMENT_ID` 環境變數注入 GA4 `gtag.js`。
-
-目前伺服器上的對應設定如下：
-
-- `stock.david888.com` -> `G-81JETJSWLW`
-- `cost.david888.com` -> `G-ZPBDGWPCRS`
-- `telegram.david888.com` -> `G-PHXY1REP68`
-
-## 🚀 部署備註 (2026-07-07)
-
-- 伺服器：`ssh david@webglsoft.com`
-- 部署目錄：`/home/david/BroadcastChannel`
-- 公開站點：
-  - `https://stock.david888.com`
-  - `https://cost.david888.com`
-  - `https://telegram.david888.com`
-- 目前 nginx 反代到：
-  - `127.0.0.1:3333` (`broadcastchannel1`) for `stock.david888.com`
-  - `127.0.0.1:3334` (`broadcastchannel2`) for `cost.david888.com`
-  - `127.0.0.1:3335` (`broadcastchannel3`) for `telegram.david888.com`
-- 遠端 repo `origin` 已更新為：
-  - `https://github.com/tbdavid2019/tg-Channel-2-web`
+本專案基於 [Miantiao-me](https://github.com/miantiao-me) 的 [BroadcastChannel](https://github.com/miantiao-me/BroadcastChannel) 延伸。
