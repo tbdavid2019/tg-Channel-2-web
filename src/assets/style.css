@@ -18,10 +18,29 @@
   --secondary-color: #999;
 }
 
+@font-face {
+  font-family: 'Broadcast Default';
+  src: url('/fonts/GenJyuuGothic-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: 'Broadcast Default';
+  src: url('/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-024F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF;
+}
+
 body {
   background-color: var(--background-color);
   color: var(--foreground-color);
   font-family:
+    'Broadcast Default',
     ui-sans-serif,
     system-ui,
     -apple-system,

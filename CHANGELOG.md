@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-29
+
+### Added
+
+- Added GenJyuu Gothic as the default Chinese font.
+- Added JetBrains Mono as the default English and numeric font.
+- Added the bundled font assets under `public/fonts/`.
+
 ## 2026-07-07
 
 ### Added

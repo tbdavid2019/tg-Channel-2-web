@@ -19,6 +19,13 @@
 -  安裝了 marked 解析器。
 -  修改了渲染邏輯，現在會自動將文章內容進行 Markdown 解析。
 
+### 預設字體
+
+- 中文：`GenJyuuGothic-Medium.woff2`
+- 英文與數字：`JetBrainsMono-Medium.woff2`
+
+字體檔放在 `public/fonts/`，由全站 CSS 依 Unicode range 自動套用。
+
 ## � 近期優化 (2026-01-05)
 
 針對 Telegram 限制與使用體驗進行了以下增強：
