@@ -27,6 +27,10 @@
   - Untracked `.env3` from git and updated `.gitignore` with wildcard `.env*` coverage while preserving `.env.example`.
   - Configured `Dockerfile` to create and own `/app/data` under unprivileged user `node` (`USER node`).
 
+### Added
+
+- Added GitHub Actions workflow (`.github/workflows/docker.yml`) to automatically build and push multi-architecture Docker images (`linux/amd64`, `linux/arm64`) to Docker Hub and GitHub Packages (GHCR) with Buildx cache and metadata tagging.
+
 ## 2026-07-29
 
 ### Added
