@@ -28,7 +28,7 @@ const channel = await getChannelInfo(Astro)
 // Save all posts to database for indexing
 if (channel.posts && channel.posts.length > 0) {
   try {
-    savePosts(channel.posts)
+    savePosts(channel.posts, channel.handle)
   } catch (e) {
     console.error('Failed to save posts:', e.message)
   }
@@ -37,7 +37,7 @@ if (channel.posts && channel.posts.length > 0) {
 // Get post IDs for this date from database
 let datePostIds = []
 try {
-  datePostIds = getPostIdsByDate(targetDate)
+  datePostIds = getPostIdsByDate(targetDate, channel.handle)
 } catch (e) {
   console.error('Failed to get posts by date:', e.message)
 }
@@ -54,7 +54,7 @@ const posts = channel.posts?.filter(post => {
 // Get adjacent dates for pagination
 let adjacentDates = { prevDate: null, nextDate: null }
 try {
-  adjacentDates = getAdjacentDates(targetDate, 30)
+  adjacentDates = getAdjacentDates(targetDate, 30, channel.handle)
 } catch (e) {
   console.error('Failed to get adjacent dates:', e.message)
 }

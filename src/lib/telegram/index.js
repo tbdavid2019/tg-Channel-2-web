@@ -5,6 +5,16 @@ import { marked } from 'marked'
 import { $fetch } from 'ofetch'
 import { getEnv } from '../env'
 import prism from '../prism'
+import { sanitizeContent, sanitizeDescription } from './sanitize'
+
+function escapeAttr(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
 
 const cache = new LRUCache({
   ttl: 1000 * 60 * 10, // 10 minutes - refresh frequently for new posts
@@ -36,15 +46,16 @@ function getImageStickers($, item, { staticProxy, index }) {
 }
 
 function getImages($, item, { staticProxy, id, index, title }) {
+  const safeTitle = escapeAttr(title)
   const images = $(item).find('.tgme_widget_message_photo_wrap')?.map((_index, photo) => {
     const url = $(photo).attr('style').match(/url\(["'](.*?)["']/)?.[1]
     const popoverId = `modal-${id}-${_index}`
     return `
       <button class="image-preview-button image-preview-wrap" popovertarget="${popoverId}" popovertargetaction="show">
-        <img src="${staticProxy + url}" alt="${title}" loading="${index > 15 ? 'eager' : 'lazy'}" />
+        <img src="${staticProxy + url}" alt="${safeTitle}" loading="${index > 15 ? 'eager' : 'lazy'}" />
       </button>
       <button class="image-preview-button modal" id="${popoverId}" popovertarget="${popoverId}" popovertargetaction="hide" popover>
-        <img class="modal-img" src="${staticProxy + url}" alt="${title}" loading="lazy" />
+        <img class="modal-img" src="${staticProxy + url}" alt="${safeTitle}" loading="lazy" />
       </button>
     `
   })?.get()
@@ -79,13 +90,15 @@ function getLinkPreview($, item, { staticProxy, index }) {
   const link = $(item).find('.tgme_widget_message_link_preview')
   const title = $(item).find('.link_preview_title')?.text() || $(item).find('.link_preview_site_name')?.text()
   const description = $(item).find('.link_preview_description')?.text()
+  const safeTitle = escapeAttr(title)
+  const safeDescription = escapeAttr(description)
 
-  link?.attr('target', '_blank').attr('rel', 'noopener').attr('title', description)
+  link?.attr('target', '_blank').attr('rel', 'noopener').attr('title', safeDescription)
 
   const image = $(item).find('.link_preview_image')
   const src = image?.attr('style')?.match(/url\(["'](.*?)["']/i)?.[1]
   const imageSrc = src ? staticProxy + src : ''
-  image?.replaceWith(`<img class="link_preview_image" alt="${title}" src="${imageSrc}" loading="${index > 15 ? 'eager' : 'lazy'}" />`)
+  image?.replaceWith(`<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" loading="${index > 15 ? 'eager' : 'lazy'}" />`)
   return $.html(link)
 }
 
@@ -150,6 +163,30 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
     $(a)?.attr('href', `/search/result?q=${encodeURIComponent($(a)?.text()?.replace(/^#/, ''))}`)
   })?.map((_index, a) => $(a)?.text()?.replace('#', ''))?.get()
 
+  const rawContent = [
+    getReply($, item, { channel }),
+    getImages($, item, { staticProxy, id, index, title }),
+    getVideo($, item, { staticProxy, id, index, title }),
+    getAudio($, item, { staticProxy, id, index, title }),
+    content?.html() ? marked.parse(content.html().replace(/<br\s*\/?>/gi, '\n'), { breaks: true }) : '',
+    getImageStickers($, item, { staticProxy, index }),
+    getVideoStickers($, item, { staticProxy, index }),
+    // $(item).find('.tgme_widget_message_sticker_wrap')?.html(),
+    $(item).find('.tgme_widget_message_poll')?.html(),
+    $.html($(item).find('.tgme_widget_message_document_wrap')),
+    $.html($(item).find('.tgme_widget_message_video_player.not_supported')),
+    $.html($(item).find('.tgme_widget_message_location_wrap')),
+    getLinkPreview($, item, { staticProxy, index }),
+  ].filter(Boolean).join('').replace(/(url\(["'])((https?:)?\/\/)/g, (match, p1, p2, _p3) => {
+    if (p2 === '//') {
+      p2 = 'https://'
+    }
+    if (p2?.startsWith('t.me')) {
+      return false
+    }
+    return `${p1}${staticProxy}${p2}`
+  })
+
   return {
     id,
     title,
@@ -157,29 +194,7 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
     datetime: $(item).find('.tgme_widget_message_date time')?.attr('datetime'),
     tags,
     text: content?.text(),
-    content: [
-      getReply($, item, { channel }),
-      getImages($, item, { staticProxy, id, index, title }),
-      getVideo($, item, { staticProxy, id, index, title }),
-      getAudio($, item, { staticProxy, id, index, title }),
-      content?.html() ? marked.parse(content.html().replace(/<br\s*\/?>/gi, '\n'), { breaks: true }) : '',
-      getImageStickers($, item, { staticProxy, index }),
-      getVideoStickers($, item, { staticProxy, index }),
-      // $(item).find('.tgme_widget_message_sticker_wrap')?.html(),
-      $(item).find('.tgme_widget_message_poll')?.html(),
-      $.html($(item).find('.tgme_widget_message_document_wrap')),
-      $.html($(item).find('.tgme_widget_message_video_player.not_supported')),
-      $.html($(item).find('.tgme_widget_message_location_wrap')),
-      getLinkPreview($, item, { staticProxy, index }),
-    ].filter(Boolean).join('').replace(/(url\(["'])((https?:)?\/\/)/g, (match, p1, p2, _p3) => {
-      if (p2 === '//') {
-        p2 = 'https://'
-      }
-      if (p2?.startsWith('t.me')) {
-        return false
-      }
-      return `${p1}${staticProxy}${p2}`
-    }),
+    content: sanitizeContent(rawContent),
   }
 }
 
@@ -261,7 +276,7 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
     posts,
     title: $('.tgme_channel_info_header_title')?.text(),
     description: $('.tgme_channel_info_description')?.text(),
-    descriptionHTML: modifyHTMLContent($, $('.tgme_channel_info_description'))?.html(),
+    descriptionHTML: sanitizeDescription(modifyHTMLContent($, $('.tgme_channel_info_description'))?.html()),
     avatar: $('.tgme_page_photo_image img')?.attr('src'),
   }
 

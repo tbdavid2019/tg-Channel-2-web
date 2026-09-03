@@ -40,7 +40,7 @@ if (!channel || !channel.title) {
 
 if (channel.posts && channel.posts.length > 0) {
   try {
-    savePosts(channel.posts)
+    savePosts(channel.posts, channelName)
   } catch (e) {
     console.error('Failed to save posts:', e.message)
   }
@@ -49,7 +49,7 @@ if (channel.posts && channel.posts.length > 0) {
 // Get post IDs for this date from database
 let datePostIds = []
 try {
-  datePostIds = getPostIdsByDate(targetDate)
+  datePostIds = getPostIdsByDate(targetDate, channelName)
 } catch (e) {
   console.error('Failed to get posts by date:', e.message)
 }
@@ -70,7 +70,7 @@ const posts = channel.posts?.filter(post => {
 // Get adjacent dates
 let adjacentDates = { prevDate: null, nextDate: null }
 try {
-  adjacentDates = getAdjacentDates(targetDate, 30)
+  adjacentDates = getAdjacentDates(targetDate, 30, channelName)
 } catch (e) {
   console.error('Failed to get adjacent dates:', e.message)
 }

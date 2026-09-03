@@ -1,5 +1,6 @@
 ---
 import { getEnv } from '../lib/env'
+import { sanitizeDescription } from '../lib/telegram/sanitize'
 import voidFile from '../assets/void.png'
 import rss from '../assets/rss.svg'
 import podcast from '../assets/podcast.svg'
@@ -25,6 +26,7 @@ const BLUESKY = getEnv(import.meta.env, Astro, 'BLUESKY')
 const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL')
 const staticProxy = anyChannel ? '' : (getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/')
 const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
+const safeDescriptionHTML = channel?.descriptionHTML ? sanitizeDescription(channel.descriptionHTML) : ''
 ---
 
 <div id="header">
@@ -117,8 +119,8 @@ const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 </style>
 
 {
-  hideDescription !== 'true' && channel?.descriptionHTML && channel?.descriptionHTML.length > 0 && (
-    <div class="text-box" id="site-intro" set:html={channel?.descriptionHTML} />
+  hideDescription !== 'true' && safeDescriptionHTML.length > 0 && (
+    <div class="text-box" id="site-intro" set:html={safeDescriptionHTML} />
   )
 }
 

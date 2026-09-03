@@ -3,6 +3,7 @@ import '../assets/item.css'
 import 'prismjs/themes/prism.css'
 import dayjs from '../lib/dayjs'
 import { getEnv } from '../lib/env'
+import { sanitizeContent } from '../lib/telegram/sanitize'
 
 const locale = getEnv(import.meta.env, Astro, 'LOCALE')
 const timezone = getEnv(import.meta.env, Astro, 'TIMEZONE')
@@ -17,6 +18,7 @@ const COMMENTS = getEnv(import.meta.env, Astro, 'COMMENTS')
 
 const datetime = dayjs(post.datetime).tz(timezone)
 const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('HH:mm · ll · ddd') : datetime.fromNow()
+const safeContent = post.content ? sanitizeContent(post.content) : ''
 ---
 
 <div class="item" style={{ 'view-transition-name': `post-${post.id}` }}>
@@ -28,7 +30,7 @@ const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('H
       </a>
     </div>
   </div>
-  {post.content.length > 0 && <div class={`text-box content`} set:html={post.content} />}
+  {safeContent.length > 0 && <div class={`text-box content`} set:html={safeContent} />}
   {
     post.tags.length > 0 && (
       <div class="tag-box" style={post.content.length === 0 ? 'padding-top: 30px;' : ''}>

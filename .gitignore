@@ -15,7 +15,10 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
+.env2
+.env3
+!.env.example
 /key/
 
 # macOS-specific files
@@ -28,4 +31,4 @@ pnpm-debug.log*
 .netlify
 .wrangler
 .edgeone
-.env2
+

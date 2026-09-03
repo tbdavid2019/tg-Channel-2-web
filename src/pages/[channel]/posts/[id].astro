@@ -12,8 +12,9 @@ Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
 // Get single post
 const post = await getChannelInfo(Astro, { channelName, id })
 
+const safeChannel = /^[a-zA-Z0-9_]+$/.test(channelName || '') ? channelName : ''
 if (!post || !post.id) {
-  return Astro.redirect(`/${channelName}/`)
+  return safeChannel ? Astro.redirect(`/${safeChannel}/`) : Astro.redirect('/')
 }
 
 // Get channel info (without id to get the channel metadata)

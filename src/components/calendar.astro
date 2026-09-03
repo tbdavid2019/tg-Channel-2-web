@@ -6,6 +6,7 @@ import { getDatesWithPosts, getDatesByMonth } from '../lib/db'
 
 const { SITE_URL } = Astro.locals
 const locale = getEnv(import.meta.env, Astro, 'LOCALE') || 'en'
+const currentChannel = Astro.params?.channel || getEnv(import.meta.env, Astro, 'CHANNEL') || ''
 
 dayjs.locale(locale)
 
@@ -25,10 +26,10 @@ try {
   // Use the new function we added to db/index.js
   // If it's not available yet (during transition), fallback to empty
   if (getDatesByMonth) {
-    datesWithPosts = getDatesByMonth(yearMonth)
+    datesWithPosts = getDatesByMonth(yearMonth, currentChannel)
   } else {
     // Fallback for types that might not have updated yet
-    datesWithPosts = getDatesWithPosts(31) 
+    datesWithPosts = getDatesWithPosts(31, currentChannel) 
   }
 } catch (e) {
   console.error('Failed to get dates with posts:', e.message)

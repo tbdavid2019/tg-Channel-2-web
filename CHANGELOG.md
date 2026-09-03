@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-09-03
+
+### Security
+
+- **Remediated Server-Side Open Redirect & SSRF/Open Proxy (`src/pages/static/[...url].js`)**:
+  - Enforced strict hostname matching (`hostname === domain || hostname.endsWith('.' + domain)`) against `targetWhitelist`.
+  - Blocked loopback and private IP ranges (`127.*`, `10.*`, `172.16-31.*`, `192.168.*`, `169.254.*`, `::1`, `localhost`).
+  - Enforced `http:`/`https:` protocols and replaced 302 redirects on non-whitelisted domains with HTTP 403 Forbidden responses.
+  - Restricted upstream proxying to safe GET requests with standardized headers.
+- **Remediated Stored & DOM Cross-Site Scripting (XSS)**:
+  - Created centralized HTML sanitization module in `src/lib/telegram/sanitize.js` using `sanitize-html`.
+  - Sanitized `post.content` in `getPost()` and `src/components/item.astro`.
+  - Sanitized `channel.descriptionHTML` in `getChannelInfo()` and `src/components/header.astro`.
+  - Escaped raw string attributes (`alt`, `title`) in `getImages` and `getLinkPreview` to prevent template string injection breakouts.
+- **Fixed Client-Side DOM-Based Open Redirect (`src/pages/index.astro`)**:
+  - Sanitized channel search input in `onsubmit` handler to strictly allow alphanumeric identifiers (`/^[a-zA-Z0-9_]+$/`) and stripped leading slashes/backslashes to prevent protocol-relative redirects (`//evil.com`).
+- **Fixed Server-Side Open Redirect in Post Fallback (`src/pages/[channel]/posts/[id].astro`)**:
+  - Validated `channelName` before calling `Astro.redirect` to prevent backslash path normalization attacks (`/\evil.com/`).
+- **Enforced Access Control Policy for `ANYCHANNEL="false"` (`src/middleware.js`)**:
+  - Added centralized middleware route guard blocking unauthorized dynamic `[channel]` access when `ANYCHANNEL` is set to `false`.
+  - Added security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`).
+- **Partitioned Flat-File Database by Channel (`src/lib/db/index.js`)**:
+  - Added channel namespacing across `savePost`, `savePosts`, `getDatesWithPosts`, `getDatesByMonth`, `getPostIdsByDate`, and `getAdjacentDates` to prevent cross-channel post record collisions and calendar corruption.
+- **Hardened Secrets & Container Privileges**:
+  - Untracked `.env3` from git and updated `.gitignore` with wildcard `.env*` coverage while preserving `.env.example`.
+  - Configured `Dockerfile` to create and own `/app/data` under unprivileged user `node` (`USER node`).
+
 ## 2026-07-29
 
 ### Added

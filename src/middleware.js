@@ -1,4 +1,14 @@
+import { getEnv } from './lib/env'
+
 export async function onRequest(context, next) {
+  const anyChannel = getEnv(import.meta.env, context, 'ANYCHANNEL') === 'true'
+  const defaultChannel = getEnv(import.meta.env, context, 'CHANNEL')
+  const channelParam = context.params?.channel
+
+  if (!anyChannel && channelParam && channelParam.toLowerCase() !== defaultChannel?.toLowerCase()) {
+    return context.redirect('/', 302)
+  }
+
   context.locals.SITE_URL = `${import.meta.env.SITE ?? ''}${import.meta.env.BASE_URL}`
   context.locals.RSS_URL = `${context.locals.SITE_URL}rss.xml`
   context.locals.RSS_PREFIX = ''
@@ -18,7 +28,11 @@ export async function onRequest(context, next) {
   ]
 
   if (!response.bodyUsed) {
-    if (response.headers.get('Content-type') === 'text/html') {
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
+    if (response.headers.get('Content-type')?.includes('text/html')) {
       response.headers.set('Speculation-Rules', '"/rules/prefetch.json"')
       response.headers.set('Link', agentDiscoveryLinks.join(', '))
     }
@@ -28,4 +42,5 @@ export async function onRequest(context, next) {
     }
   }
   return response
-};
+}
+

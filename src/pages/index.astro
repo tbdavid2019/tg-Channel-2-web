@@ -12,7 +12,7 @@ const channel = await getChannelInfo(Astro)
   ANYCHANNEL ? (
     <List channel={channel} after={false}>
        <div class="channel-input-container">
-        <form action="/api/channel" method="get" class="channel-form" onsubmit="event.preventDefault(); window.location.href = '/' + this.channel.value">
+        <form action="/api/channel" method="get" class="channel-form" onsubmit="event.preventDefault(); const ch = this.channel.value.trim().replace(/^[@/\\]+/, '').replace(/[^a-zA-Z0-9_]/g, ''); if (ch) window.location.href = '/' + ch + '/';">
           <input type="text" name="channel" placeholder="Enter Telegram Channel Name (e.g. telegram)" required class="channel-input" />
           <button type="submit" class="channel-submit">Go</button>
         </form>

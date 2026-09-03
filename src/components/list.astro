@@ -22,7 +22,7 @@ try {
   const db = await import('../lib/db')
   savePosts = db.savePosts
   if (posts.length > 0) {
-    savePosts(posts)
+    savePosts(posts, channel.handle)
   }
 } catch (e) {
   console.error('Failed to save posts to database:', e.message)

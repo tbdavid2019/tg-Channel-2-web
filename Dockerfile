@@ -37,12 +37,15 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --no-froze
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
 
-# Create data directory for JSON database
-RUN mkdir -p /app/data
+# Create data directory for JSON database and set permissions
+RUN mkdir -p /app/data && chown -R node:node /app
+
 VOLUME ["/app/data"]
 
 ENV HOST=0.0.0.0
 ENV PORT=4321
 ENV DB_PATH=/app/data/posts.json
 EXPOSE 4321
+
+USER node
 CMD node ./dist/server/entry.mjs

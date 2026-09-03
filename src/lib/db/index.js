@@ -42,16 +42,18 @@ function writeDb(data) {
 /**
  * Save or update a post in the database
  */
-export function savePost(post) {
+export function savePost(post, channel = '') {
   if (!post.id || !post.datetime) return
   
   const db = readDb()
   const date = post.datetime.split('T')[0] // Extract YYYY-MM-DD
+  const postChannel = (channel || post.channel || '').toLowerCase()
   
-  const existingIndex = db.posts.findIndex(p => p.id == post.id)
+  const existingIndex = db.posts.findIndex(p => (p.channel || '').toLowerCase() === postChannel && p.id == post.id)
   
   const newPost = {
     id: parseInt(post.id),
+    channel: postChannel,
     datetime: post.datetime,
     date,
     title: post.title?.substring(0, 200) || '',
@@ -73,7 +75,7 @@ export function savePost(post) {
 /**
  * Save multiple posts at once
  */
-export function savePosts(posts) {
+export function savePosts(posts, channel = '') {
   if (!posts || posts.length === 0) return
   
   const db = readDb()
@@ -83,10 +85,12 @@ export function savePosts(posts) {
     if (!post.id || !post.datetime) continue
     
     const date = post.datetime.split('T')[0]
-    const existingIndex = db.posts.findIndex(p => p.id == post.id)
+    const postChannel = (channel || post.channel || '').toLowerCase()
+    const existingIndex = db.posts.findIndex(p => (p.channel || '').toLowerCase() === postChannel && p.id == post.id)
     
     const newPost = {
       id: parseInt(post.id),
+      channel: postChannel,
       datetime: post.datetime,
       date,
       title: post.title?.substring(0, 200) || '',
@@ -94,7 +98,6 @@ export function savePosts(posts) {
     }
     
     if (existingIndex >= 0) {
-      // Check if update needed (optional, just update for now)
       db.posts[existingIndex] = { ...db.posts[existingIndex], ...newPost }
       changed = true
     } else {
@@ -114,15 +117,17 @@ export function savePosts(posts) {
  * Get dates with posts (for calendar)
  * Returns dates from the last N days
  */
-export function getDatesWithPosts(days = 30) {
+export function getDatesWithPosts(days = 30, channel = '') {
   const db = readDb()
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - days)
   const cutoffStr = cutoffDate.toISOString().split('T')[0]
+  const targetChannel = channel ? channel.toLowerCase() : null
   
   const dateMap = {}
   
   for (const post of db.posts) {
+    if (targetChannel && (post.channel || '').toLowerCase() !== targetChannel) continue
     if (post.date >= cutoffStr) {
       dateMap[post.date] = (dateMap[post.date] || 0) + 1
     }
@@ -137,11 +142,13 @@ export function getDatesWithPosts(days = 30) {
  * Get dates comprising posts for a specific month
  * @param {string} yearMonth - Format 'YYYY-MM'
  */
-export function getDatesByMonth(yearMonth) {
+export function getDatesByMonth(yearMonth, channel = '') {
   const db = readDb()
+  const targetChannel = channel ? channel.toLowerCase() : null
   const dateMap = {}
   
   for (const post of db.posts) {
+    if (targetChannel && (post.channel || '').toLowerCase() !== targetChannel) continue
     if (post.date.startsWith(yearMonth)) {
       dateMap[post.date] = (dateMap[post.date] || 0) + 1
     }
@@ -155,40 +162,35 @@ export function getDatesByMonth(yearMonth) {
 /**
  * Get post IDs for a specific date
  */
-export function getPostIdsByDate(date) {
+export function getPostIdsByDate(date, channel = '') {
   const db = readDb()
-  const posts = db.posts.filter(p => p.date === date)
-  // Already sorted by datetime desc in storage
-  return posts
+  const targetChannel = channel ? channel.toLowerCase() : null
+  return db.posts.filter(p => p.date === date && (!targetChannel || (p.channel || '').toLowerCase() === targetChannel))
 }
 
 /**
  * Get the first post ID for a specific date (for pagination)
  */
-export function getFirstPostIdByDate(date) {
+export function getFirstPostIdByDate(date, channel = '') {
   const db = readDb()
-  const post = db.posts.find(p => p.date === date)
-  // Data is sorted by datetime descending, so first found is latest
-  // But usually pagination wants the 'start' cursor which might be the LAST post of the day or FIRST?
-  // Telegram 'before' cursor usually means posts older than X. 
-  // If we want to show a day's posts, we usually fetch posts for that day from DB directly now.
-  // This function might be less relevant if we serve from DB, but keeping API compatible.
+  const targetChannel = channel ? channel.toLowerCase() : null
+  const post = db.posts.find(p => p.date === date && (!targetChannel || (p.channel || '').toLowerCase() === targetChannel))
   return post?.id
 }
 
 /**
  * Get available dates for pagination (returns array of dates with posts)
  */
-export function getAvailableDates(days = 30) {
-  const dates = getDatesWithPosts(days)
+export function getAvailableDates(days = 30, channel = '') {
+  const dates = getDatesWithPosts(days, channel)
   return dates.map(d => d.date)
 }
 
 /**
  * Get previous and next date relative to a given date
  */
-export function getAdjacentDates(currentDate, days = 30) {
-  const dates = getAvailableDates(days)
+export function getAdjacentDates(currentDate, days = 30, channel = '') {
+  const dates = getAvailableDates(days, channel)
   const currentIndex = dates.indexOf(currentDate)
   
   return {
@@ -202,9 +204,11 @@ export function getAdjacentDates(currentDate, days = 30) {
 /**
  * Get total post count
  */
-export function getTotalPostCount() {
+export function getTotalPostCount(channel = '') {
   const db = readDb()
-  return db.posts.length
+  if (!channel) return db.posts.length
+  const targetChannel = channel.toLowerCase()
+  return db.posts.filter(p => (p.channel || '').toLowerCase() === targetChannel).length
 }
 
 export default {
