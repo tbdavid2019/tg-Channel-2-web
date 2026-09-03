@@ -1,7 +1,8 @@
 #!/bin/bash
-IMAGE="tbdavid2019/tg-channel-2-web:latest"
+IMAGE="ghcr.io/tbdavid2019/tg-channel-2-web:latest"
 
 echo "Pulling latest image: $IMAGE..."
+
 docker pull $IMAGE || true
 
 echo "Stopping existing containers..."
