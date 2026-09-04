@@ -20,6 +20,17 @@ export function sanitizeContent(html) {
       label: ['for', 'class', 'aria-label'],
       a: ['href', 'target', 'rel', 'title', 'class'],
     },
+    transformTags: {
+      button: (tagName, attributes) => {
+        if (Object.prototype.hasOwnProperty.call(attributes, 'popover')) {
+          return {
+            tagName,
+            attribs: { ...attributes, popover: 'auto' },
+          }
+        }
+        return { tagName, attribs: attributes }
+      },
+    },
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     allowedSchemesAppliedToAttributes: ['href', 'src'],
   })

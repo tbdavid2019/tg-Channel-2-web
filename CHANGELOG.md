@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-04
+
+### Fixed
+
+- Preserved the `popover` attribute on sanitized image lightboxes so full-size images stay hidden until opened instead of rendering as a full-page overlay.
+- Added a regression test covering the lightbox markup sanitization.
+
 ## 2026-09-03
 
 ### Security
