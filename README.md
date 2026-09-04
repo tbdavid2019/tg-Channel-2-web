@@ -32,6 +32,7 @@ pnpm dev
 ## Docker 部署
 
 Docker image 使用 Node adapter，資料庫檔案保存在 `/app/data`。請保留 volume，避免容器重建後遺失快取資料。
+容器啟動時會初始化 `/app/data` 的 owner，然後降權以 `node` 使用者執行服務。
 
 ```bash
 docker build -t broadcastchannel .

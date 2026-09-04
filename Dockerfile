@@ -24,7 +24,7 @@ FROM node:lts-alpine AS runtime
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN apk add --no-cache su-exec && corepack enable
 
 WORKDIR /app
 
@@ -36,9 +36,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --no-froze
 
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # Create data directory for JSON database and set permissions
-RUN mkdir -p /app/data && chown -R node:node /app
+RUN mkdir -p /app/data && chown -R node:node /app && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 VOLUME ["/app/data"]
 
@@ -47,5 +48,6 @@ ENV PORT=4321
 ENV DB_PATH=/app/data/posts.json
 EXPOSE 4321
 
-USER node
-CMD node ./dist/server/entry.mjs
+USER root
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["node", "./dist/server/entry.mjs"]
