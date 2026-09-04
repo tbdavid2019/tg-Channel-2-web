@@ -17,6 +17,8 @@ const brand = '888 Telegram 頻道瀏覽器'
 const siteBase = new URL(SITE_URL || Astro.url.origin, Astro.url.origin)
 siteBase.protocol = 'https:'
 const siteOrigin = siteBase.origin
+const assetVersion = 'seo-20260904'
+const assetUrl = path => `${path}?v=${assetVersion}`
 const currentPath = Astro.url.pathname === '/' ? '' : Astro.url.pathname.replace(/\/+$/, '')
 const canonical = `${siteOrigin}${currentPath}`
 const twitter = getEnv(import.meta.env, Astro, 'TWITTER')
@@ -31,7 +33,7 @@ const channelDescription = String(seo?.text ?? channel?.description ?? '').repla
 const description = channel?.isReaderHome || !channelDescription
   ? genericDescription
   : `${channelDescription}｜在 888 Telegram 頻道瀏覽器閱讀公開文章、圖片與日期分組內容，支援依日期瀏覽、RSS 訂閱與桌面／手機閱讀；私人、邀請連結與沒有公開預覽的內容會顯示支援狀態。`.slice(0, 160)
-const ogImage = `${siteOrigin}/og-image.png`
+const ogImage = `${siteOrigin}${assetUrl('/og-image.png')}`
 const ogLocale = String(locale || 'zh-tw').toLowerCase() === 'zh-tw' ? 'zh_TW' : locale
 const isEnabled = value => value === true || ['true', '1', 'yes'].includes(String(value || '').toLowerCase())
 const noindex = isEnabled(seo?.noindex ?? getEnv(import.meta.env, Astro, 'NOINDEX'))
@@ -86,10 +88,10 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href={assetUrl('/favicon.svg')} />
+    <link rel="icon" type="image/png" sizes="32x32" href={assetUrl('/favicon-32x32.png')} />
+    <link rel="apple-touch-icon" sizes="180x180" href={assetUrl('/apple-touch-icon.png')} />
+    <link rel="manifest" href={assetUrl('/site.webmanifest')} />
     <link rel="alternate" type="application/rss+xml" title={`${RSS_PREFIX}${channel?.title}`} href={RSS_URL} />
     <link rel="describedby" type="text/plain" href="/llms.txt" />
     <style is:inline>

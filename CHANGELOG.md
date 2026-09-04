@@ -15,6 +15,7 @@
 
 - 修正共用 SEO metadata：所有 canonical／OG／Twitter URL 改用 HTTPS，OG 圖改為 1200×630 並補齊尺寸、alt、site name、JSON-LD、favicon、Apple touch icon 與 Web App Manifest。
 - 頻道列表補上唯一 H1，並以固定品牌 OG 圖避免 Telegram 160×160 avatar 造成社群分享預覽失敗。
+- 為新品牌圖示與 OG 資產加入版本化 URL，避免 CDN 將部署前的 fallback HTML 快取誤套用到新檔案。
 - Preserved the `popover` attribute on sanitized image lightboxes so full-size images stay hidden until opened instead of rendering as a full-page overlay.
 - Added a regression test covering the lightbox markup sanitization.
 - Added Telegram target normalization for `@username`, bare usernames, and `t.me`/`telegram.me`/`telegram.dog` links.
