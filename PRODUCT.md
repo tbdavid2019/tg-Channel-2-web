@@ -32,7 +32,7 @@ web
 ## Brand Commitments
 
 - 既有米白＋深綠品牌感予以保留。
-- 拉丁字元、數字與介面字體優先使用 JetBrains Mono；中文使用 JustFont 粉圓體，若字型檔未提供則退回現有中文字體與系統 fallback。
+- 中文閱讀是主要情境，正文與所有中文介面文字優先使用 JustFont 粉圓體；JetBrains Mono 只用於英文、數字、username、URL、程式碼與技術資訊。若 JustFont 字型檔未提供則退回現有中文字體與系統 fallback。
 - 介面語言以繁體中文為主，Telegram username、URL、程式碼等維持原文。
 
 ## Evidence on Hand

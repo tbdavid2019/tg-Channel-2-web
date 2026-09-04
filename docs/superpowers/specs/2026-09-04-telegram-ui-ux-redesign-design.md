@@ -7,7 +7,7 @@
 ## 已確認的方向
 
 - 保留米白＋深綠品牌感。
-- 拉丁字元、數字與介面字體優先使用 JetBrains Mono；中文使用 JustFont 粉圓體，若字型檔未提供則退回現有中文字體與系統 fallback。
+- 中文閱讀是主要情境，正文與所有中文介面文字優先使用 JustFont 粉圓體；JetBrains Mono 只用於英文、數字、username、URL、程式碼與技術資訊。若 JustFont 字型檔未提供則退回現有中文字體與系統 fallback。
 - Home、Tags、Links 從右側欄移到 footer；右側不再承擔主要導覽。
 - 風格為編輯部／閱讀室：內容優先、低干擾、清楚的操作層級。
 
@@ -46,6 +46,8 @@
 ## 視覺與互動
 
 - 背景使用米白，surface 使用偏白，深綠只作主要操作、連結和目前狀態；錯誤色只作語意提示。
+- 中文優先的字級不可沿用英文字體模板的緊湊尺度：正文至少 18px、行高至少 1.8；導覽／標籤／metadata 至少 15–16px；輸入框與按鈕 17–18px；標題依層級使用 28–44px。
+- 所有 Telegram 內容中的 `0.8em`、`12px` 等小字規則都要逐項檢查，中文若影響閱讀就改用明確的 px/rem 尺度。
 - 使用單一柔和圓角尺度和同色系低強度陰影，避免每個元件各自有不同形狀。
 - 所有按鈕需有 hover、focus-visible、active；表單需有 invalid 和 disabled／loading 的可見狀態。
 - `prefers-reduced-motion: reduce` 時移除非必要位移與淡入。
@@ -65,5 +67,5 @@
 3. 首頁第一屏能看懂用途並完成頻道輸入；不支援輸入會在表單附近給出原因。
 4. 頻道頁仍可閱讀文字、圖片、link preview、標籤、日期分組與前後頁。
 5. invite、private、no-public-preview、fetch failure 等狀態不會顯示空白頁。
-6. JetBrains Mono 或 JustFont 粉圓體載入失敗時，中文與拉丁字元仍有合理 fallback。
+6. JustFont 粉圓體或 JetBrains Mono 載入失敗時，中文與拉丁字元仍有合理 fallback；中文正文在常用桌面與手機寬度都維持至少 18px 與 1.8 行高。
 7. 現有測試與 production build 通過，且不新增 baseline lint 問題。

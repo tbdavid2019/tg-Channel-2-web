@@ -6,7 +6,7 @@
 
 **THESIS:** 把 Telegram 頻道瀏覽做成一個安靜、可掃讀的編輯部工具；拒絕漂浮的側欄、空白的錯誤頁和沒有優先級的模板裝飾。
 
-**OWN-WORLD:** 米白紙張底、深綠導覽與動作、低對比綠灰分隔，搭配 JetBrains Mono 的資料感字形與 JustFont 粉圓體中文。元件採單一柔和圓角尺度，陰影只用來表示真正的層級。
+**OWN-WORLD:** 米白紙張底、深綠導覽與動作、低對比綠灰分隔，中文以大尺寸 JustFont 粉圓體為主，JetBrains Mono 只承擔英文、數字和技術字串。元件採單一柔和圓角尺度，陰影只用來表示真正的層級。
 
 **STORY:** 使用者先輸入頻道，再辨識頻道身份，接著沿日期分組時間線閱讀；若 Telegram 不提供公開預覽，頁面要直接解釋限制並提供回到輸入或在 Telegram 開啟的行動。
 
@@ -18,7 +18,8 @@
 
 - Mode: Operate + Read
 - Palette: `#f3f0e7` background, `#fffdf8` surface, `#18231e` foreground, `#176754` accent, `#e9eee7` muted surface.
-- Typography: JetBrains Mono for Latin, numbers, labels and interface chrome; JustFont 粉圓體 for CJK glyphs, with GenJyuu Gothic and system fallbacks when the font asset is unavailable.
+- Typography: JustFont 粉圓體 is the primary reading and UI face for CJK; JetBrains Mono is reserved for Latin, numbers, handles, URLs and code. Use visibly generous CJK sizing and line-height; fall back to GenJyuu Gothic and system CJK fonts when the JustFont asset is unavailable.
+- Type scale: body 18px / 1.8 minimum on desktop and mobile; labels and metadata 15–16px minimum; inputs and buttons 17–18px; headings scale from 28px to 44px. Do not size Chinese copy using compact Latin-only 12–14px defaults.
 - Navigation: search and current-channel context stay near the task; Home, Tags and Links live in the footer.
 - Responsive: desktop uses a readable main column and a compact utility rail; mobile collapses to one column with no horizontal overflow.
 - States: loading, empty, unsupported, invalid and fetch failure each have a visible label, explanation and safe next action.
