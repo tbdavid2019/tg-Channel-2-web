@@ -5,16 +5,23 @@ import { getEnv } from '../lib/env'
 
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
-const channel = await getChannelInfo(Astro)
+const channel = ANYCHANNEL
+  ? { handle: '', title: 'Telegram 頻道瀏覽器', description: '輸入公開 Telegram 頻道或群組連結', posts: [] }
+  : await getChannelInfo(Astro)
 ---
 
 {
   ANYCHANNEL ? (
     <List channel={channel} after={false}>
        <div class="channel-input-container">
-        <form action="/api/channel" method="get" class="channel-form" onsubmit="event.preventDefault(); const ch = this.channel.value.trim().replace(/^[@/\\]+/, '').replace(/[^a-zA-Z0-9_]/g, ''); if (ch) window.location.href = '/' + ch + '/';">
-          <input type="text" name="channel" placeholder="Enter Telegram Channel Name (e.g. telegram)" required class="channel-input" />
-          <button type="submit" class="channel-submit">Go</button>
+        <form action="/" method="get" class="channel-form">
+          <label class="channel-label" for="channel-input">Telegram 頻道或群組</label>
+          <div class="channel-form-row">
+            <input id="channel-input" type="text" name="channel" placeholder="@daybuy、daybuy 或 https://t.me/daybuy" required class="channel-input" aria-describedby="channel-help channel-error" />
+            <button type="submit" class="channel-submit">開啟</button>
+          </div>
+          <p id="channel-help" class="channel-help">公開頻道可顯示貼文；群組或私密邀請會顯示可支援狀態。</p>
+          <p id="channel-error" class="channel-error" role="alert"></p>
         </form>
       </div>
     </List>
@@ -32,6 +39,14 @@ const channel = await getChannelInfo(Astro)
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
   .channel-form {
+    display: block;
+  }
+  .channel-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .channel-form-row {
     display: flex;
     gap: 10px;
   }
@@ -54,4 +69,51 @@ const channel = await getChannelInfo(Astro)
   .channel-submit:hover {
     background: #1d78d4;
   }
+  .channel-help,
+  .channel-error {
+    margin: 8px 0 0;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+  }
+  .channel-error:empty {
+    display: none;
+  }
+  .channel-error {
+    color: var(--highlight-color);
+  }
+
+  @media screen and (max-width: 600px) {
+    .channel-form-row {
+      flex-direction: column;
+    }
+  }
 </style>
+
+<script>
+  import { normalizeTelegramTarget } from '../lib/telegram/normalize'
+
+  const form = document.querySelector('.channel-form')
+  const input = document.querySelector('#channel-input')
+  const error = document.querySelector('#channel-error')
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const target = normalizeTelegramTarget(input?.value)
+
+    if (!target.ok) {
+      if (input) input.setAttribute('aria-invalid', 'true')
+      if (error) {
+        error.textContent = target.code === 'invite'
+          ? '邀請連結不能讀取公開歷史，請改輸入公開頻道 username。'
+          : target.code === 'private'
+            ? '私人連結不能讀取公開歷史，請改輸入公開頻道 username。'
+            : '請輸入 @username、username，或完整的 t.me 公開連結。'
+      }
+      return
+    }
+
+    if (input) input.setAttribute('aria-invalid', 'false')
+    if (error) error.textContent = ''
+    window.location.assign(`/${target.handle}/`)
+  })
+</script>

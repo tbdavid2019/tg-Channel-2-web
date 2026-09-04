@@ -1,9 +1,16 @@
 ---
 import List from '../../components/list.astro'
+import ChannelState from '../../components/channel-state.astro'
 import { getChannelInfo } from '../../lib/telegram'
+import { normalizeTelegramTarget } from '../../lib/telegram/normalize'
 
 const { channel: channelName } = Astro.params
 const { before, after } = Astro.params
+
+const normalizedTarget = normalizeTelegramTarget(channelName)
+if (normalizedTarget.ok && normalizedTarget.handle !== channelName) {
+  return Astro.redirect(`/${normalizedTarget.handle}/`)
+}
 
 // Update SITE_URL for local context to point to the channel
 Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
@@ -11,10 +18,9 @@ Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
 Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
 
 const channel = await getChannelInfo(Astro, { channelName, before, after })
-
-if (!channel || !channel.title) {
-  return Astro.redirect('/')
-}
+const isUnavailable = !channel || !channel.title
+const errorCode = channel?.errorCode || normalizedTarget.code
+const telegramUrl = channel?.telegramUrl || normalizedTarget.url
 ---
 
-<List channel={channel} />
+{isUnavailable ? <ChannelState channel={channel} errorCode={errorCode} telegramUrl={telegramUrl} /> : <List channel={channel} />}

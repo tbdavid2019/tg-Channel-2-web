@@ -5,6 +5,7 @@ import { marked } from 'marked'
 import { $fetch } from 'ofetch'
 import { getEnv } from '../env'
 import prism from '../prism'
+import { normalizeTelegramTarget } from './normalize'
 import { sanitizeContent, sanitizeDescription } from './sanitize'
 
 function escapeAttr(str) {
@@ -199,17 +200,33 @@ function getPost($, item, { channel, staticProxy, index = 0 }) {
 }
 
 export async function getChannelInfo(Astro, { before = '', after = '', q = '', type = 'list', id = '', channelName = '' } = {}) {
-  const cacheKey = JSON.stringify({ before, after, q, type, id, channelName })
+  // Where t.me can also be telegram.me, telegram.dog
+  const host = getEnv(import.meta.env, Astro, 'TELEGRAM_HOST') ?? 't.me'
+  const requestedChannel = channelName || getEnv(import.meta.env, Astro, 'CHANNEL') || ''
+  const normalizedTarget = normalizeTelegramTarget(requestedChannel)
+
+  if (!normalizedTarget.ok) {
+    return {
+      handle: requestedChannel,
+      posts: [],
+      title: '',
+      description: '',
+      descriptionHTML: '',
+      avatar: '',
+      errorCode: normalizedTarget.code,
+      telegramUrl: normalizedTarget.url,
+    }
+  }
+
+  const channel = normalizedTarget.handle
+  const cacheKey = JSON.stringify({ before, after, q, type, id, channelName: channel })
   const cachedResult = cache.get(cacheKey)
 
   if (cachedResult) {
-    console.info('Match Cache', { before, after, q, type, id, channelName })
+    console.info('Match Cache', { before, after, q, type, id, channelName: channel })
     return JSON.parse(JSON.stringify(cachedResult))
   }
 
-  // Where t.me can also be telegram.me, telegram.dog
-  const host = getEnv(import.meta.env, Astro, 'TELEGRAM_HOST') ?? 't.me'
-  const channel = channelName || getEnv(import.meta.env, Astro, 'CHANNEL')
   // In ANYCHANNEL mode, don't use proxy - direct CDN access works better
   const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL')
   const staticProxy = anyChannel ? '' : (getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/')
@@ -242,30 +259,54 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
     console.error('Fetch error:', error.message, { url, before, after, q, type, id })
     // Return empty result instead of throwing - don't cache failures
     return {
+      handle: channel,
       posts: [],
       title: '',
       description: '',
       descriptionHTML: '',
       avatar: '',
+      errorCode: 'fetch_failed',
+      telegramUrl: normalizedTarget.url,
     }
   }
 
   if (!html) {
     console.error('Empty response received', { url, before, after, q, type, id })
     return {
+      handle: channel,
       posts: [],
       title: '',
       description: '',
       descriptionHTML: '',
       avatar: '',
+      errorCode: 'empty_response',
+      telegramUrl: normalizedTarget.url,
     }
   }
 
   const $ = cheerio.load(html, {}, false)
+  const title = $('.tgme_channel_info_header_title')?.text()?.trim()
   if (id) {
     const post = getPost($, null, { channel, staticProxy })
     cache.set(cacheKey, post)
     return post
+  }
+
+  if (!title) {
+    const pageTitle = $('title')?.text()?.trim() || ''
+    const errorCode = /join (?:group )?chat/i.test(pageTitle) ? 'invite' : 'no_public_preview'
+    const unsupported = {
+      handle: channel,
+      posts: [],
+      title: '',
+      description: '',
+      descriptionHTML: '',
+      avatar: '',
+      errorCode,
+      telegramUrl: normalizedTarget.url,
+    }
+    cache.set(cacheKey, unsupported)
+    return unsupported
   }
   const posts = $('.tgme_channel_history  .tgme_widget_message_wrap')?.map((index, item) => {
     return getPost($, item, { channel, staticProxy, index })
@@ -274,7 +315,7 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
   const channelInfo = {
     handle: channel,
     posts,
-    title: $('.tgme_channel_info_header_title')?.text(),
+    title,
     description: $('.tgme_channel_info_description')?.text(),
     descriptionHTML: sanitizeDescription(modifyHTMLContent($, $('.tgme_channel_info_description'))?.html()),
     avatar: $('.tgme_page_photo_image img')?.attr('src'),

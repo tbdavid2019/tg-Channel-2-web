@@ -1,0 +1,95 @@
+---
+import Layout from '../layouts/base.astro'
+import Header from './header.astro'
+
+const { channel, errorCode, telegramUrl } = Astro.props
+const displayChannel = {
+  ...channel,
+  title: channel?.title || (channel?.handle ? `@${channel.handle}` : 'Telegram 頻道'),
+  posts: [],
+}
+
+const messages = {
+  invite: {
+    title: '這是 Telegram 邀請連結',
+    description: '邀請連結需要在 Telegram 裡加入，沒有可供網站讀取的公開歷史訊息。',
+  },
+  private: {
+    title: '這是私人訊息連結',
+    description: '私人群組或私人頻道的訊息需要登入 Telegram，公開網站無法讀取。',
+  },
+  no_public_preview: {
+    title: '這個連結沒有公開訊息預覽',
+    description: '常見原因是它是群組、已限制公開預覽，或連結已失效。這類內容需要直接在 Telegram 開啟。',
+  },
+  fetch_failed: {
+    title: '暫時無法連線到 Telegram',
+    description: 'Telegram 暫時沒有回應，請稍後再試。',
+  },
+  empty_response: {
+    title: 'Telegram 沒有回傳內容',
+    description: '這個連結目前沒有可顯示的公開內容。',
+  },
+  invalid: {
+    title: 'Telegram 連結格式不正確',
+    description: '請輸入 @username、username，或完整的 t.me 公開連結。',
+  },
+  empty: {
+    title: '請輸入 Telegram 頻道或群組',
+    description: '請輸入 @username、username，或完整的 t.me 公開連結。',
+  },
+}
+
+const message = messages[errorCode] || messages.no_public_preview
+---
+
+<Layout channel={displayChannel}>
+  <slot name="header">
+    <Header channel={displayChannel} />
+  </slot>
+
+  <section class="channel-state" aria-live="polite">
+    <h1>{message.title}</h1>
+    <p>{message.description}</p>
+    <div class="channel-state-actions">
+      {telegramUrl && <a href={telegramUrl} target="_blank" rel="noopener">在 Telegram 開啟</a>}
+      <a href="/">重新輸入</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .channel-state {
+    padding: 36px 30px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--box-border-radius);
+    box-shadow: var(--shadows);
+  }
+
+  .channel-state h1 {
+    margin: 0 0 12px;
+    font-size: 1.35rem;
+  }
+
+  .channel-state p {
+    margin: 0;
+    color: var(--secondary-color);
+    line-height: 1.7;
+  }
+
+  .channel-state-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .channel-state-actions a {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--box-border-radius);
+    background: var(--code-background-color);
+  }
+</style>

@@ -6,6 +6,9 @@
 
 - Preserved the `popover` attribute on sanitized image lightboxes so full-size images stay hidden until opened instead of rendering as a full-page overlay.
 - Added a regression test covering the lightbox markup sanitization.
+- Added Telegram target normalization for `@username`, bare usernames, and `t.me`/`telegram.me`/`telegram.dog` links.
+- Added explicit status pages for private links, invite links, unavailable public previews, and Telegram fetch failures instead of redirecting to a blank homepage.
+- Added a visible homepage identity and clearer input guidance for ANYCHANNEL deployments.
 
 ## 2026-09-03
 
