@@ -43,6 +43,7 @@ const safeDescriptionHTML = channel?.descriptionHTML ? sanitizeDescription(chann
       <a href={SITE_URL} class="site-title" title={channel?.title}>
         {channel?.title}
       </a>
+      {channel?.handle && <span class="header-handle">@{channel.handle}</span>}
     </div>
   </div>
 
@@ -119,7 +120,7 @@ const safeDescriptionHTML = channel?.descriptionHTML ? sanitizeDescription(chann
 </style>
 
 {
-  hideDescription !== 'true' && safeDescriptionHTML.length > 0 && (
+  !channel?.isReaderHome && hideDescription !== 'true' && safeDescriptionHTML.length > 0 && (
     <div class="text-box" id="site-intro" set:html={safeDescriptionHTML} />
   )
 }
@@ -142,5 +143,15 @@ const safeDescriptionHTML = channel?.descriptionHTML ? sanitizeDescription(chann
 
   .header-icons {
     gap: 2px;
+  }
+
+  .header-handle {
+    display: block;
+    margin-top: 2px;
+    color: var(--secondary-color);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
   }
 </style>

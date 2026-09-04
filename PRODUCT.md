@@ -39,7 +39,7 @@ web
 
 - 現有 Astro 版型、Telegram 頻道頁、列表、日期導覽、搜尋與狀態頁。
 - `https://github.com/EdmenGU/telegram-groups` 提供可用來驗證公開頻道、群組與邀請連結狀態的真實清單。
-- 現有 `public/fonts/JetBrainsMono-Medium.woff2` 與 `public/fonts/GenJyuuGothic-Medium.woff2`；JustFont 粉圓體檔案需在實作時確認可用來源與授權。
+- 現有 `public/fonts/jf-openhuninn-2.1.ttf`、`public/fonts/JetBrainsMono-Medium.woff2` 與 `public/fonts/GenJyuuGothic-Medium.woff2`；`public/fonts/OFL-1.1.txt` 記錄 `jf open 粉圓` 的開源授權。
 
 ## Product Principles
 

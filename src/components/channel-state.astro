@@ -49,6 +49,7 @@ const message = messages[errorCode] || messages.no_public_preview
   </slot>
 
   <section class="channel-state" aria-live="polite">
+    <p class="status-eyebrow">TELEGRAM STATUS</p>
     <h1>{message.title}</h1>
     <p>{message.description}</p>
     <div class="channel-state-actions">
@@ -60,22 +61,33 @@ const message = messages[errorCode] || messages.no_public_preview
 
 <style>
   .channel-state {
-    padding: 36px 30px;
+    max-width: 72ch;
+    padding: clamp(30px, 6vw, 64px) clamp(22px, 5vw, 56px);
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--box-border-radius);
     box-shadow: var(--shadows);
   }
 
+  .status-eyebrow {
+    margin: 0 0 18px;
+    color: var(--accent-color);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+  }
+
   .channel-state h1 {
-    margin: 0 0 12px;
-    font-size: 1.35rem;
+    margin: 0 0 18px;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    line-height: 1.4;
   }
 
   .channel-state p {
     margin: 0;
     color: var(--secondary-color);
-    line-height: 1.7;
+    font-size: 1.125rem;
+    line-height: 1.8;
   }
 
   .channel-state-actions {
@@ -86,10 +98,24 @@ const message = messages[errorCode] || messages.no_public_preview
   }
 
   .channel-state-actions a {
-    display: inline-block;
-    padding: 8px 14px;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 8px 18px;
     border: 1px solid var(--border-color);
     border-radius: var(--box-border-radius);
     background: var(--code-background-color);
+    font-size: 1rem;
+  }
+
+  .channel-state-actions a:first-child {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+    color: var(--surface-color);
+  }
+
+  .channel-state-actions a:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
   }
 </style>

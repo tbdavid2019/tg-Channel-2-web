@@ -20,10 +20,25 @@
   --cell-background-color: var(--surface-color);
   --code-background-color: #e9eee7;
   --scrollbar-thumb-color: #a9b6aa;
+  --font-cjk: 'jf open 粉圓', 'JustFont 粉圓', 'GenJyuu Gothic', 'PingFang TC', 'Noto Sans CJK TC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrainsMono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-ui: var(--font-cjk);
+  --text-body: 1.125rem;
+  --text-meta: 0.9375rem;
+  --text-control: 1.0625rem;
+  --leading-body: 1.8;
 }
 
 @font-face {
-  font-family: 'Broadcast Default';
+  font-family: 'jf open 粉圓';
+  src: url('/fonts/jf-openhuninn-2.1.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GenJyuu Gothic';
   src: url('/fonts/GenJyuuGothic-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
@@ -32,7 +47,7 @@
 }
 
 @font-face {
-  font-family: 'Broadcast Default';
+  font-family: 'JetBrains Mono';
   src: url('/fonts/JetBrainsMono-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
@@ -43,22 +58,10 @@
 body {
   background-color: var(--background-color);
   color: var(--foreground-color);
-  font-family:
-    'Broadcast Default',
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Helvetica Neue,
-    Arial,
-    Noto Sans,
-    sans-serif,
-    Apple Color Emoji,
-    Segoe UI Emoji,
-    Segoe UI Symbol,
-    Noto Color Emoji;
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  overflow-x: hidden;
 }
 
 :focus-visible {

@@ -21,7 +21,7 @@ const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('H
 const safeContent = post.content ? sanitizeContent(post.content) : ''
 ---
 
-<div class="item" style={{ 'view-transition-name': `post-${post.id}` }}>
+<article class="item" style={{ 'view-transition-name': `post-${post.id}` }}>
   <div class="time-box">
     <div class="dot"></div>
     <div class="time">
@@ -59,4 +59,4 @@ const safeContent = post.content ? sanitizeContent(post.content) : ''
       </div>
     )
   }
-</div>
+</article>

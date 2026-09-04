@@ -2,6 +2,12 @@
 
 ## 2026-09-04
 
+### Changed
+
+- 重做共用閱讀模板：中文使用較大的 `jf open 粉圓` 字級與行高，英文／數字／username／URL／程式碼使用 JetBrains Mono。
+- 文章改為獨立 surface，增加文章間距、邊框、日期區段與閱讀層級，避免相鄰文章黏在一起。
+- 將 Home、Tags、Links 從右側欄移到 footer，並改善桌面、平板與手機版的導覽與觸控尺寸。
+
 ### Fixed
 
 - Preserved the `popover` attribute on sanitized image lightboxes so full-size images stay hidden until opened instead of rendering as a full-page overlay.

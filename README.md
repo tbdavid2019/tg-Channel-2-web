@@ -12,7 +12,7 @@
 - 支援單一頻道與任意公開頻道瀏覽模式。
 - 內建響應式時間軸、按日期分組的文章清單與日曆導覽。
 - 支援 `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT` 等自訂嵌入內容。
-- 預設使用 GenJyuu Gothic 顯示中文、JetBrains Mono 顯示英文與數字。
+- 中文閱讀預設使用 justfont `jf open 粉圓`，並以較大的字級與行高優先；英文、數字、username、URL 與程式碼使用 JetBrains Mono。
 
 ## 快速開始
 
@@ -91,6 +91,8 @@ Agent 與 crawler 可參考 [`public/docs/agent-guide.md`](public/docs/agent-gui
 
 - `public/fonts/GenJyuuGothic-Medium.woff2`：中文字型。
 - `public/fonts/JetBrainsMono-Medium.woff2`：英文、數字與資料表字型。
+- `public/fonts/jf-openhuninn-2.1.ttf`：justfont `jf open 粉圓` 中文字型，依 SIL Open Font License 1.1 提供。
+- `public/fonts/OFL-1.1.txt`：`jf open 粉圓` 授權文字。
 
 CSS 以 Unicode range 自動分配字型。資料／程式區塊在寬螢幕會使用完整內容欄寬；只有內容實際超出窄螢幕時才顯示水平捲動。
 
