@@ -71,8 +71,8 @@ const seo = { noindex: true }
   <Calendar />
   
   <div class="date-header">
-    <h2>📰 {displayDate}</h2>
-    <p class="post-count">{posts.length} 篇文章</p>
+    <h1>📰 {displayDate}</h1>
+    <p class="post-count"><span data-i18n="postsCount" data-i18n-count={posts.length}>{posts.length} 篇文章</span></p>
   </div>
   
   <div class="items">
@@ -80,8 +80,8 @@ const seo = { noindex: true }
       posts.map((post) => <Item post={post} isItem={false} />)
     ) : (
       <div class="no-posts">
-        <p>這一天沒有文章</p>
-        <a href={SITE_URL} class="back-link">← 返回首頁</a>
+        <p data-i18n="noPosts">這一天沒有文章</p>
+        <a href={SITE_URL} class="back-link" data-i18n="backHome">← 返回首頁</a>
       </div>
     )}
   </div>
@@ -96,7 +96,7 @@ const seo = { noindex: true }
     )}
 
     <div class="pages-info">
-      <a href={SITE_URL} class="home-link">首頁</a>
+      <a href={SITE_URL} class="home-link" data-i18n="home">首頁</a>
     </div>
 
     {adjacentDates.prevDate ? (
@@ -118,7 +118,7 @@ const seo = { noindex: true }
     border-radius: 12px;
   }
 
-  .date-header h2 {
+  .date-header h1 {
     margin: 0;
     font-size: 1.3em;
     color: var(--primary-color);

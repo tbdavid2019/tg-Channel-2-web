@@ -1,0 +1,22 @@
+# 888 Telegram 頻道瀏覽器
+
+> 888 Telegram 頻道瀏覽器是公開 Telegram 頻道閱讀工具，將可公開預覽的文章、圖片與日期分組內容整理成容易閱讀、搜尋與訂閱的網站。
+
+本網站只讀取 Telegram 公開預覽內容。私人頻道、私人群組、邀請連結，以及沒有公開歷史預覽的連結，無法由本網站代替 Telegram 登入讀取。頻道文章本身屬於各頻道發布者，不代表 david888.com 的立場或所有權。
+
+## 入口
+
+- [首頁](https://telegram.david888.com/): 輸入 `@username`、裸 username 或公開 `t.me` 連結。
+- [RSS](https://telegram.david888.com/rss.xml): 首頁的 RSS 訂閱來源。
+- [JSON Feed](https://telegram.david888.com/rss.json): 首頁的 JSON Feed。
+- [網站文件](https://telegram.david888.com/docs/agent-guide.md): 網站路由、可讀資料與爬蟲注意事項。
+
+## 行為與限制
+
+- 公開頻道可透過 `/:channel/` 閱讀，文章可透過 `/:channel/posts/:id` 查看。
+- 頻道頁提供按日期瀏覽、RSS 與 JSON Feed；頁面顯示的內容可能受 Telegram 公開預覽與本站快取狀態影響。
+- `/sitemap.xml` 適合查找可索引頁面；本檔案則提供給代理程式快速理解網站用途與入口。
+
+## Optional
+
+- [GitHub 原始碼](https://github.com/tbdavid2019/tg-Channel-2-web): 專案程式碼、部署設定與版本異動。

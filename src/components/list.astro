@@ -63,7 +63,8 @@ const afterCursor = posts[0]?.id
   <slot name="header">
     <Header channel={channel} />
   </slot>
-  
+  {!channel?.isReaderHome && channel?.title && <h1 class="channel-page-title">{channel.title}</h1>}
+
   {showCalendar && <Calendar />}
   
   <slot />
@@ -74,7 +75,7 @@ const afterCursor = posts[0]?.id
         <section class="day-group" aria-label={`${dayGroup.dateKey} 的文章`}>
           <header class="day-marker" id={`day-${dayGroup.dateKey}`}>
             <time datetime={dayGroup.dateKey}>{dayGroup.dateLabel}</time>
-            <span>{dayGroup.posts.length} 篇</span>
+            <span data-i18n="articleCount" data-i18n-count={dayGroup.posts.length}>{dayGroup.posts.length} 篇</span>
           </header>
           <div class="day-group-items">
             {dayGroup.posts.map((post) => <Item post={{ ...post, channel: channel.handle }} isItem={isItem} />)}
@@ -87,8 +88,8 @@ const afterCursor = posts[0]?.id
   <div class="pages-container">
     {
       before && beforeCursor > 1 ? (
-      <a href={`${SITE_URL}before/${beforeCursor}`} title="更早的文章" class="page">
-          ← 更早的文章
+      <a href={`${SITE_URL}before/${beforeCursor}`} title="更早的文章" data-i18n-title="olderPosts" class="page">
+          <span data-i18n="olderPosts">← 更早的文章</span>
         </a>
       ) : (
         <span class="page-placeholder">&nbsp;</span>
@@ -97,15 +98,15 @@ const afterCursor = posts[0]?.id
 
     <div class="pages-info">
       {postDates.length > 0 && (
-        <a href={`${SITE_URL}date/${postDates[0]}`} class="date-link" title="依日期瀏覽">
-          {dayjs(String(postDates[0])).format('M/D')} 依日期瀏覽
+        <a href={`${SITE_URL}date/${postDates[0]}`} class="date-link" title="依日期瀏覽" data-i18n-title="browseByDate">
+          {dayjs(String(postDates[0])).format('M/D')} <span data-i18n="browseByDate">依日期瀏覽</span>
         </a>
       )}
     </div>
     {
       after && afterCursor ? (
-        <a href={`${SITE_URL}after/${afterCursor}`} title="更新文章" class="page">
-          更新文章 →
+        <a href={`${SITE_URL}after/${afterCursor}`} title="更新文章" data-i18n-title="newerPosts" class="page">
+          <span data-i18n="newerPosts">更新文章 →</span>
         </a>
       ) : (
         <span class="page-placeholder">&nbsp;</span>
@@ -115,6 +116,13 @@ const afterCursor = posts[0]?.id
 </Layout>
 
 <style>
+  .channel-page-title {
+    margin: 0 0 24px;
+    color: var(--foreground-color);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    line-height: 1.35;
+  }
+
   .date-link {
     color: var(--accent-color);
     text-decoration: none;

@@ -21,6 +21,7 @@ export async function onRequest(context, next) {
 
   const response = await next()
   const agentDiscoveryLinks = [
+    '</llms.txt>; rel="describedby"; type="text/plain"',
     '</docs/agent-guide.md>; rel="describedby"; type="text/markdown"',
     '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"',
     '</rss.xml>; rel="alternate"; type="application/rss+xml"',
@@ -37,10 +38,11 @@ export async function onRequest(context, next) {
       response.headers.set('Link', agentDiscoveryLinks.join(', '))
     }
 
-    if (!response.headers.has('Cache-Control')) {
+    if (/^\/(?:favicon(?:-32x32)?|apple-touch-icon|icon-(?:192|512)|og-image)\.(?:svg|png|ico)$/.test(context.url.pathname)) {
+      response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+    } else if (!response.headers.has('Cache-Control')) {
       response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300')
     }
   }
   return response
 }
-

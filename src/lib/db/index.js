@@ -20,13 +20,18 @@ if (!fs.existsSync(dataDir)) {
 function readDb() {
   try {
     if (!fs.existsSync(dbPath)) {
-      return { posts: [] }
+      return { posts: [], channelHistory: [] }
     }
     const data = fs.readFileSync(dbPath, 'utf-8')
-    return JSON.parse(data)
+    const db = JSON.parse(data)
+    return {
+      ...db,
+      posts: Array.isArray(db.posts) ? db.posts : [],
+      channelHistory: Array.isArray(db.channelHistory) ? db.channelHistory : [],
+    }
   } catch (error) {
     console.error('Error reading DB:', error)
-    return { posts: [] }
+    return { posts: [], channelHistory: [] }
   }
 }
 
@@ -111,6 +116,74 @@ export function savePosts(posts, channel = '') {
     db.posts.sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
     writeDb(db)
   }
+}
+
+const CHANNEL_HISTORY_TTL_MS = 1000 * 60 * 60 * 24 * 7
+
+function isValidHistoryHandle(handle) {
+  return /^[a-zA-Z0-9_]{3,64}$/.test(handle || '')
+}
+
+function pruneChannelHistory(history, now = Date.now()) {
+  const cutoff = now - CHANNEL_HISTORY_TTL_MS
+  return history
+    .map(entry => ({
+      ...entry,
+      visits: (Array.isArray(entry.visits) ? entry.visits : [])
+        .map(Number)
+        .filter(timestamp => Number.isFinite(timestamp) && timestamp >= cutoff),
+    }))
+    .filter(entry => entry.visits.length > 0)
+}
+
+/** Record a successful public channel visit without storing visitor identity. */
+export function recordChannelVisit({ handle, title = '', avatar = '' } = {}) {
+  const normalizedHandle = String(handle || '').toLowerCase()
+  if (!isValidHistoryHandle(normalizedHandle)) return
+
+  const now = Date.now()
+  const db = readDb()
+  const history = pruneChannelHistory(db.channelHistory, now)
+  const existing = history.find(entry => entry.handle === normalizedHandle)
+
+  if (existing) {
+    existing.title = String(title || existing.title || '').slice(0, 200)
+    existing.avatar = String(avatar || existing.avatar || '').slice(0, 1000)
+    existing.visits.push(now)
+    existing.visits = existing.visits.slice(-1000)
+  } else {
+    history.push({
+      handle: normalizedHandle,
+      title: String(title || '').slice(0, 200),
+      avatar: String(avatar || '').slice(0, 1000),
+      visits: [now],
+    })
+  }
+
+  writeDb({ ...db, channelHistory: history })
+}
+
+/** Return the ten most-used public channels from the rolling seven-day window. */
+export function getRecentChannels(limit = 10) {
+  const now = Date.now()
+  const db = readDb()
+  const history = pruneChannelHistory(db.channelHistory, now)
+  const result = history
+    .map(entry => ({
+      handle: entry.handle,
+      title: entry.title || `@${entry.handle}`,
+      avatar: entry.avatar || '',
+      count: entry.visits.length,
+      lastVisitedAt: Math.max(...entry.visits),
+    }))
+    .sort((a, b) => b.count - a.count || b.lastVisitedAt - a.lastVisitedAt)
+    .slice(0, Math.max(0, limit))
+
+  if (JSON.stringify(history) !== JSON.stringify(db.channelHistory)) {
+    writeDb({ ...db, channelHistory: history })
+  }
+
+  return result
 }
 
 /**
@@ -220,5 +293,7 @@ export default {
   getFirstPostIdByDate,
   getAvailableDates,
   getAdjacentDates,
-  getTotalPostCount
+  getTotalPostCount,
+  recordChannelVisit,
+  getRecentChannels,
 }

@@ -1,6 +1,5 @@
 ---
 import { getEnv } from '../../lib/env'
-import voidFile from '../../assets/void.png'
 import List from '../../components/list.astro'
 import { getChannelInfo } from '../../lib/telegram'
 
@@ -25,7 +24,7 @@ const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 <List channel={channel} before={false} after={false} isItem={true}>
   <div slot="header" id="breadcrumb">
     <img
-      src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : voidFile.src}
+      src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : '/favicon.svg'}
       alt={channel?.title}
       loading="eager"
       class="breadcrumb-avatar"

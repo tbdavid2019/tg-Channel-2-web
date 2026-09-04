@@ -13,30 +13,44 @@ const messages = {
   invite: {
     title: '這是 Telegram 邀請連結',
     description: '邀請連結需要在 Telegram 裡加入，沒有可供網站讀取的公開歷史訊息。',
+    titleKey: 'statusInviteTitle',
+    descriptionKey: 'statusInviteDescription',
   },
   private: {
     title: '這是私人訊息連結',
     description: '私人群組或私人頻道的訊息需要登入 Telegram，公開網站無法讀取。',
+    titleKey: 'statusPrivateTitle',
+    descriptionKey: 'statusPrivateDescription',
   },
   no_public_preview: {
     title: '這個連結沒有公開訊息預覽',
     description: '常見原因是它是群組、已限制公開預覽，或連結已失效。這類內容需要直接在 Telegram 開啟。',
+    titleKey: 'statusNoPreviewTitle',
+    descriptionKey: 'statusNoPreviewDescription',
   },
   fetch_failed: {
     title: '暫時無法連線到 Telegram',
     description: 'Telegram 暫時沒有回應，請稍後再試。',
+    titleKey: 'statusFetchFailedTitle',
+    descriptionKey: 'statusFetchFailedDescription',
   },
   empty_response: {
     title: 'Telegram 沒有回傳內容',
     description: '這個連結目前沒有可顯示的公開內容。',
+    titleKey: 'statusEmptyTitle',
+    descriptionKey: 'statusEmptyDescription',
   },
   invalid: {
     title: 'Telegram 連結格式不正確',
     description: '請輸入 @username、username，或完整的 t.me 公開連結。',
+    titleKey: 'statusInvalidTitle',
+    descriptionKey: 'statusInvalidDescription',
   },
   empty: {
     title: '請輸入 Telegram 頻道或群組',
     description: '請輸入 @username、username，或完整的 t.me 公開連結。',
+    titleKey: 'statusEmptyInputTitle',
+    descriptionKey: 'statusEmptyInputDescription',
   },
 }
 
@@ -50,11 +64,11 @@ const message = messages[errorCode] || messages.no_public_preview
 
   <section class="channel-state" aria-live="polite">
     <p class="status-eyebrow">TELEGRAM STATUS</p>
-    <h1>{message.title}</h1>
-    <p>{message.description}</p>
+    <h1 data-i18n={message.titleKey}>{message.title}</h1>
+    <p data-i18n={message.descriptionKey}>{message.description}</p>
     <div class="channel-state-actions">
-      {telegramUrl && <a href={telegramUrl} target="_blank" rel="noopener">在 Telegram 開啟</a>}
-      <a href="/">重新輸入</a>
+      {telegramUrl && <a href={telegramUrl} target="_blank" rel="noopener" data-i18n="openTelegram">在 Telegram 開啟</a>}
+      <a href="/" data-i18n="reenter">重新輸入</a>
     </div>
   </section>
 </Layout>

@@ -4,6 +4,7 @@ import { LRUCache } from 'lru-cache'
 import { marked } from 'marked'
 import { $fetch } from 'ofetch'
 import { getEnv } from '../env'
+import { recordChannelVisit } from '../db'
 import prism from '../prism'
 import { normalizeTelegramTarget } from './normalize'
 import { sanitizeContent, sanitizeDescription } from './sanitize'
@@ -223,6 +224,9 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
   const cachedResult = cache.get(cacheKey)
 
   if (cachedResult) {
+    if (cachedResult.handle && cachedResult.title) {
+      recordChannelVisit(cachedResult)
+    }
     console.info('Match Cache', { before, after, q, type, id, channelName: channel })
     return JSON.parse(JSON.stringify(cachedResult))
   }
@@ -321,6 +325,7 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
     avatar: $('.tgme_page_photo_image img')?.attr('src'),
   }
 
+  recordChannelVisit(channelInfo)
   cache.set(cacheKey, channelInfo)
   return channelInfo
 }

@@ -2,49 +2,75 @@
 import List from '../components/list.astro'
 import { getChannelInfo } from '../lib/telegram'
 import { getEnv } from '../lib/env'
+import { getRecentChannels } from '../lib/db'
 
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
 const channel = ANYCHANNEL
-  ? { handle: '', title: 'Telegram 頻道瀏覽器', description: '輸入公開 Telegram 頻道或群組連結', posts: [], isReaderHome: true }
+  ? { handle: '', title: '888 Telegram 頻道瀏覽器', description: '輸入公開 Telegram 頻道或群組連結', posts: [], isReaderHome: true }
   : await getChannelInfo(Astro)
+const recentChannels = ANYCHANNEL ? getRecentChannels() : []
 ---
 
 {
   ANYCHANNEL ? (
     <List channel={channel} after={false} showCalendar={false}>
       <section class="reader-hero" aria-labelledby="reader-title">
-        <p class="eyebrow">公開 Telegram 閱讀器</p>
-        <h1 id="reader-title">把頻道內容，讀成清楚的時間線</h1>
-        <p class="reader-lede">輸入公開頻道的 username 或連結，直接查看貼文、圖片與日期分組。</p>
+        <p class="eyebrow" data-i18n="readerKicker">公開 Telegram 閱讀器</p>
+        <h1 id="reader-title" data-i18n="homepageHeading">把頻道內容，讀成清楚的時間線</h1>
+        <p class="reader-lede" data-i18n="homepageLead">輸入公開頻道的 username 或連結，直接查看貼文、圖片與日期分組。</p>
 
         <form action="/" method="get" class="channel-form">
-          <label class="channel-label" for="channel-input">輸入頻道或群組</label>
+          <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
           <div class="channel-form-row">
-            <input id="channel-input" type="text" name="channel" placeholder="@daybuy、daybuy 或 https://t.me/daybuy" autocomplete="off" spellcheck="false" required class="channel-input" aria-describedby="channel-help channel-error" />
-            <button type="submit" class="channel-submit">開始閱讀</button>
+            <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" required class="channel-input" aria-describedby="channel-help channel-error" />
+            <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
           </div>
-          <p id="channel-help" class="channel-help">支援 @username、裸 username，或公開 t.me 連結。</p>
+          <p id="channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
           <p id="channel-error" class="channel-error" role="alert"></p>
         </form>
 
-        <p class="reader-note"><span class="reader-note-mark" aria-hidden="true">i</span> 公開頻道可顯示貼文；私人、邀請連結與沒有公開預覽的群組會顯示支援狀態。</p>
+        <p class="reader-note"><span class="reader-note-mark" aria-hidden="true">i</span> <span data-i18n="publicNote">公開頻道可顯示貼文；私人、邀請連結與沒有公開預覽的群組會顯示支援狀態。</span></p>
       </section>
 
-      <section class="reader-points" aria-label="使用方式">
+      <section class="reader-points" aria-label="使用方式" data-i18n-aria-label="usage">
         <div class="reader-point">
           <span class="step-number">01</span>
-          <div><strong>輸入</strong><span>貼上 Telegram username 或連結</span></div>
+          <div><strong data-i18n="stepInput">輸入</strong><span data-i18n="stepInputHelp">貼上 Telegram username 或連結</span></div>
         </div>
         <div class="reader-point">
           <span class="step-number">02</span>
-          <div><strong>辨識</strong><span>先確認頻道身份與公開狀態</span></div>
+          <div><strong data-i18n="stepIdentify">辨識</strong><span data-i18n="stepIdentifyHelp">先確認頻道身份與公開狀態</span></div>
         </div>
         <div class="reader-point">
           <span class="step-number">03</span>
-          <div><strong>閱讀</strong><span>沿日期分組回看文章與媒體</span></div>
+          <div><strong data-i18n="stepRead">閱讀</strong><span data-i18n="stepReadHelp">沿日期分組回看文章與媒體</span></div>
         </div>
       </section>
+
+      {recentChannels.length > 0 && (
+        <section class="popular-channels" aria-labelledby="popular-title">
+          <div class="popular-heading">
+            <p class="eyebrow" data-i18n="popularKicker">DISCOVERY</p>
+            <h2 id="popular-title" data-i18n="popularTitle">近 7 天熱門頻道</h2>
+            <p data-i18n="popularDescription">曾有人瀏覽過的公開頻道，依近 7 天使用次數排序。</p>
+          </div>
+          <ol class="popular-list">
+            {recentChannels.map((recentChannel, index) => (
+              <li>
+                <a href={`/${recentChannel.handle}/`} class="popular-channel-link">
+                  <span class="popular-rank">{String(index + 1).padStart(2, '0')}</span>
+                  <span class="popular-channel-copy">
+                    <strong>{recentChannel.title}</strong>
+                    <small>@{recentChannel.handle} · <span data-i18n="popularViews" data-i18n-count={recentChannel.count}>{recentChannel.count} 次瀏覽</span></small>
+                  </span>
+                  <span class="popular-arrow" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
     </List>
   ) : (
     <List channel={channel} after={false} />
@@ -197,6 +223,93 @@ const channel = ANYCHANNEL
     border-bottom: 1px solid var(--border-color);
   }
 
+  .popular-channels {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+    gap: 28px;
+    margin-top: 36px;
+    padding: 28px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--box-border-radius);
+    background: var(--surface-color);
+  }
+
+  .popular-heading .eyebrow {
+    margin-bottom: 12px;
+  }
+
+  .popular-heading h2 {
+    margin: 0;
+    color: var(--foreground-color);
+    font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+    line-height: 1.4;
+  }
+
+  .popular-heading > p:last-child {
+    margin: 12px 0 0;
+    color: var(--secondary-color);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .popular-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .popular-channel-link {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    min-height: 60px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    color: var(--foreground-color);
+  }
+
+  .popular-channel-link:hover {
+    background: var(--code-background-color);
+    text-decoration: none;
+  }
+
+  .popular-rank {
+    color: var(--accent-color);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+
+  .popular-channel-copy {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .popular-channel-copy strong,
+  .popular-channel-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .popular-channel-copy strong {
+    font-size: 1.05rem;
+  }
+
+  .popular-channel-copy small {
+    color: var(--secondary-color);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+
+  .popular-arrow {
+    color: var(--accent-color);
+    font-size: 1.25rem;
+  }
+
   .reader-point {
     display: flex;
     gap: 14px;
@@ -236,6 +349,12 @@ const channel = ANYCHANNEL
       grid-template-columns: 1fr;
     }
 
+    .popular-channels {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 22px 18px;
+    }
+
     .reader-point {
       border-right: 0;
       border-bottom: 1px solid var(--border-color);
@@ -261,11 +380,13 @@ const channel = ANYCHANNEL
     if (!target.ok) {
       if (input) input.setAttribute('aria-invalid', 'true')
       if (error) {
+        error.dataset.i18n = target.code === 'invite' ? 'errorInvite' : target.code === 'private' ? 'errorPrivate' : 'errorInvalid'
         error.textContent = target.code === 'invite'
           ? '邀請連結不能讀取公開歷史，請改輸入公開頻道 username。'
           : target.code === 'private'
             ? '私人連結不能讀取公開歷史，請改輸入公開頻道 username。'
             : '請輸入 @username、username，或完整的 t.me 公開連結。'
+        window.dispatchEvent(new CustomEvent('telegram-language-change'))
       }
       return
     }

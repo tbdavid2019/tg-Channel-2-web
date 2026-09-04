@@ -2,8 +2,8 @@
 import '../assets/normalize.css'
 import '../assets/style.css'
 import '../assets/global.css'
-import { SEO } from 'astro-seo'
 import { getEnv } from '../lib/env'
+import { uiTranslations } from '../lib/i18n'
 import backToTopIcon from '../assets/back-to-top.svg'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
@@ -13,41 +13,44 @@ const locale = getEnv(import.meta.env, Astro, 'LOCALE')
 const GA_MEASUREMENT_ID = getEnv(import.meta.env, Astro, 'GA_MEASUREMENT_ID')
 
 const seo = channel?.seo
-const reqPathname = Astro.url.pathname.replace(/\/$/, '')
-const canonical = SITE_URL.startsWith('http') ? new URL(SITE_URL).origin + reqPathname : Astro.url.origin + reqPathname
-
-const { origin, pathname } = new URL(canonical)
+const brand = '888 Telegram 頻道瀏覽器'
+const siteBase = new URL(SITE_URL || Astro.url.origin, Astro.url.origin)
+siteBase.protocol = 'https:'
+const siteOrigin = siteBase.origin
+const currentPath = Astro.url.pathname === '/' ? '' : Astro.url.pathname.replace(/\/+$/, '')
+const canonical = `${siteOrigin}${currentPath}`
 const twitter = getEnv(import.meta.env, Astro, 'TWITTER')
-
-const seoParams = {
-  title: seo?.title,
-  description: seo?.text ?? channel?.description,
-  canonical,
-  noindex: seo?.noindex ?? getEnv(import.meta.env, Astro, 'NOINDEX'),
-  nofollow: seo?.nofollow ?? getEnv(import.meta.env, Astro, 'NOFOLLOW'),
-  openGraph: {
-    basic: {
-      type: 'website',
-      title: channel?.title ?? '',
-      url: canonical,
-      image: channel?.avatar ? channel.avatar : origin + '/favicon.ico',
-    },
-    optional: {
-      description: seo?.text ?? channel?.description,
-      locale,
-    },
+const twitterHandle = String(twitter || 'oobwei').replace(/^@/, '')
+const pageTitle = channel?.isReaderHome
+  ? `${brand}｜公開頻道與文章閱讀`
+  : seo?.title && ['Tags', 'Links'].includes(seo.title)
+    ? `${seo.title}｜${brand}`
+    : `${channel?.title || brand}｜Telegram 公開頻道閱讀器`
+const genericDescription = '888 Telegram 頻道瀏覽器：輸入公開頻道的 @username、裸 username 或 t.me 連結，閱讀文章、圖片與日期分組內容；私人、邀請連結與沒有公開預覽的內容會顯示支援狀態。'
+const channelDescription = String(seo?.text ?? channel?.description ?? '').replace(/\s+/g, ' ').trim()
+const description = channel?.isReaderHome || !channelDescription
+  ? genericDescription
+  : `${channelDescription}｜在 888 Telegram 頻道瀏覽器閱讀公開文章、圖片與日期分組內容，支援依日期瀏覽、RSS 訂閱與桌面／手機閱讀；私人、邀請連結與沒有公開預覽的內容會顯示支援狀態。`.slice(0, 160)
+const ogImage = `${siteOrigin}/og-image.png`
+const ogLocale = String(locale || 'zh-tw').toLowerCase() === 'zh-tw' ? 'zh_TW' : locale
+const isEnabled = value => value === true || ['true', '1', 'yes'].includes(String(value || '').toLowerCase())
+const noindex = isEnabled(seo?.noindex ?? getEnv(import.meta.env, Astro, 'NOINDEX'))
+const nofollow = isEnabled(seo?.nofollow ?? getEnv(import.meta.env, Astro, 'NOFOLLOW'))
+const robots = [noindex ? 'noindex' : 'index', nofollow ? 'nofollow' : 'follow'].join(', ')
+const structuredData = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': channel?.isReaderHome ? 'WebSite' : 'WebPage',
+  name: pageTitle,
+  description,
+  url: canonical,
+  inLanguage: ['zh-Hant', 'en'],
+  isPartOf: {
+    '@type': 'WebSite',
+    name: brand,
+    url: `${siteOrigin}/`,
   },
-  extend: {
-    link: [
-      {
-        rel: 'icon',
-        href: channel?.avatar
-          ? `https://wsrv.nl/?w=64&h=64&fit=cover&mask=circle&url=ssl:${channel?.avatar?.replace(/^https?:\/\//, '')}`
-          : '/favicon.svg',
-      },
-    ],
-  },
-}
+}).replace(/</g, '\\u003c')
+const initialLanguage = String(locale || '').toLowerCase().startsWith('zh') ? 'zh-Hant' : 'en'
 
 const GOOGLE_SEARCH_SITE = getEnv(import.meta.env, Astro, 'GOOGLE_SEARCH_SITE')
 const searchAction = GOOGLE_SEARCH_SITE ? 'https://www.google.com/search' : '/search/result'
@@ -74,26 +77,47 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
 ---
 
 <!doctype html>
-<html lang={locale ?? 'en'}>
+<html lang={initialLanguage}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#f4f1ec" />
+    <meta name="theme-color" content="#126b57" />
+    <meta name="application-name" content={brand} />
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title={`${RSS_PREFIX}${channel?.title}`} href={RSS_URL} />
+    <link rel="describedby" type="text/plain" href="/llms.txt" />
     <style is:inline>
       @view-transition {
         navigation: auto; /* enabled */
       }
     </style>
-    <SEO
-      titleTemplate={`%s | ${channel?.title}`}
-      titleDefault={[channel?.title, seoParams.description].filter(Boolean).join(' - ')}
-      twitter={{
-        card: 'summary_large_image',
-        creator: twitter ? `@${twitter}` : undefined,
-      }}
-      {...seoParams}
-    />
+    <title>{pageTitle}</title>
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={brand} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${brand} 公開頻道閱讀器品牌圖`} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={`@${twitterHandle}`} />
+    <meta name="twitter:creator" content={`@${twitterHandle}`} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={`${brand} 公開頻道閱讀器品牌圖`} />
+    <script type="application/ld+json" set:html={structuredData}></script>
     {
       GA_MEASUREMENT_ID && (
         <>
@@ -122,16 +146,16 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         <div id="aside-container">
           <slot name="aside">
             
-            <input class="search-icon" name="icon" type="checkbox" aria-label="開啟搜尋" />
+            <input class="search-icon" name="icon" type="checkbox" aria-label="開啟搜尋" data-i18n-aria-label="searchToggle" />
             <form class="search-form" action={searchAction} method="get">
               {GOOGLE_SEARCH_SITE ? <input type="hidden" name="as_sitesearch" value={GOOGLE_SEARCH_SITE} /> : null}
-              <label class="visually-hidden" for="site-search">搜尋網站內容</label>
-              <input id="site-search" type="search" name="q" placeholder="搜尋文章與標籤" />
+              <label class="visually-hidden" for="site-search" data-i18n="searchLabel">搜尋網站內容</label>
+              <input id="site-search" type="search" name="q" placeholder="搜尋文章與標籤" data-i18n-placeholder="searchPlaceholder" />
             </form>
 
             {
               getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' && Astro.url.pathname !== '/' && (
-                <a href="/" class="aside-switch">換一個頻道</a>
+                <a href="/" class="aside-switch" data-i18n="switchChannel">換一個頻道</a>
               )
             }
 
@@ -149,22 +173,92 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <footer class="site-footer">
       <div class="site-footer-inner">
         <div class="footer-brand">
-          <span class="footer-kicker">TELEGRAM READER</span>
-          <span class="footer-title">{channel?.title || 'Telegram 頻道瀏覽器'}</span>
+          <span class="footer-kicker" data-i18n="readerKicker">公開 Telegram 閱讀器</span>
+          <span class="footer-title" data-i18n="brand">{brand}</span>
+          <a href="https://david888.com" target="_blank" rel="noopener" class="footer-credit" data-i18n="technologyBy">技術提供 david888.com</a>
         </div>
 
         <nav class="footer-nav" aria-label="網站導覽">
-          <a href={SITE_URL} class={`footer-link ${Astro.url.pathname === '/' ? 'current' : ''}`}>Home</a>
-          {tags.length > 0 && <a href={`${SITE_URL}tags`} class={`footer-link ${Astro.url.pathname === '/tags' ? 'current' : ''}`}>Tags</a>}
-          {links.length > 0 && <a href={`${SITE_URL}links`} class={`footer-link ${Astro.url.pathname === '/links' ? 'current' : ''}`}>Links</a>}
+          <a href={SITE_URL} class={`footer-link ${Astro.url.pathname === '/' ? 'current' : ''}`} data-i18n="home">首頁</a>
+          {tags.length > 0 && <a href={`${SITE_URL}tags`} class={`footer-link ${Astro.url.pathname === '/tags' ? 'current' : ''}`} data-i18n="tags">標籤</a>}
+          {links.length > 0 && <a href={`${SITE_URL}links`} class={`footer-link ${Astro.url.pathname === '/links' ? 'current' : ''}`} data-i18n="links">連結</a>}
         </nav>
 
         <div class="footer-actions">
-          {RSS_URL && <a href={RSS_URL} target="_blank" rel="alternate" class="footer-link">RSS</a>}
-          <span>公開內容閱讀工具</span>
+          {RSS_URL && <a href={RSS_URL} target="_blank" rel="alternate" class="footer-link" data-i18n="rss">RSS</a>}
+          <span data-i18n="publicReader">公開內容閱讀工具</span>
+          <div class="language-switcher" role="group" aria-label="介面語言" data-i18n-aria-label="languageLabel">
+            <span class="visually-hidden" data-i18n="languageLabel">介面語言</span>
+            <button type="button" data-language="zh-Hant" aria-pressed="true">繁體中文</button>
+            <span aria-hidden="true">|</span>
+            <button type="button" data-language="en" aria-pressed="false">English</button>
+          </div>
         </div>
       </div>
     </footer>
+    <script define:vars={{ uiTranslations, initialLanguage }}>
+      const storageKey = 'telegram-reader-language'
+      const supportedLanguages = ['zh-Hant', 'en']
+      let activeLanguage = initialLanguage
+
+      const applyLanguage = (language) => {
+        const selectedLanguage = supportedLanguages.includes(language) ? language : initialLanguage
+        const dictionary = uiTranslations[selectedLanguage]
+
+        activeLanguage = selectedLanguage
+        document.documentElement.lang = selectedLanguage
+        document.querySelectorAll('[data-i18n]').forEach((element) => {
+          const value = dictionary[element.dataset.i18n]
+          if (value === undefined) return
+          element.textContent = value.replace('{count}', element.dataset.i18nCount || '')
+        })
+        document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+          const value = dictionary[element.dataset.i18nPlaceholder]
+          if (value !== undefined) element.setAttribute('placeholder', value)
+        })
+        document.querySelectorAll('[data-i18n-title]').forEach((element) => {
+          const value = dictionary[element.dataset.i18nTitle]
+          if (value !== undefined) element.setAttribute('title', value.replace('{count}', element.dataset.i18nCount || ''))
+        })
+        document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+          const value = dictionary[element.dataset.i18nAriaLabel]
+          if (value !== undefined) element.setAttribute('aria-label', value)
+        })
+        document.querySelectorAll('[data-i18n-weekday]').forEach((element) => {
+          const value = dictionary.calendarWeekdays?.[Number(element.dataset.i18nWeekday)]
+          if (value !== undefined) element.textContent = value
+        })
+        document.querySelectorAll('[data-i18n-month]').forEach((element) => {
+          const [year, month] = element.dataset.i18nMonth.split('-').map(Number)
+          element.textContent = selectedLanguage === 'en'
+            ? new Intl.DateTimeFormat('en', { year: 'numeric', month: 'long' }).format(new Date(Date.UTC(year, month - 1, 1)))
+            : `${year}年${month}月`
+        })
+        document.querySelectorAll('[data-language]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.language === selectedLanguage))
+        })
+
+        try {
+          window.localStorage.setItem(storageKey, selectedLanguage)
+        } catch {
+          // Private browsing may disable localStorage; the toggle still works for this page.
+        }
+      }
+
+      const storedLanguage = (() => {
+        try {
+          return window.localStorage.getItem(storageKey)
+        } catch {
+          return null
+        }
+      })()
+
+      document.querySelectorAll('[data-language]').forEach((button) => {
+        button.addEventListener('click', () => applyLanguage(button.dataset.language))
+      })
+      window.addEventListener('telegram-language-change', () => applyLanguage(activeLanguage))
+      applyLanguage(storedLanguage || initialLanguage)
+    </script>
     <a href="#wrapper" id="back-to-top" aria-label="Back to top">
       <img {...backToTopIcon} alt="Back to Top" />
     </a>

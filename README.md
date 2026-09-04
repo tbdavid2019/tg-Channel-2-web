@@ -11,6 +11,8 @@
 - 提供 RSS XML、RSS JSON 與 sitemap。
 - 支援單一頻道與任意公開頻道瀏覽模式。
 - 內建響應式時間軸、按日期分組的文章清單與日曆導覽。
+- 首頁提供近七天熱門公開頻道 Top 10，並支援繁體中文／English 介面切換。
+- 提供完整 Open Graph、Twitter Card、JSON-LD、PWA manifest、8 品牌 favicon 與 `/llms.txt`。
 - 支援 `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT` 等自訂嵌入內容。
 - 中文閱讀預設使用 justfont `jf open 粉圓`，並以較大的字級與行高優先；英文、數字、username、URL 與程式碼使用 JetBrains Mono。
 
@@ -83,6 +85,7 @@ SIDEBAR_INJECT='<ins class="adsbygoogle" data-ad-slot="1234567890"></ins>'
 | `/tags`、`/links`       | 標籤與連結頁。           |
 | `/rss.xml`、`/rss.json` | 訂閱來源。               |
 | `/sitemap.xml`          | Sitemap。                |
+| `/llms.txt`             | 給 AI agent 讀取的網站摘要與重要入口。 |
 | `/:channel/...`         | 任意頻道模式的對應路徑。 |
 
 Agent 與 crawler 可參考 [`public/docs/agent-guide.md`](public/docs/agent-guide.md)；版本異動請看 [CHANGELOG.md](CHANGELOG.md)。

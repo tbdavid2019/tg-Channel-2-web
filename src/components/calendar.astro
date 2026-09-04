@@ -73,16 +73,16 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
 
 <div class="calendar-container">
   <div class="calendar-header">
-    <a href={prevLink} class="nav-btn" title="上個月">&lt;</a>
-    <span class="calendar-title">
+    <a href={prevLink} class="nav-btn" title="上個月" data-i18n-title="previousMonth">&lt;</a>
+    <span class="calendar-title" data-i18n-month={currentMonth.format('YYYY-MM')}>
       {currentMonth.format('YYYY年M月')}
     </span>
-    <a href={nextLink} class="nav-btn" title="下個月">&gt;</a>
+    <a href={nextLink} class="nav-btn" title="下個月" data-i18n-title="nextMonth">&gt;</a>
   </div>
   
   <div class="calendar-grid">
     {weekDays.map(day => (
-      <div class="calendar-weekday">{day}</div>
+      <div class="calendar-weekday" data-i18n-weekday={weekDays.indexOf(day)}>{day}</div>
     ))}
     
     {calendarDays.map(item => (
@@ -93,6 +93,8 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
           href={`${SITE_URL}date/${item.date}`} 
           class={`calendar-day has-post ${item.isToday ? 'today' : ''}`}
           title={`${item.count} 篇文章`}
+          data-i18n-title="dayArticleCount"
+          data-i18n-count={item.count}
         >
           {item.day}
           <span class="post-indicator"></span>

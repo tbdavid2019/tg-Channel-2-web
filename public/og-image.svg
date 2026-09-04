@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f4f1ec"/>
+  <rect x="46" y="46" width="1108" height="538" rx="34" fill="#fffdf8" stroke="#d8e2db" stroke-width="3"/>
+  <circle cx="254" cy="315" r="166" fill="#126b57"/>
+  <text x="254" y="420" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="330" font-weight="800" fill="#fffdf8">8</text>
+  <text x="496" y="292" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="700" fill="#18251f">888 Telegram</text>
+  <text x="496" y="368" font-family="Arial,Helvetica,sans-serif" font-size="48" fill="#126b57">頻道瀏覽器</text>
+  <text x="496" y="438" font-family="Arial,Helvetica,sans-serif" font-size="27" fill="#68766f">Public channel reading · posts · dates</text>
+</svg>

@@ -464,6 +464,11 @@ a.page:visited {
   font-size: 1.0625rem;
 }
 
+.footer-credit {
+  color: var(--secondary-color);
+  font-size: var(--text-meta);
+}
+
 .footer-nav {
   display: flex;
   flex-direction: row;
@@ -490,6 +495,32 @@ a.page:visited {
   align-items: flex-start;
   font-size: var(--text-meta);
   line-height: 1.6;
+}
+
+.language-switcher {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  color: var(--secondary-color);
+}
+
+.language-switcher button {
+  min-height: 36px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--secondary-color);
+  cursor: pointer;
+  font-family: var(--font-cjk);
+  font-size: 0.95rem;
+}
+
+.language-switcher button[aria-pressed='true'] {
+  color: var(--accent-color);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .visually-hidden {

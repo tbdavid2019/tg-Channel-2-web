@@ -18,7 +18,7 @@ const tags = (getEnv(import.meta.env, Astro, 'TAGS') || '').split(',')
     <Header channel={channel} />
   </slot>
 
-  <div class="section-title">Tags</div>
+  <h1 class="section-title" data-i18n="tags">標籤</h1>
 
   <div class="tag-cloud">
     {

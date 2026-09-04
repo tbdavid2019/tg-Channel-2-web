@@ -7,9 +7,14 @@
 - 重做共用閱讀模板：中文使用較大的 `jf open 粉圓` 字級與行高，英文／數字／username／URL／程式碼使用 JetBrains Mono。
 - 文章改為獨立 surface，增加文章間距、邊框、日期區段與閱讀層級，避免相鄰文章黏在一起。
 - 將 Home、Tags、Links 從右側欄移到 footer，並改善桌面、平板與手機版的導覽與觸控尺寸。
+- 品牌統一為「888 Telegram 頻道瀏覽器」，footer 加入「技術提供 david888.com」與繁體中文／English 介面切換。
+- 首頁新增近七天公開頻道使用紀錄 Top 10；只儲存頻道識別資料與匿名使用次數，逾七天自動清除。
+- 新增根目錄 `/llms.txt` 與 HTTP discovery Link，提供 AI agent 了解網站入口與公開內容限制。
 
 ### Fixed
 
+- 修正共用 SEO metadata：所有 canonical／OG／Twitter URL 改用 HTTPS，OG 圖改為 1200×630 並補齊尺寸、alt、site name、JSON-LD、favicon、Apple touch icon 與 Web App Manifest。
+- 頻道列表補上唯一 H1，並以固定品牌 OG 圖避免 Telegram 160×160 avatar 造成社群分享預覽失敗。
 - Preserved the `popover` attribute on sanitized image lightboxes so full-size images stay hidden until opened instead of rendering as a full-page overlay.
 - Added a regression test covering the lightbox markup sanitization.
 - Added Telegram target normalization for `@username`, bare usernames, and `t.me`/`telegram.me`/`telegram.dog` links.

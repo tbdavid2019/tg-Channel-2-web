@@ -4,18 +4,18 @@ import { normalizeTelegramTarget } from '../src/lib/telegram/normalize.js'
 
 test('normalizes public Telegram channel inputs to a username', () => {
   const inputs = [
-    '@daybuy',
-    'daybuy',
-    'https://t.me/daybuy',
-    't.me/s/daybuy',
-    'https://telegram.me/daybuy/123',
+    '@oliservice',
+    'oliservice',
+    'https://t.me/oliservice',
+    't.me/s/oliservice',
+    'https://telegram.me/oliservice/123',
   ]
 
   for (const input of inputs) {
     assert.deepEqual(normalizeTelegramTarget(input), {
       ok: true,
-      handle: 'daybuy',
-      url: 'https://t.me/daybuy',
+      handle: 'oliservice',
+      url: 'https://t.me/oliservice',
     })
   }
 })
