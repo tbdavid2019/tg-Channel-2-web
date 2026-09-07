@@ -165,6 +165,24 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       <!-- Slot for Full Width Header -->
       <slot name="header" />
       
+      <!-- Language Preference Banner -->
+      <aside id="lang-prompt-banner" class="lang-prompt-banner" style="display: none;" aria-label="語言偏好提示">
+        <div class="lang-prompt-inner">
+          <div class="lang-prompt-content">
+            <span class="lang-prompt-icon" aria-hidden="true">🌐</span>
+            <div class="lang-prompt-text-group">
+              <p id="lang-prompt-message" class="lang-prompt-text"></p>
+              <p id="lang-prompt-sub" class="lang-prompt-sub"></p>
+            </div>
+          </div>
+          <div class="lang-prompt-actions">
+            <button type="button" id="lang-prompt-keep" class="lang-prompt-btn lang-prompt-btn-primary"></button>
+            <button type="button" id="lang-prompt-detected" class="lang-prompt-btn lang-prompt-btn-secondary"></button>
+            <button type="button" id="lang-prompt-close" class="lang-prompt-close-btn" aria-label="關閉提示" title="關閉">✕</button>
+          </div>
+        </div>
+      </aside>
+      
       <div id="container">
         <div id="main-container">
           <slot />
@@ -259,10 +277,99 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     </footer>
     <script define:vars={{ uiTranslations, initialLanguage }}>
       const storageKey = 'telegram-reader-language'
+      const decisionKey = 'telegram-reader-lang-decision'
+      const dismissKey = 'telegram-lang-prompt-dismissed'
       const supportedLanguages = ['zh-Hant', 'en']
       let activeLanguage = initialLanguage
 
-      const applyLanguage = (language) => {
+      const detectBrowserLanguage = () => {
+        try {
+          const navLangs = Array.isArray(navigator.languages) && navigator.languages.length
+            ? navigator.languages
+            : [navigator.language || navigator.userLanguage || '']
+          for (const raw of navLangs) {
+            const l = String(raw || '').toLowerCase().trim()
+            if (!l) continue
+            if (l.startsWith('zh')) return 'zh-Hant'
+            if (l.startsWith('en')) return 'en'
+          }
+          if (navLangs.length > 0 && navLangs[0]) {
+            const first = String(navLangs[0]).toLowerCase().trim()
+            if (first.startsWith('zh')) return 'zh-Hant'
+            return 'en'
+          }
+        } catch {
+          // fallback
+        }
+        return initialLanguage || 'zh-Hant'
+      }
+
+      const banner = document.getElementById('lang-prompt-banner')
+      const bannerMsg = document.getElementById('lang-prompt-message')
+      const bannerSub = document.getElementById('lang-prompt-sub')
+      const bannerKeepBtn = document.getElementById('lang-prompt-keep')
+      const bannerDetectedBtn = document.getElementById('lang-prompt-detected')
+      const bannerCloseBtn = document.getElementById('lang-prompt-close')
+
+      const hidePrompt = () => {
+        if (banner) banner.style.display = 'none'
+      }
+
+      const showPrompt = (detected, stored) => {
+        if (!banner || !bannerMsg || !bannerKeepBtn || !bannerDetectedBtn) return
+
+        const isDetectedZh = detected === 'zh-Hant'
+        const isStoredZh = stored === 'zh-Hant'
+
+        const storedLabelZh = isStoredZh ? '繁體中文' : '英文'
+        const detectedLabelZh = isDetectedZh ? '繁體中文' : '英文'
+        const storedLabelEn = isStoredZh ? 'Traditional Chinese' : 'English'
+        const detectedLabelEn = isDetectedZh ? 'Traditional Chinese' : 'English'
+
+        if (isDetectedZh) {
+          bannerMsg.textContent = `偵測到您的瀏覽器語系為繁體中文，您先前曾設定為「${storedLabelZh}」。是否保留先前設定？`
+          if (bannerSub) bannerSub.textContent = `Browser language detected: Traditional Chinese (previously selected: ${storedLabelEn}).`
+          bannerKeepBtn.textContent = `保留「${storedLabelZh}」`
+          bannerDetectedBtn.textContent = `以偵測為主 (${detectedLabelZh})`
+        } else {
+          bannerMsg.textContent = `偵測到您的瀏覽器語系為英文（EN），您先前曾設定為「${storedLabelZh}」。是否保留先前設定？`
+          if (bannerSub) bannerSub.textContent = `Browser language detected: English (previously selected: ${storedLabelEn}). Keep previous setting?`
+          bannerKeepBtn.textContent = `保留「${storedLabelZh}」`
+          bannerDetectedBtn.textContent = `以偵測為主 (${detectedLabelEn})`
+        }
+
+        bannerKeepBtn.onclick = () => {
+          applyLanguage(stored, true)
+          try {
+            window.localStorage.setItem(decisionKey, 'keep-' + stored)
+            window.sessionStorage.setItem(dismissKey, '1')
+          } catch {}
+          hidePrompt()
+        }
+
+        bannerDetectedBtn.onclick = () => {
+          applyLanguage(detected, true)
+          try {
+            window.localStorage.setItem(storageKey, detected)
+            window.localStorage.removeItem(decisionKey)
+            window.sessionStorage.setItem(dismissKey, '1')
+          } catch {}
+          hidePrompt()
+        }
+
+        if (bannerCloseBtn) {
+          bannerCloseBtn.onclick = () => {
+            try {
+              window.sessionStorage.setItem(dismissKey, '1')
+            } catch {}
+            hidePrompt()
+          }
+        }
+
+        banner.style.display = 'block'
+      }
+
+      const applyLanguage = (language, saveToStorage = false) => {
         const selectedLanguage = supportedLanguages.includes(language) ? language : initialLanguage
         const dictionary = uiTranslations[selectedLanguage]
 
@@ -270,8 +377,9 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         document.documentElement.lang = selectedLanguage
         document.querySelectorAll('[data-i18n]').forEach((element) => {
           const value = dictionary[element.dataset.i18n]
-          if (value === undefined) return
-          element.textContent = value.replace('{count}', element.dataset.i18nCount || '')
+          if (value !== undefined) {
+            element.textContent = value.replace('{count}', element.dataset.i18nCount || '')
+          }
         })
         document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
           const value = dictionary[element.dataset.i18nPlaceholder]
@@ -299,30 +407,233 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
           button.setAttribute('aria-pressed', String(button.dataset.language === selectedLanguage))
         })
 
-        try {
-          window.localStorage.setItem(storageKey, selectedLanguage)
-        } catch {
-          // Private browsing may disable localStorage; the toggle still works for this page.
+        if (saveToStorage) {
+          try {
+            window.localStorage.setItem(storageKey, selectedLanguage)
+          } catch {
+            // Private browsing may disable localStorage; the toggle still works for this page.
+          }
         }
       }
 
-      const storedLanguage = (() => {
+      const rawStored = (() => {
         try {
           return window.localStorage.getItem(storageKey)
         } catch {
           return null
         }
       })()
+      const storedLanguage = supportedLanguages.includes(rawStored) ? rawStored : null
+
+      const isDismissed = (() => {
+        try {
+          return window.sessionStorage.getItem(dismissKey) === '1'
+        } catch {
+          return false
+        }
+      })()
+
+      const savedDecision = (() => {
+        try {
+          return window.localStorage.getItem(decisionKey)
+        } catch {
+          return null
+        }
+      })()
+
+      const detectedLanguage = detectBrowserLanguage()
 
       document.querySelectorAll('[data-language]').forEach((button) => {
-        button.addEventListener('click', () => applyLanguage(button.dataset.language))
+        button.addEventListener('click', () => {
+          applyLanguage(button.dataset.language, true)
+          try {
+            window.localStorage.removeItem(decisionKey)
+            window.sessionStorage.setItem(dismissKey, '1')
+          } catch {}
+          hidePrompt()
+        })
       })
-      window.addEventListener('telegram-language-change', () => applyLanguage(activeLanguage))
-      applyLanguage(storedLanguage || initialLanguage)
+      window.addEventListener('telegram-language-change', () => applyLanguage(activeLanguage, false))
+
+      if (storedLanguage && storedLanguage !== detectedLanguage) {
+        if (savedDecision === 'keep-' + storedLanguage) {
+          applyLanguage(storedLanguage, false)
+        } else if (!isDismissed) {
+          applyLanguage(detectedLanguage, false)
+          showPrompt(detectedLanguage, storedLanguage)
+        } else {
+          applyLanguage(detectedLanguage, false)
+        }
+      } else if (storedLanguage && storedLanguage === detectedLanguage) {
+        applyLanguage(storedLanguage, false)
+      } else {
+        applyLanguage(detectedLanguage, false)
+      }
     </script>
     <a href="#wrapper" id="back-to-top" aria-label="Back to top">
       <img {...backToTopIcon} alt="Back to Top" />
     </a>
+    <style>
+      .lang-prompt-banner {
+        width: 100%;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 12px 20px 0 20px;
+        box-sizing: border-box;
+      }
+
+      .lang-prompt-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: #f4f0ff;
+        border: 1px solid #d4ccf7;
+        color: #2b1d4a;
+        box-shadow: 0 2px 8px rgba(112, 56, 232, 0.08);
+        font-size: 0.875rem;
+      }
+
+      .lang-prompt-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .lang-prompt-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+      }
+
+      .lang-prompt-text-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .lang-prompt-text {
+        margin: 0;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .lang-prompt-sub {
+        margin: 0;
+        font-size: 0.78rem;
+        opacity: 0.75;
+        line-height: 1.35;
+      }
+
+      .lang-prompt-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .lang-prompt-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 12px;
+        min-height: 30px;
+        border-radius: 6px;
+        font-family: var(--font-cjk);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        white-space: nowrap;
+      }
+
+      .lang-prompt-btn-primary {
+        background: #7038e8;
+        color: #ffffff;
+        border: 1px solid #7038e8;
+        box-shadow: 0 1px 3px rgba(112, 56, 232, 0.3);
+      }
+
+      .lang-prompt-btn-primary:hover {
+        background: #5b2bc2;
+        border-color: #5b2bc2;
+      }
+
+      .lang-prompt-btn-secondary {
+        background: transparent;
+        color: #583ba0;
+        border: 1px solid #c2b4ed;
+      }
+
+      .lang-prompt-btn-secondary:hover {
+        background: rgba(112, 56, 232, 0.08);
+        border-color: #7038e8;
+        color: #3b227a;
+      }
+
+      .lang-prompt-close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        color: #7c7096;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        transition: all 0.15s ease;
+      }
+
+      .lang-prompt-close-btn:hover {
+        background: rgba(0, 0, 0, 0.06);
+        color: #1a1a24;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .lang-prompt-inner {
+          background: #1f1833;
+          border-color: #4c3a7a;
+          color: #f1edfc;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+        }
+        .lang-prompt-btn-secondary {
+          color: #d6ccfa;
+          border-color: #5b468e;
+        }
+        .lang-prompt-btn-secondary:hover {
+          background: rgba(112, 56, 232, 0.2);
+          color: #ffffff;
+          border-color: #7038e8;
+        }
+        .lang-prompt-close-btn {
+          color: #a497c2;
+        }
+        .lang-prompt-close-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+        }
+      }
+
+      @media screen and (max-width: 640px) {
+        .lang-prompt-inner {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+          padding: 12px 14px;
+        }
+        .lang-prompt-actions {
+          justify-content: flex-end;
+          width: 100%;
+        }
+      }
+    </style>
     <Fragment set:html={getEnv(import.meta.env, Astro, 'FOOTER_INJECT')} />
   </body>
 </html>
