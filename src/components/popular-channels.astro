@@ -1,8 +1,46 @@
 ---
 import { getRecentChannels } from '../lib/db'
+import { getEnv } from '../lib/env'
 
 const { channels, limit = 10, currentHandle = '' } = Astro.props
-const recentChannels = channels ?? getRecentChannels(limit)
+const rawRecent = channels ?? getRecentChannels(limit)
+
+const defaultChannels = [
+  { handle: 'oliservice', title: '選出潛力股 | 投資新聞濃縮包 | 333', count: 1200 },
+  { handle: 'daybuy', title: 'Costco好市多(新品/優惠)最速報', count: 1000 },
+  { handle: 'backpackerscomtw', title: '背包客棧', count: 980 },
+  { handle: 'mikuri520', title: "BennyThink's Blog", count: 197 },
+  { handle: 'weekly_books', title: '小聲讀書 🙈', count: 172 },
+  { handle: 'twtrailers', title: '台灣最新電影預告片', count: 149 },
+  { handle: 'worldnewshome', title: '全球新聞快訊(中文)', count: 144 },
+  { handle: 'scheeinfo', title: 'Schee.info @ Telegram', count: 79 },
+  { handle: 'wordpress', title: 'WordPress | @GlobalUsername', count: 63 },
+]
+
+const existingHandles = new Set((rawRecent || []).map(c => c.handle.toLowerCase()))
+const recentChannels = [...(rawRecent || [])]
+for (const def of defaultChannels) {
+  if (recentChannels.length >= limit) break
+  if (!existingHandles.has(def.handle.toLowerCase())) {
+    recentChannels.push(def)
+    existingHandles.add(def.handle.toLowerCase())
+  }
+}
+
+const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+const defaultChannel = (getEnv(import.meta.env, Astro, 'CHANNEL') || '').toLowerCase()
+const readerBase = getEnv(import.meta.env, Astro, 'READER_URL') || 'https://telegram.david888.com'
+
+function getChannelHref(handle) {
+  const norm = handle.toLowerCase()
+  if (anyChannel) {
+    return `/${handle}/`
+  }
+  if (norm === defaultChannel || (currentHandle && norm === currentHandle.toLowerCase())) {
+    return '/'
+  }
+  return `${readerBase}/${handle}/`
+}
 ---
 
 {
@@ -19,7 +57,7 @@ const recentChannels = channels ?? getRecentChannels(limit)
           return (
             <li>
               <a
-                href={`/${recentChannel.handle}/`}
+                href={getChannelHref(recentChannel.handle)}
                 class={`popular-channel-link ${isCurrent ? 'is-current' : ''}`}
                 aria-current={isCurrent ? 'page' : undefined}
                 title={recentChannel.title}

@@ -180,16 +180,45 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             </form>
 
             {
-              getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' && Astro.url.pathname !== '/' && (
-                <a href="/" class="aside-switch" data-i18n="switchChannel">換一個頻道</a>
+              getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' ? (
+                Astro.url.pathname !== '/' && (
+                  <a href="/" class="aside-switch" data-i18n="switchChannel">換一個頻道</a>
+                )
+              ) : (
+                <a href={getEnv(import.meta.env, Astro, 'READER_URL') || 'https://telegram.david888.com/'} target="_blank" rel="noopener" class="aside-switch reader-switch">
+                  888 頻道瀏覽器 →
+                </a>
               )
             }
 
-            {
-              getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' && (
-                <PopularChannels currentHandle={channel?.handle} />
-              )
-            }
+            {tags.length > 0 && (
+              <div class="sidebar-card sidebar-tags">
+                <h3 class="sidebar-card-title" data-i18n="tags">標籤分類</h3>
+                <div class="tag-cloud">
+                  {tags.map((tag) => (
+                    <a href={`/search/${encodeURIComponent(tag)}`} class="tag-chip">#{tag}</a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <PopularChannels currentHandle={channel?.handle} />
+
+            {links.length > 0 && (
+              <div class="sidebar-card sidebar-links">
+                <h3 class="sidebar-card-title" data-i18n="links">相關連結</h3>
+                <ul class="sidebar-links-list">
+                  {links.map((link) => (
+                    <li>
+                      <a href={link.href} target="_blank" rel="noopener" class="sidebar-link-item">
+                        <span>{link.title}</span>
+                        <span class="sidebar-link-arrow">↗</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {
               getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT') && (

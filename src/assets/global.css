@@ -275,13 +275,108 @@ body {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  margin-top: 20px;
+  justify-content: center;
+  padding: 8px 14px;
   color: var(--accent-color);
   font-size: var(--text-control);
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--box-border-radius);
+  background: var(--surface-color);
+  transition: all 0.15s ease;
+}
+
+.aside-switch:hover {
+  background: var(--code-background-color);
+  border-color: var(--accent-color);
+  text-decoration: none;
+}
+
+.reader-switch {
+  color: var(--foreground-color);
+}
+
+.reader-switch:hover {
+  color: var(--accent-color);
+}
+
+.sidebar-card {
+  padding: 18px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--box-border-radius);
+  background: var(--surface-color);
+  box-shadow: var(--shadows);
+}
+
+.sidebar-card-title {
+  margin: 0 0 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--foreground-color);
+  letter-spacing: 0.02em;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 6px;
+}
+
+.tag-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  color: var(--secondary-color);
+  background: var(--code-background-color);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.tag-chip:hover {
+  color: var(--accent-color);
+  background: var(--surface-color);
+  border-color: var(--accent-color);
+  text-decoration: none;
+}
+
+.sidebar-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidebar-link-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--foreground-color);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link-item:hover {
+  background: var(--code-background-color);
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.sidebar-link-arrow {
+  color: var(--secondary-color);
+  font-size: 0.8125rem;
 }
 
 .sidebar-inject {
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 .items {
