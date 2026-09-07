@@ -17,15 +17,33 @@ const defaultChannels = [
   { handle: 'wordpress', title: 'WordPress | @GlobalUsername', count: 63 },
 ]
 
-const existingHandles = new Set((rawRecent || []).map(c => c.handle.toLowerCase()))
-const recentChannels = [...(rawRecent || [])]
+const channelMap = new Map()
+
+// 1. Seed with curated default network channels
 for (const def of defaultChannels) {
-  if (recentChannels.length >= limit) break
-  if (!existingHandles.has(def.handle.toLowerCase())) {
-    recentChannels.push(def)
-    existingHandles.add(def.handle.toLowerCase())
+  channelMap.set(def.handle.toLowerCase(), { ...def })
+}
+
+// 2. Merge with live visit data
+for (const raw of (rawRecent || [])) {
+  const handle = raw.handle.toLowerCase()
+  if (channelMap.has(handle)) {
+    const existing = channelMap.get(handle)
+    channelMap.set(handle, {
+      ...existing,
+      ...raw,
+      count: Math.max(raw.count || 0, existing.count || 0),
+      lastVisitedAt: Math.max(raw.lastVisitedAt || 0, existing.lastVisitedAt || 0),
+    })
+  } else {
+    channelMap.set(handle, { ...raw })
   }
 }
+
+// 3. Strictly sort by view count descending, then lastVisitedAt descending
+const recentChannels = Array.from(channelMap.values())
+  .sort((a, b) => (b.count || 0) - (a.count || 0) || (b.lastVisitedAt || 0) - (a.lastVisitedAt || 0))
+  .slice(0, Math.max(0, limit))
 
 const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 const defaultChannel = (getEnv(import.meta.env, Astro, 'CHANNEL') || '').toLowerCase()
