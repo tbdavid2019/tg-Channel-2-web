@@ -5,6 +5,7 @@ import '../assets/global.css'
 import { getEnv } from '../lib/env'
 import { uiTranslations } from '../lib/i18n'
 import backToTopIcon from '../assets/back-to-top.svg'
+import PopularChannels from '../components/popular-channels.astro'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
 const { channel } = Astro.props
@@ -52,6 +53,28 @@ const structuredData = JSON.stringify({
     url: `${siteOrigin}/`,
   },
 }).replace(/</g, '\\u003c')
+
+const breadcrumbItems = [
+  {
+    '@type': 'ListItem',
+    position: 1,
+    name: brand,
+    item: `${siteOrigin}/`,
+  },
+]
+if (!channel?.isReaderHome && channel?.title && channel?.title !== brand) {
+  breadcrumbItems.push({
+    '@type': 'ListItem',
+    position: 2,
+    name: channel.title,
+    item: canonical,
+  })
+}
+const breadcrumbStructuredData = breadcrumbItems.length > 1 ? JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbItems,
+}).replace(/</g, '\\u003c') : null
 const initialLanguage = String(locale || '').toLowerCase().startsWith('zh') ? 'zh-Hant' : 'en'
 
 const GOOGLE_SEARCH_SITE = getEnv(import.meta.env, Astro, 'GOOGLE_SEARCH_SITE')
@@ -119,7 +142,8 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={`${brand} 公開頻道閱讀器品牌圖`} />
-    <script type="application/ld+json" set:html={structuredData}></script>
+    <script type="application/ld+json" is:inline set:html={structuredData}></script>
+    {breadcrumbStructuredData && <script type="application/ld+json" is:inline set:html={breadcrumbStructuredData}></script>}
     {
       GA_MEASUREMENT_ID && (
         <>
@@ -158,6 +182,12 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             {
               getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' && Astro.url.pathname !== '/' && (
                 <a href="/" class="aside-switch" data-i18n="switchChannel">換一個頻道</a>
+              )
+            }
+
+            {
+              getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' && (
+                <PopularChannels currentHandle={channel?.handle} />
               )
             }
 

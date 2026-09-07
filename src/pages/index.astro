@@ -2,14 +2,11 @@
 import List from '../components/list.astro'
 import { getChannelInfo } from '../lib/telegram'
 import { getEnv } from '../lib/env'
-import { getRecentChannels } from '../lib/db'
-
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
 const channel = ANYCHANNEL
   ? { handle: '', title: '888 Telegram 頻道瀏覽器', description: '輸入公開 Telegram 頻道或群組連結', posts: [], isReaderHome: true }
   : await getChannelInfo(Astro)
-const recentChannels = ANYCHANNEL ? getRecentChannels() : []
 ---
 
 {
@@ -47,30 +44,6 @@ const recentChannels = ANYCHANNEL ? getRecentChannels() : []
           <div><strong data-i18n="stepRead">閱讀</strong><span data-i18n="stepReadHelp">沿日期分組回看文章與媒體</span></div>
         </div>
       </section>
-
-      {recentChannels.length > 0 && (
-        <section class="popular-channels" aria-labelledby="popular-title">
-          <div class="popular-heading">
-            <p class="eyebrow" data-i18n="popularKicker">DISCOVERY</p>
-            <h2 id="popular-title" data-i18n="popularTitle">近 7 天熱門頻道</h2>
-            <p data-i18n="popularDescription">曾有人瀏覽過的公開頻道，依近 7 天使用次數排序。</p>
-          </div>
-          <ol class="popular-list">
-            {recentChannels.map((recentChannel, index) => (
-              <li>
-                <a href={`/${recentChannel.handle}/`} class="popular-channel-link">
-                  <span class="popular-rank">{String(index + 1).padStart(2, '0')}</span>
-                  <span class="popular-channel-copy">
-                    <strong>{recentChannel.title}</strong>
-                    <small>@{recentChannel.handle} · <span data-i18n="popularViews" data-i18n-count={recentChannel.count}>{recentChannel.count} 次瀏覽</span></small>
-                  </span>
-                  <span class="popular-arrow" aria-hidden="true">→</span>
-                </a>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
     </List>
   ) : (
     <List channel={channel} after={false} />
@@ -221,93 +194,6 @@ const recentChannels = ANYCHANNEL ? getRecentChannels() : []
     margin-top: 28px;
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
-  }
-
-  .popular-channels {
-    display: grid;
-    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
-    gap: 28px;
-    margin-top: 36px;
-    padding: 28px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--box-border-radius);
-    background: var(--surface-color);
-  }
-
-  .popular-heading .eyebrow {
-    margin-bottom: 12px;
-  }
-
-  .popular-heading h2 {
-    margin: 0;
-    color: var(--foreground-color);
-    font-size: clamp(1.35rem, 2.5vw, 1.9rem);
-    line-height: 1.4;
-  }
-
-  .popular-heading > p:last-child {
-    margin: 12px 0 0;
-    color: var(--secondary-color);
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-
-  .popular-list {
-    display: grid;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .popular-channel-link {
-    display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    min-height: 60px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    color: var(--foreground-color);
-  }
-
-  .popular-channel-link:hover {
-    background: var(--code-background-color);
-    text-decoration: none;
-  }
-
-  .popular-rank {
-    color: var(--accent-color);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-  }
-
-  .popular-channel-copy {
-    display: grid;
-    min-width: 0;
-    gap: 2px;
-  }
-
-  .popular-channel-copy strong,
-  .popular-channel-copy small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .popular-channel-copy strong {
-    font-size: 1.05rem;
-  }
-
-  .popular-channel-copy small {
-    color: var(--secondary-color);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-  }
-
-  .popular-arrow {
-    color: var(--accent-color);
-    font-size: 1.25rem;
   }
 
   .reader-point {

@@ -175,8 +175,8 @@ body {
 
 #container {
   max-width: 1380px;
-  grid-template-columns: minmax(0, 1fr) 240px;
-  gap: clamp(24px, 4vw, 64px);
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: clamp(24px, 3.5vw, 48px);
 }
 
 #main-container {
@@ -185,6 +185,9 @@ body {
 }
 
 #aside-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   padding-block: clamp(24px, 4vw, 48px);
 }
 

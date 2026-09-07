@@ -27,25 +27,96 @@ const staticProxy = anyChannel ? '' : (getEnv(import.meta.env, Astro, 'STATIC_PR
 const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 const safeDescriptionHTML = channel?.descriptionHTML ? sanitizeDescription(channel.descriptionHTML) : ''
 const brand = '888 Telegram 頻道瀏覽器'
-const channelTitle = channel?.title || brand
+const channelTitle = channel?.title || (channel?.handle ? `@${channel.handle}` : brand)
+
+const pathname = Astro.url.pathname.replace(/\/+$/, '') || '/'
+const isHome = channel?.isReaderHome || pathname === '/'
+const channelUrl = channel?.handle ? `/${channel.handle}/` : SITE_URL
+const hasChannelCrumb = Boolean(channel?.handle || (channel?.title && channel?.title !== brand))
+
+// Check subpages
+let subPageTitle = ''
+const postMatch = pathname.match(/\/posts\/(\d+)/)
+const dateMatch = pathname.match(/\/date\/([\d-]+)/)
+
+if (postMatch) {
+  subPageTitle = `貼文 #${postMatch[1]}`
+} else if (dateMatch) {
+  subPageTitle = dateMatch[1]
+} else if (pathname.endsWith('/tags')) {
+  subPageTitle = '標籤'
+} else if (pathname.endsWith('/links')) {
+  subPageTitle = '連結'
+} else if (pathname.startsWith('/search/')) {
+  const query = decodeURIComponent(pathname.replace('/search/', ''))
+  subPageTitle = query ? `搜尋：${query}` : '搜尋'
+}
 ---
 
 <div id="header">
   <div class="header-main">
-    <a href={SITE_URL} title={channelTitle} class="avatar-link">
-      <img
-        src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : '/favicon.svg?v=seo-20260904'}
-        alt={channelTitle}
-        loading="eager"
-        class="header-avatar"
-      />
-    </a>
-    <div class="header-title">
-      <a href={SITE_URL} class="site-title" title={channelTitle}>
-        {channelTitle}
-      </a>
-      {channel?.handle && <span class="header-handle">@{channel.handle}</span>}
-    </div>
+    {isHome ? (
+      <div class="header-brand-wrap">
+        <a href="/" title={brand} class="avatar-link brand-avatar-link">
+          <img
+            src="/favicon.svg?v=seo-20260904"
+            alt={brand}
+            loading="eager"
+            class="header-avatar brand-avatar"
+          />
+        </a>
+        <div class="header-title">
+          <a href="/" class="site-title brand-title" title={brand}>
+            {brand}
+          </a>
+        </div>
+      </div>
+    ) : (
+      <nav class="breadcrumb-trail" aria-label="麵包屑導航">
+        <ol class="breadcrumb-list">
+          <li class="breadcrumb-item breadcrumb-home">
+            <a href="/" title={brand} class="breadcrumb-link home-link">
+              <img
+                src="/favicon.svg?v=seo-20260904"
+                alt={brand}
+                loading="eager"
+                class="header-avatar breadcrumb-brand-icon"
+              />
+              <span class="breadcrumb-text breadcrumb-brand-title">{brand}</span>
+            </a>
+          </li>
+
+          {hasChannelCrumb && (
+            <>
+              <li class="breadcrumb-separator" aria-hidden="true">&gt;</li>
+              <li class={`breadcrumb-item breadcrumb-channel ${!subPageTitle ? 'is-current' : ''}`}>
+                <a href={channelUrl} title={channelTitle} class="breadcrumb-link channel-link">
+                  <img
+                    src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : '/favicon.svg?v=seo-20260904'}
+                    alt={channelTitle}
+                    loading="eager"
+                    class="header-avatar channel-avatar"
+                  />
+                  <div class="breadcrumb-channel-info">
+                    <span class="breadcrumb-text channel-name">{channelTitle}</span>
+                    {channel?.handle && <span class="header-handle">@{channel.handle}</span>}
+                  </div>
+                </a>
+              </li>
+            </>
+          )}
+
+          {subPageTitle && (
+            <>
+              <li class="breadcrumb-separator" aria-hidden="true">&gt;</li>
+              <li class="breadcrumb-item breadcrumb-subpage is-current" aria-current="page">
+                <span class="breadcrumb-text subpage-title">{subPageTitle}</span>
+              </li>
+            </>
+          )}
+        </ol>
+      </nav>
+    )}
   </div>
 
 
@@ -117,6 +188,133 @@ const channelTitle = channel?.title || brand
   .header-main {
     display: flex;
     align-items: center;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .header-brand-wrap {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .breadcrumb-trail {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+
+  .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--foreground-color);
+    border-radius: 6px;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--accent-color);
+    text-decoration: none;
+  }
+
+  .breadcrumb-brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .breadcrumb-brand-title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--foreground-color);
+  }
+
+  .breadcrumb-separator {
+    color: var(--secondary-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 0.6;
+    user-select: none;
+    padding-inline: 2px;
+  }
+
+  .channel-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .breadcrumb-channel-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+  }
+
+  .channel-name {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 260px;
+  }
+
+  .subpage-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    white-space: nowrap;
+  }
+
+  @media screen and (max-width: 768px) {
+    .breadcrumb-list {
+      gap: 4px 6px;
+    }
+
+    .breadcrumb-brand-title {
+      font-size: 0.875rem;
+    }
+
+    .channel-name {
+      max-width: 140px;
+      font-size: 0.875rem;
+    }
+
+    .breadcrumb-brand-icon {
+      width: 26px;
+      height: 26px;
+    }
+
+    .channel-avatar {
+      width: 26px;
+      height: 26px;
+    }
   }
 </style>
 
