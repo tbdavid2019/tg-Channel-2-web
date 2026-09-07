@@ -76,6 +76,9 @@ const breadcrumbStructuredData = breadcrumbItems.length > 1 ? JSON.stringify({
   itemListElement: breadcrumbItems,
 }).replace(/</g, '\\u003c') : null
 const initialLanguage = String(locale || '').toLowerCase().startsWith('zh') ? 'zh-Hant' : 'en'
+const isReaderHome = Boolean(channel?.isReaderHome)
+const currentChannelTitle = String(channel?.title || '')
+const currentSeoTitle = String(seo?.title || '')
 
 const GOOGLE_SEARCH_SITE = getEnv(import.meta.env, Astro, 'GOOGLE_SEARCH_SITE')
 const searchAction = GOOGLE_SEARCH_SITE ? 'https://www.google.com/search' : '/search/result'
@@ -275,7 +278,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         </div>
       </div>
     </footer>
-    <script define:vars={{ uiTranslations, initialLanguage }}>
+    <script define:vars={{ uiTranslations, initialLanguage, isReaderHome, currentChannelTitle, currentSeoTitle }}>
       const storageKey = 'telegram-reader-language'
       const decisionKey = 'telegram-reader-lang-decision'
       const dismissKey = 'telegram-lang-prompt-dismissed'
@@ -403,9 +406,24 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             ? new Intl.DateTimeFormat('en', { year: 'numeric', month: 'long' }).format(new Date(Date.UTC(year, month - 1, 1)))
             : `${year}年${month}月`
         })
+        document.querySelectorAll('[data-i18n-alt]').forEach((element) => {
+          const value = dictionary[element.dataset.i18nAlt]
+          if (value !== undefined) element.setAttribute('alt', value)
+        })
         document.querySelectorAll('[data-language]').forEach((button) => {
           button.setAttribute('aria-pressed', String(button.dataset.language === selectedLanguage))
         })
+
+        if (isReaderHome) {
+          document.title = dictionary.homePageTitle || (selectedLanguage === 'en' ? '888 Telegram Channel Browser | Public Channel & Post Reader' : '888 Telegram 頻道瀏覽器｜公開頻道與文章閱讀')
+        } else if (currentSeoTitle && ['Tags', 'Links'].includes(currentSeoTitle)) {
+          const transSeoTitle = currentSeoTitle === 'Tags' ? dictionary.tags : dictionary.links
+          document.title = `${transSeoTitle}｜${dictionary.brand}`
+        } else if (currentChannelTitle) {
+          document.title = selectedLanguage === 'en'
+            ? `${currentChannelTitle} | ${dictionary.channelReaderSuffix || 'Public Telegram Channel Reader'}`
+            : `${currentChannelTitle}｜${dictionary.channelReaderSuffix || 'Telegram 公開頻道閱讀器'}`
+        }
 
         if (saveToStorage) {
           try {

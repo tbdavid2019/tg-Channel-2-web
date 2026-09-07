@@ -63,32 +63,34 @@ if (postMatch) {
   <div class="header-main">
     {isHome ? (
       <div class="header-brand-wrap">
-        <a href="/" title={brand} class="avatar-link brand-avatar-link">
+        <a href="/" title={brand} data-i18n-title="brand" class="avatar-link brand-avatar-link">
           <img
             src="/favicon.svg?v=seo-20260904"
             alt={brand}
+            data-i18n-alt="brand"
             loading="eager"
             class="header-avatar brand-avatar"
           />
         </a>
         <div class="header-title">
-          <a href="/" class="site-title brand-title" title={brand}>
+          <a href="/" class="site-title brand-title" title={brand} data-i18n-title="brand" data-i18n="brand">
             {brand}
           </a>
         </div>
       </div>
     ) : (
-      <nav class="breadcrumb-trail" aria-label="麵包屑導航">
+      <nav class="breadcrumb-trail" aria-label="麵包屑導航" data-i18n-aria-label="breadcrumbNav">
         <ol class="breadcrumb-list">
           <li class="breadcrumb-item breadcrumb-home">
-            <a href={homeUrl} title={brand} class="breadcrumb-link home-link">
+            <a href={homeUrl} title={brand} data-i18n-title="brand" class="breadcrumb-link home-link">
               <img
                 src="/favicon.svg?v=seo-20260904"
                 alt={brand}
+                data-i18n-alt="brand"
                 loading="eager"
                 class="header-avatar breadcrumb-brand-icon"
               />
-              <span class="breadcrumb-text breadcrumb-brand-title">{brand}</span>
+              <span class="breadcrumb-text breadcrumb-brand-title" data-i18n="brand">{brand}</span>
             </a>
           </li>
 
@@ -116,7 +118,13 @@ if (postMatch) {
             <>
               <li class="breadcrumb-separator" aria-hidden="true">&gt;</li>
               <li class="breadcrumb-item breadcrumb-subpage is-current" aria-current="page">
-                <span class="breadcrumb-text subpage-title">{subPageTitle}</span>
+                {pathname.endsWith('/tags') ? (
+                  <span class="breadcrumb-text subpage-title" data-i18n="tags">標籤</span>
+                ) : pathname.endsWith('/links') ? (
+                  <span class="breadcrumb-text subpage-title" data-i18n="links">連結</span>
+                ) : (
+                  <span class="breadcrumb-text subpage-title">{subPageTitle}</span>
+                )}
               </li>
             </>
           )}
