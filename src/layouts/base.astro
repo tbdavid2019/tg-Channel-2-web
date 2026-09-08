@@ -6,6 +6,7 @@ import { getEnv } from '../lib/env'
 import { uiTranslations } from '../lib/i18n'
 import backToTopIcon from '../assets/back-to-top.svg'
 import PopularChannels from '../components/popular-channels.astro'
+import RandomRecommendation from '../components/random-recommendation.astro'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
 const { channel } = Astro.props
@@ -222,6 +223,8 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
                 </div>
               </div>
             )}
+
+            <RandomRecommendation currentHandle={channel?.handle} />
 
             <PopularChannels currentHandle={channel?.handle} />
 

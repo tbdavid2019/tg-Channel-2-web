@@ -1,0 +1,586 @@
+[
+  {
+    "handle": "shareAliyun",
+    "title": "阿里云盘发布频道",
+    "description": "最新高清影视资源，快速下载",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "yunpanpan",
+    "title": "🎬 云盘盘",
+    "description": "阿里云盘投稿🚦 电影 美剧 日韩剧 动漫",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "yunpanshare",
+    "title": "网盘资源收藏(夸克)",
+    "description": "影视 音乐 杂志",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "cctv1",
+    "title": "电影频道",
+    "description": "影视搜索动态及影视更新信息。",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "guo_man",
+    "title": "国产动漫",
+    "description": "主要更新国产的动漫和电影",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "yeqingjie_GJG666",
+    "title": "爷青回动画分享频道",
+    "description": "小时候的回忆，永远会存留在脑海里的一小片土地，而我想做的，就是带大家去寻找这块儿熟悉又陌生的福邸",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "hakemisy",
+    "title": "电影视频在线看",
+    "description": "电影 预告 高清 TV Netflix",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "dmhy_org",
+    "title": "動漫花園",
+    "description": "新番推送 新番推送",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "jlpahz",
+    "title": "纪录片爱好者",
+    "description": "提供BBC、国家地理频道、Discovery、NHK、探索频道等大量高清纪录片",
+    "category": "影视综艺动漫",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "sharebooks4you",
+    "title": "电子书/期刊",
+    "description": "下载各种最新期刊，例如《环球人物》",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "EbookPDF_Library",
+    "title": "电子书｜有声书｜杂志",
+    "description": "分享的所有图书资料均收集于网络",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "PDFtushuguan",
+    "title": "PDF图书联盟电子书lebook",
+    "description": "无规律无方向的持续分享一些书目，以及资源和有趣的内容",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "BooksThatMakeYouThink",
+    "title": "文杏馆（藏书分享）",
+    "description": "本频道书单来源于网络、翻墙用户求书口碑和好友荐书共识",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "bookusefor3",
+    "title": "计算机类书籍",
+    "description": "收集偏计算机专业化的书籍",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "happylibrary",
+    "title": "开心书库",
+    "description": "成人小说",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "MothLib",
+    "title": "飛蛾書庫",
+    "description": "想象、思考、怀疑、批判 *工作日4更，周末杂志* 热爱书籍，请购买正版",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "readingclubus",
+    "title": "外滩读书会",
+    "description": "以英文为主的报纸、杂志、电子书及财经报告分享，比如华尔街日报、金融时报、经济学人、哈佛商业评论、福布斯杂志、彭博商业评论、巴伦周刊等等更多资源分享",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "magazinesclubnew",
+    "title": "报刊亭",
+    "description": "新闻、报纸、杂志、电子书",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "Qikan2023",
+    "title": "杂志｜期刊｜考研",
+    "description": "经济学人,纽约客,财新周刊,卫报,华尔街日报,中国日报,科学",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "natgeomedia",
+    "title": "國家地理雜誌中文版",
+    "description": "Hi 探險家，和國家地理一起探索世界吧！",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "shufm",
+    "title": "读舍-享受阅读时光",
+    "description": "本群鼓励发起具体书的讨论、分享书摘与心得|分享讲座、读书会等信息",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "what_youread",
+    "title": "小声读书",
+    "description": "小声读书是一个探索数字阅读可能性和未来的开放项目，致力于打破信息茧房，挖掘价值信息。亦是一份杂志，一个博客，混搭不拘一格，时常荒腔走板。",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "basssss_room",
+    "title": "玄学_图书收集",
+    "description": "本频道专注于收集各类有关玄学的书籍。",
+    "category": "书籍杂志",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "YuanShen",
+    "title": "原神",
+    "description": "本频道半自动推送《原神》官方活动信息、公告和宣传视频等",
+    "category": "游戏",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "steamsteam",
+    "title": "Steam快讯",
+    "description": "Steam游戏快讯",
+    "category": "游戏",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "blindgamer",
+    "title": "瞎玩菌",
+    "description": "🕹 聚焦 PC / 主机游戏，分享游戏见闻，晒趣图，赏视频",
+    "category": "游戏",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "theblockbeats",
+    "title": "BlockBeats",
+    "description": "专业的区块链研究机构与资讯平台",
+    "category": "加密货币",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "MoonPulse_Channel",
+    "title": "Moonpulse",
+    "description": "月律 抓住Web3脉动",
+    "category": "加密货币",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "chainnews",
+    "title": "链闻",
+    "description": "ChainNews 为中国的 FinTech 金融科技菁英与决策者们提供每日不可或缺的区块链新闻、快讯、深度分析以及评论。",
+    "category": "加密货币",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "btcnewsdaily",
+    "title": "币圈快讯",
+    "description": "币圈快讯，掌握币圈动态",
+    "category": "加密货币",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "wsj_rss",
+    "title": "华尔街日报",
+    "description": "华尔街日报RSS",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "zhihuribao_rss",
+    "title": "知乎日报",
+    "description": "知乎日报实时推送",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "lutouzhongwen_rss",
+    "title": "路透中文",
+    "description": "路透中文全文实时推送",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "newmobilelife",
+    "title": "NewMobileLife",
+    "description": "限時免費情報、Apple 消息、科技新知、實用秘技",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "TimeHorizonX",
+    "title": "Time经济观察",
+    "description": "宏观经济/公共政策/金融市场",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "https1024",
+    "title": "互联网从业者充电站",
+    "description": "内容多为技术、产品、设计、运营等不同话题内容；目标人群为程序员、设计师、产品经理、运营管理等不同职能。",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "XiaoZhangDuBao",
+    "title": "校长读报",
+    "description": "多读书 多看报",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "readhub_cn",
+    "title": "Readhub",
+    "description": "每天三分钟的科技新闻聚合阅读，内容主要包括商业动态、科技资讯，每天早 9 点推送当日早报。",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "nyt_bilingual",
+    "title": "纽约时报双语新闻",
+    "description": "总部设在纽约的美国报纸，具有全球影响力和读者群。",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "chinapodcast",
+    "title": "精选中文播客",
+    "description": "本频道实时推送热门播客节目，推送较频繁请mute。",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "AI_News_CN",
+    "title": "ChatGPT / AI新闻聚合 OpenAI状态页通知",
+    "description": "汇集全网ChatGPT/AI新闻",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "zaobao_news",
+    "title": "联合早报",
+    "description": "即时报道",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "Financial_Express",
+    "title": "财经慢报",
+    "description": "财经类资讯新闻频道，实时覆盖黄金原油外汇股票区块链市场，内容真实中立客观。",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "NEWSPJAPK",
+    "title": "每天60秒简报",
+    "description": "新闻简报 热点时事 数码科技 社会民生",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "clsvip",
+    "title": "财联社VIP文章分享",
+    "description": "财联社 VIP文章即时更新：盘中宝、风口研报、狙击龙虎榜、电报解读",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "douban_read",
+    "title": "豆瓣精选",
+    "description": "我们将从投稿中筛选出真实、善意、公允的内容，努力为大家提供一个真正服务于读者的内容精选。",
+    "category": "新闻资讯  播客",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "aigc1024",
+    "title": "AI探索指南",
+    "description": "关于ChatGPT、Bard等人工智能、思维方式、知识拓展，能力提升等",
+    "category": "AI相关",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "NobyDa",
+    "title": "QX脚本收集",
+    "description": "提供各种自动化签到脚本",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "nbfz111",
+    "title": "公益破解",
+    "description": "王者荣耀 和平精英 游戏外挂 辅助 破解软件",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "se8888888888",
+    "title": "破解站—破解软件分享频道",
+    "description": "专注开车软件破解 白嫖党的福音",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "Xpddd",
+    "title": "Android🎗️share(｡•̀ᴗ-)✧［懒虫社］",
+    "description": "每天不定时更新直连代理以及破解应用",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "WidgetChannel",
+    "title": "Widget🏂软件工具资源分享",
+    "description": "每日推送有用有趣的内容，包括但不限于：软件 工具 网站 科技新闻。",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "feiyu123",
+    "title": "飞鱼资源分享",
+    "description": "分享一些工具，软件，网站,歌曲，互联网相关资讯，开源项目，碎碎念的想法 等等。",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "pojieshare",
+    "title": "安卓免费破解软件分享",
+    "description": "🚀安卓免费破解频道",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "geekshare",
+    "title": "极客分享",
+    "description": "专注分享各种高质量网站、工具、APP、开源项目等一切好玩的东西🚀，以及偶尔开开车🚗",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "appmew",
+    "title": "APP喵-阿喵科技资源共享",
+    "description": "发现分享好用软件，优质资源，网站，极客，教程，网络黑科技",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "ioskk",
+    "title": "IOS优质应用",
+    "description": "分享iOS、macOS限免信息，免费使用正版应用。分享iOS、macOS各种高效实用应用、破解脚本与实用黑技巧。",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "iosrxwy",
+    "title": "IOS宝藏",
+    "description": "苹果越狱巨魔自签破解去广告插件软件➜宝藏资源、福利分享、圈X、Loon脚本",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "ziyuanfxvip",
+    "title": "全网最强资源分享",
+    "description": "分享资源、影视、软件和福利等有趣的东西",
+    "category": "软件/脚本",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "gongzhutonghao",
+    "title": "公诸同好｜二次元美图分享",
+    "description": "高质量二次元美图/插画作品分享",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "botmzt",
+    "title": "快乐星球",
+    "description": "美女 妹子 精选",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "meizitu3",
+    "title": "朱颜别镜",
+    "description": "全网美女,妹子图收藏。最是人间留不住,朱颜辞镜花辞树",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "pixiv_top50",
+    "title": "PIXIV站每日",
+    "description": "搬運PIXIV每天綜合排行榜前50圖片資源",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "baisi",
+    "title": "白丝即正义",
+    "description": "本频道会不定时推送一些绅士老爷们喜闻乐见的福利",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "yzjzy",
+    "title": "颜值即正义",
+    "description": "高颜值妹子",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "SomeACG",
+    "title": "每日少女壁纸",
+    "description": "平时会发一些自己精心挑选的壁纸，大多数来自Pixiv，主要以PC壁纸为主",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "kanxiaojiejie",
+    "title": "每日少女壁纸",
+    "description": "街拍 妹子 福利 美女 摄影 性感 唯美 小姐姐",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "moemeizi",
+    "title": "萌妹子聚集地",
+    "description": "妹子 小姐姐",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "BaoZang",
+    "title": "宝藏女孩",
+    "description": "芸芸众生，红颜各异，阅天下之美人，品世间之甜美。",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "linyunbook2",
+    "title": "笔记本：好图收藏与整理",
+    "description": "欢迎大家关注小林的壁纸频道！",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "wuwuwuEnglish",
+    "title": "英语&学习资源宝库",
+    "description": "安利分享有趣和精致的英语学习资源，愿与大家透过英语学习的窗户,一同欣赏风景.",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "jp_study",
+    "title": "日语学习",
+    "description": "日语 日剧 学习 日文 日本 语言",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  },
+  {
+    "handle": "english_learning_discuss",
+    "title": "英文学习桌",
+    "description": "学习英语，了解世界。分享学习资料，原版书籍，报纸新闻。",
+    "category": "图片美女壁纸",
+    "source": "https://tgnav.com/",
+    "addedAt": 1788845907414
+  }
+]

@@ -1,0 +1,261 @@
+---
+import { getRandomChannel } from '../lib/recommendations'
+import { getEnv } from '../lib/env'
+
+const { currentHandle = '' } = Astro.props
+const initialChannel = getRandomChannel(currentHandle)
+
+const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+const readerBase = getEnv(import.meta.env, Astro, 'READER_URL') || 'https://telegram.david888.com'
+
+function getChannelHref(handle) {
+  if (anyChannel) return `/${handle}/`
+  return `${readerBase.replace(/\/+$/, '')}/${handle}/`
+}
+---
+
+<div class="sidebar-card random-recommend-card" id="random-recommend-card" data-any-channel={anyChannel ? 'true' : 'false'} data-reader-base={readerBase}>
+  <div class="random-card-header">
+    <div class="random-title-wrap">
+      <span class="random-badge" data-i18n="randomRecommendBadge">🎲 隨機探索</span>
+    </div>
+    <button type="button" class="random-reroll-btn" id="random-reroll-btn" title="換一個" data-i18n-title="randomReroll">
+      <span class="reroll-icon" id="random-reroll-icon" aria-hidden="true">🔄</span>
+      <span class="reroll-text" data-i18n="randomChange">換一個</span>
+    </button>
+  </div>
+
+  <div class="random-card-body">
+    <a href={getChannelHref(initialChannel.handle)} class="random-channel-link" id="random-channel-link">
+      <div class="random-channel-info">
+        <h4 class="random-channel-title" id="random-channel-title">{initialChannel.title}</h4>
+        <span class="random-channel-handle" id="random-channel-handle">@{initialChannel.handle}</span>
+        {initialChannel.description && (
+          <p class="random-channel-desc" id="random-channel-desc">{initialChannel.description}</p>
+        )}
+      </div>
+      <div class="random-card-footer">
+        <span class="random-category-tag" id="random-category-tag">#{initialChannel.category || '精選'}</span>
+        <span class="random-action-btn" data-i18n="randomReadNow">立即閱讀 →</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<script>
+  const card = document.getElementById('random-recommend-card')
+  const rerollBtn = document.getElementById('random-reroll-btn')
+  const icon = document.getElementById('random-reroll-icon')
+  const link = document.getElementById('random-channel-link')
+  const titleEl = document.getElementById('random-channel-title')
+  const handleEl = document.getElementById('random-channel-handle')
+  const descEl = document.getElementById('random-channel-desc')
+  const tagEl = document.getElementById('random-category-tag')
+
+  if (rerollBtn && card) {
+    const isAnyChannel = card.dataset.anyChannel === 'true'
+    const readerBase = card.dataset.readerBase || 'https://telegram.david888.com'
+
+    rerollBtn.addEventListener('click', async () => {
+      if (icon) icon.classList.add('is-spinning')
+      try {
+        const currentHandle = handleEl ? handleEl.textContent.replace('@', '') : ''
+        const res = await fetch(`/random?json=1&exclude=${encodeURIComponent(currentHandle)}`)
+        if (!res.ok) throw new Error('Fetch failed')
+        const data = await res.json()
+        if (data && data.channel) {
+          const ch = data.channel
+          if (titleEl) titleEl.textContent = ch.title || ch.handle
+          if (handleEl) handleEl.textContent = `@${ch.handle}`
+          if (descEl) descEl.textContent = ch.description || ''
+          if (tagEl) tagEl.textContent = `#${ch.category || '精選'}`
+          if (link) {
+            link.setAttribute('href', isAnyChannel ? `/${ch.handle}/` : `${readerBase.replace(/\/+$/, '')}/${ch.handle}/`)
+          }
+        }
+      } catch (err) {
+        console.warn('Reroll random channel error:', err)
+      } finally {
+        if (icon) {
+          setTimeout(() => icon.classList.remove('is-spinning'), 300)
+        }
+      }
+    })
+  }
+</script>
+
+<style>
+  .random-recommend-card {
+    background: #fdfcff;
+    border: 1px solid #e2ddf2;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(112, 56, 232, 0.04);
+    margin-bottom: 24px;
+    transition: all 0.2s ease;
+  }
+
+  .random-recommend-card:hover {
+    border-color: #7038e8;
+    box-shadow: 0 4px 14px rgba(112, 56, 232, 0.1);
+  }
+
+  .random-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #e9e4f5;
+  }
+
+  .random-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #7038e8;
+    background: #f1edfc;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .random-reroll-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid #dcd4f2;
+    border-radius: 6px;
+    padding: 3px 8px;
+    color: #55447a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+  }
+
+  .random-reroll-btn:hover {
+    background: #7038e8;
+    color: #ffffff;
+    border-color: #7038e8;
+  }
+
+  .reroll-icon {
+    display: inline-block;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+  }
+
+  .reroll-icon.is-spinning {
+    transform: rotate(360deg);
+  }
+
+  .random-channel-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .random-channel-title {
+    margin: 0 0 4px 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a1a24;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .random-channel-handle {
+    display: inline-block;
+    font-size: 0.78rem;
+    color: #7c7096;
+    margin-bottom: 6px;
+  }
+
+  .random-channel-desc {
+    margin: 0 0 10px 0;
+    font-size: 0.8125rem;
+    color: #4b4b60;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .random-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 6px;
+  }
+
+  .random-category-tag {
+    font-size: 0.75rem;
+    color: #6a5796;
+    background: #f4f0fa;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .random-action-btn {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #7038e8;
+    transition: transform 0.18s ease;
+  }
+
+  .random-channel-link:hover .random-action-btn {
+    transform: translateX(3px);
+  }
+
+  .random-channel-link:hover .random-channel-title {
+    color: #7038e8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .random-recommend-card {
+      background: #181324;
+      border-color: #3b2c5e;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .random-recommend-card:hover {
+      border-color: #8c5cf6;
+      box-shadow: 0 4px 14px rgba(112, 56, 232, 0.25);
+    }
+    .random-card-header {
+      border-bottom-color: #2e234a;
+    }
+    .random-badge {
+      background: #2a1f47;
+      color: #bfa3ff;
+    }
+    .random-reroll-btn {
+      border-color: #4c3b73;
+      color: #c9bdeb;
+    }
+    .random-reroll-btn:hover {
+      background: #7038e8;
+      color: #ffffff;
+      border-color: #7038e8;
+    }
+    .random-channel-title {
+      color: #f1edfc;
+    }
+    .random-channel-handle {
+      color: #9f91bf;
+    }
+    .random-channel-desc {
+      color: #b5a9d1;
+    }
+    .random-category-tag {
+      background: #251c3d;
+      color: #b6a4e3;
+    }
+    .random-action-btn {
+      color: #bfa3ff;
+    }
+  }
+</style>

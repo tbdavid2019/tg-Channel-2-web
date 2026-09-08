@@ -32,3 +32,7 @@ pnpm-debug.log*
 .wrangler
 .edgeone
 
+# runtime data cache
+/data/
+
+

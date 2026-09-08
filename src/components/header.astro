@@ -136,6 +136,11 @@ if (postMatch) {
 
 
   <div class="header-right">
+    <a href="/random" class="header-random-link" title="隨機探索 Telegram 公開頻道" data-i18n-title="randomRecommendTitle">
+      <span class="random-dice" aria-hidden="true">🎲</span>
+      <span class="random-text" data-i18n="randomShort">隨機推薦</span>
+    </a>
+
     <div class="lang-pill-toggle" role="group" aria-label="介面語言" data-i18n-aria-label="languageLabel">
       <button type="button" class="lang-pill-btn" data-language="zh-Hant" aria-pressed={isZh ? "true" : "false"}>繁中</button>
       <button type="button" class="lang-pill-btn" data-language="en" aria-pressed={!isZh ? "true" : "false"}>EN</button>
@@ -345,6 +350,36 @@ if (postMatch) {
     flex-shrink: 0;
   }
 
+  .header-random-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    min-height: 26px;
+    background: #f4f0ff;
+    border: 1px solid #dcd4f2;
+    border-radius: 8px;
+    color: #55447a;
+    font-family: var(--font-cjk);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1;
+    transition: all 0.18s ease;
+  }
+
+  .header-random-link:hover {
+    background: #7038e8;
+    color: #ffffff;
+    border-color: #7038e8;
+    box-shadow: 0 2px 6px rgba(112, 56, 232, 0.25);
+  }
+
+  .random-dice {
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+
   .lang-pill-toggle {
     display: inline-flex;
     align-items: center;
@@ -385,6 +420,15 @@ if (postMatch) {
   }
 
   @media (prefers-color-scheme: dark) {
+    .header-random-link {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .header-random-link:hover {
+      background: #7038e8;
+      color: #ffffff;
+    }
     .lang-pill-toggle {
       background: rgba(255, 255, 255, 0.08);
       border-color: rgba(255, 255, 255, 0.15);
@@ -404,6 +448,14 @@ if (postMatch) {
   @media screen and (max-width: 640px) {
     .header-right {
       gap: 6px;
+    }
+    .header-random-link {
+      padding: 4px 7px;
+      font-size: 0.75rem;
+      min-height: 24px;
+    }
+    .header-random-link .random-text {
+      display: none;
     }
     .lang-pill-btn {
       padding: 3px 7px;
