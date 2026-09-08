@@ -32,7 +32,7 @@ for (const raw of (rawRecent || [])) {
     channelMap.set(handle, {
       ...existing,
       ...raw,
-      count: Math.max(raw.count || 0, existing.count || 0),
+      count: (existing.count || 0) + (raw.count || 0),
       lastVisitedAt: Math.max(raw.lastVisitedAt || 0, existing.lastVisitedAt || 0),
     })
   } else {

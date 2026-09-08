@@ -19,14 +19,14 @@ echo "Starting broadcastchannel2 on port 3334..."
 docker run -d --name broadcastchannel2 --restart unless-stopped \
   --label com.centurylinklabs.watchtower.scope=broadcastchannel \
   --label com.centurylinklabs.watchtower.enable=true \
-  -p 3334:4321 --env-file .env2 -v broadcastchannel-data2:/app/data \
+  -p 3334:4321 --env-file .env2 -v broadcastchannel-data:/app/data \
   $IMAGE
 
 echo "Starting broadcastchannel3 on port 3335..."
 docker run -d --name broadcastchannel3 --restart unless-stopped \
   --label com.centurylinklabs.watchtower.scope=broadcastchannel \
   --label com.centurylinklabs.watchtower.enable=true \
-  -p 3335:4321 --env-file .env3 -v broadcastchannel-data3:/app/data \
+  -p 3335:4321 --env-file .env3 -v broadcastchannel-data:/app/data \
   $IMAGE
 
 echo "Starting Watchtower for auto CI/CD updates..."

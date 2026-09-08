@@ -35,10 +35,12 @@ function readDb() {
   }
 }
 
-// Helper to write DB
+// Helper to write DB with atomic write to prevent corruption across shared containers
 function writeDb(data) {
   try {
-    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8')
+    const tempPath = `${dbPath}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`
+    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8')
+    fs.renameSync(tempPath, dbPath)
   } catch (error) {
     console.error('Error writing DB:', error)
   }
@@ -150,7 +152,7 @@ export function recordChannelVisit({ handle, title = '', avatar = '' } = {}) {
     existing.title = String(title || existing.title || '').slice(0, 200)
     existing.avatar = String(avatar || existing.avatar || '').slice(0, 1000)
     existing.visits.push(now)
-    existing.visits = existing.visits.slice(-1000)
+    existing.visits = existing.visits.slice(-50000)
   } else {
     history.push({
       handle: normalizedHandle,
