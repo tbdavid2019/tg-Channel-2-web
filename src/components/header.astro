@@ -1,5 +1,5 @@
 ---
-import { getEnv } from '../lib/env'
+import { getEnv, assetUrl } from '../lib/env'
 import { sanitizeDescription } from '../lib/telegram/sanitize'
 import rss from '../assets/rss.svg'
 import podcast from '../assets/podcast.svg'
@@ -65,7 +65,7 @@ if (postMatch) {
       <div class="header-brand-wrap">
         <a href="/" title={brand} data-i18n-title="brand" class="avatar-link brand-avatar-link">
           <img
-            src="/favicon.svg?v=seo-20260904"
+            src={assetUrl('/favicon.svg')}
             alt={brand}
             data-i18n-alt="brand"
             loading="eager"
@@ -84,7 +84,7 @@ if (postMatch) {
           <li class="breadcrumb-item breadcrumb-home">
             <a href={homeUrl} title={brand} data-i18n-title="brand" class="breadcrumb-link home-link">
               <img
-                src="/favicon.svg?v=seo-20260904"
+                src={assetUrl('/favicon.svg')}
                 alt={brand}
                 data-i18n-alt="brand"
                 loading="eager"
@@ -100,7 +100,7 @@ if (postMatch) {
               <li class={`breadcrumb-item breadcrumb-channel ${!subPageTitle ? 'is-current' : ''}`}>
                 <a href={channelUrl} title={channelTitle} class="breadcrumb-link channel-link">
                   <img
-                    src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : '/favicon.svg?v=seo-20260904'}
+                    src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : assetUrl('/favicon.svg')}
                     alt={channelTitle}
                     loading="eager"
                     class="header-avatar channel-avatar"

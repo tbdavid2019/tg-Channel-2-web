@@ -1,4 +1,4 @@
-import { getEnv } from './lib/env'
+import { getEnv, ASSET_VERSION } from './lib/env'
 
 export async function onRequest(context, next) {
   const anyChannel = getEnv(import.meta.env, context, 'ANYCHANNEL') === 'true'
@@ -28,6 +28,12 @@ export async function onRequest(context, next) {
     '</rss.json>; rel="alternate"; type="application/feed+json"',
   ]
 
+  const faviconLinks = [
+    `</favicon.svg?v=${ASSET_VERSION}>; rel="icon"; type="image/svg+xml"`,
+    `</favicon-32x32.png?v=${ASSET_VERSION}>; rel="icon"; type="image/png"`,
+    `</favicon.ico?v=${ASSET_VERSION}>; rel="shortcut icon"`,
+  ]
+
   if (!response.bodyUsed) {
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('X-Frame-Options', 'SAMEORIGIN')
@@ -35,11 +41,17 @@ export async function onRequest(context, next) {
 
     if (response.headers.get('Content-type')?.includes('text/html')) {
       response.headers.set('Speculation-Rules', '"/rules/prefetch.json"')
-      response.headers.set('Link', agentDiscoveryLinks.join(', '))
+      response.headers.set('Link', [...agentDiscoveryLinks, ...faviconLinks].join(', '))
+    } else if (context.url.pathname === '/llms.txt') {
+      response.headers.set('Link', faviconLinks.join(', '))
     }
 
     if (/^\/(?:favicon(?:-32x32)?|apple-touch-icon|icon-(?:192|512)|og-image)\.(?:svg|png|ico)$/.test(context.url.pathname)) {
-      response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+      if (context.url.searchParams.has('v')) {
+        response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+      } else {
+        response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate')
+      }
     } else if (!response.headers.has('Cache-Control')) {
       response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300')
     }

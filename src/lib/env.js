@@ -11,3 +11,6 @@ export function getEnv(env, Astro, name) {
   }
   return value
 }
+
+export const ASSET_VERSION = '20260908'
+export const assetUrl = path => `${path}?v=${ASSET_VERSION}`
