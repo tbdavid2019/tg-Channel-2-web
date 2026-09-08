@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/base.astro'
 import Header from './header.astro'
+import { getEnv } from '../lib/env'
 
 const { channel, errorCode, telegramUrl } = Astro.props
 const displayChannel = {
@@ -8,6 +9,9 @@ const displayChannel = {
   title: channel?.title || (channel?.handle ? `@${channel.handle}` : 'Telegram 頻道'),
   posts: [],
 }
+
+const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+const readerBase = getEnv(import.meta.env, Astro, 'READER_URL') || 'https://telegram.david888.com'
 
 const messages = {
   invite: {
@@ -62,16 +66,86 @@ const message = messages[errorCode] || messages.no_public_preview
     <Header channel={displayChannel} />
   </slot>
 
-  <section class="channel-state" aria-live="polite">
+  <section
+    class="channel-state"
+    aria-live="polite"
+    data-any-channel={anyChannel ? 'true' : 'false'}
+    data-reader-base={readerBase}
+  >
     <p class="status-eyebrow">TELEGRAM STATUS</p>
     <h1 data-i18n={message.titleKey}>{message.title}</h1>
-    <p data-i18n={message.descriptionKey}>{message.description}</p>
-    <div class="channel-state-actions">
-      {telegramUrl && <a href={telegramUrl} target="_blank" rel="noopener" data-i18n="openTelegram">在 Telegram 開啟</a>}
-      <a href="/" data-i18n="reenter">重新輸入</a>
-    </div>
+    <p class="status-description" data-i18n={message.descriptionKey}>{message.description}</p>
+
+    <form action="/" method="get" class="channel-form state-channel-form" id="state-channel-form">
+      <label class="channel-label" for="state-channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
+      <div class="channel-form-row">
+        <input
+          id="state-channel-input"
+          type="text"
+          name="channel"
+          placeholder="@oliservice、oliservice 或 https://t.me/oliservice"
+          data-i18n-placeholder="channelInputPlaceholder"
+          autocomplete="off"
+          spellcheck="false"
+          required
+          class="channel-input"
+          aria-describedby="state-channel-help state-channel-error"
+        />
+        <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
+      </div>
+      <p id="state-channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
+      <p id="state-channel-error" class="channel-error" role="alert"></p>
+    </form>
+
+    {telegramUrl && (
+      <div class="channel-state-actions">
+        <a href={telegramUrl} target="_blank" rel="noopener" class="state-telegram-link" data-i18n="openTelegram">
+          在 Telegram 開啟此連結 ↗
+        </a>
+      </div>
+    )}
   </section>
 </Layout>
+
+<script>
+  import { normalizeTelegramTarget } from '../lib/telegram/normalize'
+
+  const stateSection = document.querySelector('.channel-state')
+  const form = document.querySelector('#state-channel-form')
+  const input = document.querySelector('#state-channel-input')
+  const error = document.querySelector('#state-channel-error')
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const rawVal = input instanceof HTMLInputElement ? input.value : ''
+    const target = normalizeTelegramTarget(rawVal)
+
+    if (!target.ok) {
+      if (input) input.setAttribute('aria-invalid', 'true')
+      if (error) {
+        error.dataset.i18n = target.code === 'invite' ? 'errorInvite' : target.code === 'private' ? 'errorPrivate' : 'errorInvalid'
+        error.textContent = target.code === 'invite'
+          ? '邀請連結不能讀取公開歷史，請改輸入公開頻道 username。'
+          : target.code === 'private'
+            ? '私人連結不能讀取公開歷史，請改輸入公開頻道 username。'
+            : '請輸入 @username、username，或完整的 t.me 公開連結。'
+        window.dispatchEvent(new CustomEvent('telegram-language-change'))
+      }
+      return
+    }
+
+    if (input) input.setAttribute('aria-invalid', 'false')
+    if (error) error.textContent = ''
+
+    const isAnyChannel = stateSection?.getAttribute('data-any-channel') === 'true'
+    const readerBase = stateSection?.getAttribute('data-reader-base') || 'https://telegram.david888.com'
+    const targetPath = isAnyChannel
+      ? `/${target.handle}/`
+      : `${readerBase.replace(/\/+$/, '')}/${target.handle}/`
+
+    window.location.assign(targetPath)
+  })
+</script>
 
 <style>
   .channel-state {
@@ -97,11 +171,93 @@ const message = messages[errorCode] || messages.no_public_preview
     line-height: 1.4;
   }
 
-  .channel-state p {
+  .status-description {
     margin: 0;
     color: var(--secondary-color);
     font-size: 1.125rem;
     line-height: 1.8;
+  }
+
+  .state-channel-form {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .channel-label {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--foreground-color);
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  .channel-form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .channel-input {
+    min-height: 52px;
+    min-width: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--box-border-radius);
+    background: var(--background-color);
+    color: var(--foreground-color);
+    font-family: var(--font-cjk);
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .channel-input::placeholder {
+    color: var(--secondary-color);
+    opacity: 0.85;
+  }
+
+  .channel-input[aria-invalid='true'] {
+    border-color: var(--highlight-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--highlight-color) 18%, transparent);
+  }
+
+  .channel-submit {
+    min-height: 52px;
+    padding: 12px 22px;
+    border: 1px solid var(--accent-color);
+    border-radius: var(--box-border-radius);
+    background: var(--accent-color);
+    color: #fffdf8;
+    cursor: pointer;
+    font-family: var(--font-cjk);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .channel-submit:hover {
+    background: var(--foreground-color);
+  }
+
+  .channel-submit:active {
+    transform: translateY(1px);
+  }
+
+  .channel-help,
+  .channel-error {
+    margin: 10px 0 0;
+    color: var(--secondary-color);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .channel-error:empty {
+    display: none;
+  }
+
+  .channel-error {
+    color: var(--highlight-color);
   }
 
   .channel-state-actions {
@@ -109,27 +265,34 @@ const message = messages[errorCode] || messages.no_public_preview
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-color);
   }
 
-  .channel-state-actions a {
+  .state-telegram-link {
     display: inline-flex;
-    min-height: 44px;
+    min-height: 40px;
     align-items: center;
     padding: 8px 18px;
     border: 1px solid var(--border-color);
     border-radius: var(--box-border-radius);
     background: var(--code-background-color);
-    font-size: 1rem;
+    color: var(--secondary-color);
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
   }
 
-  .channel-state-actions a:first-child {
+  .state-telegram-link:hover {
+    color: var(--accent-color);
     border-color: var(--accent-color);
-    background: var(--accent-color);
-    color: var(--surface-color);
-  }
-
-  .channel-state-actions a:hover {
     text-decoration: none;
     transform: translateY(-1px);
+  }
+
+  @media screen and (max-width: 640px) {
+    .channel-form-row {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
