@@ -121,6 +121,8 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <link rel="manifest" href={assetUrl('/site.webmanifest')} />
     <link rel="alternate" type="application/rss+xml" title={`${RSS_PREFIX}${channel?.title}`} href={RSS_URL} />
     <link rel="describedby" type="text/plain" href="/llms.txt" />
+    <meta name="technical-provider" content="david888.com" />
+    <meta name="webmcp" content="enabled" />
     <style is:inline>
       @view-transition {
         navigation: auto; /* enabled */
@@ -195,7 +197,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
           <slot name="aside">
             
             <input class="search-icon" name="icon" type="checkbox" aria-label="開啟搜尋" data-i18n-aria-label="searchToggle" />
-            <form class="search-form" action={searchAction} method="get">
+            <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容">
               {GOOGLE_SEARCH_SITE ? <input type="hidden" name="as_sitesearch" value={GOOGLE_SEARCH_SITE} /> : null}
               <label class="visually-hidden" for="site-search" data-i18n="searchLabel">搜尋網站內容</label>
               <input id="site-search" type="search" name="q" placeholder="搜尋文章與標籤" data-i18n-placeholder="searchPlaceholder" />
@@ -491,6 +493,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         applyLanguage(detectedLanguage, false)
       }
     </script>
+    <script src="../scripts/webmcp.js"></script>
     <a href="#wrapper" id="back-to-top" aria-label="Back to top">
       <img {...backToTopIcon} alt="Back to Top" />
     </a>

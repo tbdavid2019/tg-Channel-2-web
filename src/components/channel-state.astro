@@ -76,7 +76,7 @@ const message = messages[errorCode] || messages.no_public_preview
     <h1 data-i18n={message.titleKey}>{message.title}</h1>
     <p class="status-description" data-i18n={message.descriptionKey}>{message.description}</p>
 
-    <form action="/" method="get" class="channel-form state-channel-form" id="state-channel-form">
+    <form action="/" method="get" class="channel-form state-channel-form" id="state-channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀">
       <label class="channel-label" for="state-channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
       <div class="channel-form-row">
         <input

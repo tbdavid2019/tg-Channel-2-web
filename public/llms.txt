@@ -1,22 +1,77 @@
 # 888 Telegram 頻道瀏覽器
 
 > 888 Telegram 頻道瀏覽器是公開 Telegram 頻道閱讀工具，將可公開預覽的文章、圖片與日期分組內容整理成容易閱讀、搜尋與訂閱的網站。
+> 
+> **技術提供**：[david888.com](https://david888.com/)
 
 本網站只讀取 Telegram 公開預覽內容。私人頻道、私人群組、邀請連結，以及沒有公開歷史預覽的連結，無法由本網站代替 Telegram 登入讀取。頻道文章本身屬於各頻道發布者，不代表 david888.com 的立場或所有權。
 
-## 入口
+---
+
+## WebMCP (Web Model Context Protocol) 支援
+
+本網站原生實作 Chrome 與 W3C 推薦之 [WebMCP (Web Model Context Protocol)](https://developer.chrome.com/docs/ai/webmcp) 規範，透過 `document.modelContext`、`navigator.modelContext` 以及全域 `window.__webmcp` 向瀏覽器 AI 代理人（AI Agents，如 Chrome AI, Gemini, Claude, Copilot）提供標準結構化工具呼叫介面，無須進行脆弱的 DOM 解析即可精準執行動作：
+
+### 註冊的 WebMCP 工具清單
+
+1. **`navigate-channel`**
+   - **描述**：輸入公開頻道名稱（@username、裸 username 或完整 t.me 連結），直接在瀏覽器導航至該頻道時間線。
+   - **輸入參數**：
+     - `channel` (string, required): 頻道 Handle 或 t.me 連結（例如 `oliservice`, `@NewlearnerChannel`, `https://t.me/technews_tw`）。
+   - **回傳**：`{ ok: true, handle: string, url: string }`
+
+2. **`search-articles`**
+   - **描述**：搜尋當前網站或頻道的歷史文章、貼文或標籤（Hashtag）。
+   - **輸入參數**：
+     - `query` (string, required): 搜尋關鍵字或標籤。
+   - **回傳**：`{ ok: true, query: string, searchUrl: string }`
+
+3. **`get-random-channel`**
+   - **描述**：從 888 精選高活躍推薦池獲取隨機頻道資訊（科技、財經、新聞、生活等），無需離開當前頁面。
+   - **輸入參數**：
+     - `exclude` (string, optional): 排除特定頻道 handle。
+   - **回傳**：`{ ok: true, channel: { handle, title, description, category }, totalPoolCount: number }`
+
+4. **`navigate-random-channel`**
+   - **描述**：立即在瀏覽器中隨機跳轉瀏覽一個精選 Telegram 公開頻道。
+   - **輸入參數**：
+     - `exclude` (string, optional): 排除特定頻道 handle。
+   - **回傳**：`{ ok: true, navigatingTo: string }`
+
+5. **`switch-language`**
+   - **描述**：即時切換使用者介面語言為繁體中文或英文。
+   - **輸入參數**：
+     - `language` (string, required, enum: `["zh-Hant", "en"]`): 目標語言。
+   - **回傳**：`{ ok: true, language: string }`
+
+6. **`get-current-channel-info`**
+   - **描述**：取得目前瀏覽頻道的結構化元數據，包含頻道標題、簡介、RSS 與 JSON Feed 端點。
+   - **輸入參數**：無
+   - **回傳**：`{ ok: true, handle: string, title: string, description: string, rssUrl: string, jsonFeedUrl: string, provider: "david888.com" }`
+
+7. **`filter-by-date`**
+   - **描述**：若目前位於頻道頁面，可篩選並檢視特定日期的歷史文章時間線。
+   - **輸入參數**：
+     - `date` (string, required): 日期格式為 `YYYY-MM-DD`（例如 `2026-09-08`）。
+   - **回傳**：`{ ok: true, navigatingTo: string }`
+
+---
+
+## 網站入口與 API
 
 - [首頁](https://telegram.david888.com/): 輸入 `@username`、裸 username 或公開 `t.me` 連結。
-- [RSS](https://telegram.david888.com/rss.xml): 首頁的 RSS 訂閱來源。
-- [JSON Feed](https://telegram.david888.com/rss.json): 首頁的 JSON Feed。
-- [網站文件](https://telegram.david888.com/docs/agent-guide.md): 網站路由、可讀資料與爬蟲注意事項。
+- [隨機推薦 API](https://telegram.david888.com/random?json=1): 取得隨機精選高活躍推薦頻道（JSON 格式）。
+- [RSS 訂閱](https://telegram.david888.com/rss.xml): 首頁或特定頻道的 RSS 訂閱來源（支援 `/:channel/rss.xml`）。
+- [JSON Feed](https://telegram.david888.com/rss.json): 首頁或特定頻道的 JSON Feed（支援 `/:channel/rss.json`）。
+- [網站代理指引文件](https://telegram.david888.com/docs/agent-guide.md): 網站路由、可讀資料與爬蟲注意事項。
 
 ## 行為與限制
 
 - 公開頻道可透過 `/:channel/` 閱讀，文章可透過 `/:channel/posts/:id` 查看。
 - 頻道頁提供按日期瀏覽、RSS 與 JSON Feed；頁面顯示的內容可能受 Telegram 公開預覽與本站快取狀態影響。
-- `/sitemap.xml` 適合查找可索引頁面；本檔案則提供給代理程式快速理解網站用途與入口。
+- `/sitemap.xml` 適合查找可索引頁面；本檔案提供給 AI 代理程式快速理解網站用途、API 與 WebMCP 結構化工具。
 
-## Optional
+## 相關連結
 
+- [技術提供：david888.com](https://david888.com/)
 - [GitHub 原始碼](https://github.com/tbdavid2019/tg-Channel-2-web): 專案程式碼、部署設定與版本異動。

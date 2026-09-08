@@ -17,7 +17,7 @@ const channel = ANYCHANNEL
         <h1 id="reader-title" data-i18n="homepageHeading">把頻道內容，讀成清楚的時間線</h1>
         <p class="reader-lede" data-i18n="homepageLead">輸入公開頻道的 username 或連結，直接查看貼文、圖片與日期分組。</p>
 
-        <form action="/" method="get" class="channel-form">
+        <form action="/" method="get" class="channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀">
           <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
           <div class="channel-form-row">
             <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" required class="channel-input" aria-describedby="channel-help channel-error" />
