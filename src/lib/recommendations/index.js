@@ -158,9 +158,17 @@ export async function syncRecommendations() {
 
   try {
     const existingCache = readCacheFile()
-    const existingChannels = existingCache?.channels || getBundledSeed()
+    const existingChannels = existingCache?.channels || []
+    const seedChannels = getBundledSeed()
     const channelMap = new Map()
 
+    // Seed channels first
+    for (const c of seedChannels) {
+      if (c && c.handle) {
+        channelMap.set(c.handle.toLowerCase(), { ...c })
+      }
+    }
+    // Then merge existing runtime cache
     for (const c of existingChannels) {
       if (c && c.handle) {
         channelMap.set(c.handle.toLowerCase(), { ...c })
@@ -255,11 +263,18 @@ export function getRecommendedChannels() {
     syncRecommendations().catch(err => console.warn('Background sync error:', err.message))
   }
 
+  const seed = getBundledSeed()
+
   if (cached && Array.isArray(cached.channels) && cached.channels.length > 0) {
+    const existing = new Set(cached.channels.map(c => c.handle.toLowerCase()))
+    const missingSeed = seed.filter(s => !existing.has(s.handle.toLowerCase()))
+    if (missingSeed.length > 0) {
+      return [...missingSeed, ...cached.channels]
+    }
     return cached.channels
   }
 
-  return getBundledSeed()
+  return seed
 }
 
 /**

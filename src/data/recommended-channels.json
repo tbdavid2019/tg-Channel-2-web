@@ -1,5 +1,117 @@
 [
   {
+    "handle": "NewlearnerChannel",
+    "title": "Newlearnerの自留地",
+    "description": "关注科技动态、数字生活与优质软件工具",
+    "category": "科技生活",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "technews_tw",
+    "title": "TechNews 科技新報",
+    "description": "台灣知名科技產業與趨勢新聞媒體",
+    "category": "科技数码",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "appinnfeed",
+    "title": "Appinn Feed｜小众软件",
+    "description": "分享免费、小巧、实用、有趣的应用软件",
+    "category": "软件工具",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "oliservice",
+    "title": "選出潛力股 | 投資新聞濃縮包 | 333",
+    "description": "每日美股盤前盤後整理、市場重磅新聞與潛力股動態",
+    "category": "金融投资",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "mgstock",
+    "title": "美股频道 Stock USA",
+    "description": "美股即时行情、财报研报与深度投资研究",
+    "category": "金融投资",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "initiumnews",
+    "title": "端傳媒 Initium Media",
+    "description": "立足華語世界的深度報導與獨立新聞機構",
+    "category": "新闻资讯",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "zaobaosg",
+    "title": "zaobao.sg 早报",
+    "description": "以睿智亲和的内容，与你共谈天下事（联合早报）",
+    "category": "新闻资讯",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "Taiwan_Jishixinwen",
+    "title": "台灣即時新聞",
+    "description": "台灣在地熱門時事、社會與政治快訊整理",
+    "category": "新闻资讯",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "daybuy",
+    "title": "Costco好市多(新品/優惠)最速報",
+    "description": "全台好市多最新商品降價、檔期特惠與踩雷避坑整理",
+    "category": "生活好物",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "backpackerscomtw",
+    "title": "背包客棧",
+    "description": "台灣最大旅遊社群，自助旅行指南與全球景點情報",
+    "category": "生活旅游",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "sspai",
+    "title": "少数派 sspai",
+    "description": "高品质数字消费指南，高效工作与生活方式",
+    "category": "科技生活",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "v2ex_hot",
+    "title": "V2EX 最热主题",
+    "description": "V2EX 社区每日精选热门讨论与技术交流",
+    "category": "技术开发",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "solidot",
+    "title": "Solidot",
+    "description": "奇客的资讯，重要的开源、安全与科技快讯",
+    "category": "科技数码",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
+    "handle": "ForesightNews",
+    "title": "Foresight News",
+    "description": "Web 3.0 与区块链时代全球前沿中文资讯站",
+    "category": "区块链",
+    "source": "精选高活跃推荐",
+    "addedAt": 1788847907793
+  },
+  {
     "handle": "shareAliyun",
     "title": "阿里云盘发布频道",
     "description": "最新高清影视资源，快速下载",
