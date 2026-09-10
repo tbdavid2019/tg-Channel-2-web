@@ -87,7 +87,6 @@ const message = messages[errorCode] || messages.no_public_preview
           data-i18n-placeholder="channelInputPlaceholder"
           autocomplete="off"
           spellcheck="false"
-          required
           class="channel-input"
           aria-describedby="state-channel-help state-channel-error"
         />
@@ -117,8 +116,9 @@ const message = messages[errorCode] || messages.no_public_preview
 
   form?.addEventListener('submit', (event) => {
     event.preventDefault()
-    const rawVal = input instanceof HTMLInputElement ? input.value : ''
-    const target = normalizeTelegramTarget(rawVal)
+    const rawVal = (input instanceof HTMLInputElement ? input.value : '').trim()
+    const targetVal = rawVal || 'oliservice'
+    const target = normalizeTelegramTarget(targetVal)
 
     if (!target.ok) {
       if (input) input.setAttribute('aria-invalid', 'true')

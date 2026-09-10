@@ -200,21 +200,18 @@ export function getRecentChannels(limit = 10, { pinHandle = '' } = {}) {
     }))
     .sort((a, b) => b.count - a.count || b.lastVisitedAt - a.lastVisitedAt)
 
-  let finalResult = result.slice(0, Math.max(0, limit))
-
+  let finalResult
   if (pinHandle) {
     const norm = pinHandle.toLowerCase()
-    const inTop = finalResult.some(c => c.handle.toLowerCase() === norm)
-    if (!inTop) {
-      const pinnedItem = result.find(c => c.handle.toLowerCase() === norm)
-      if (pinnedItem) {
-        if (finalResult.length >= limit) {
-          finalResult[finalResult.length - 1] = pinnedItem
-        } else {
-          finalResult.push(pinnedItem)
-        }
-      }
+    const pinnedItem = result.find(c => c.handle.toLowerCase() === norm)
+    const others = result.filter(c => c.handle.toLowerCase() !== norm)
+    if (pinnedItem) {
+      finalResult = [pinnedItem, ...others.slice(0, Math.max(0, limit - 1))]
+    } else {
+      finalResult = others.slice(0, Math.max(0, limit))
     }
+  } else {
+    finalResult = result.slice(0, Math.max(0, limit))
   }
 
   if (JSON.stringify(history) !== JSON.stringify(db.channelHistory)) {

@@ -1,9 +1,20 @@
 ---
 import List from '../components/list.astro'
 import { getChannelInfo } from '../lib/telegram'
+import { normalizeTelegramTarget } from '../lib/telegram/normalize'
 import { getEnv } from '../lib/env'
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
+
+// 若表單提交（或網址帶有 ?channel=），使用者未輸入時預設導向 oliservice
+if (ANYCHANNEL && Astro.url.searchParams.has('channel')) {
+  const queryVal = (Astro.url.searchParams.get('channel') || '').trim()
+  const target = normalizeTelegramTarget(queryVal || 'oliservice')
+  if (target.ok) {
+    return Astro.redirect(`/${target.handle}/`)
+  }
+}
+
 const channel = ANYCHANNEL
   ? { handle: '', title: '888 Telegram 頻道瀏覽器', description: '輸入公開 Telegram 頻道或群組連結', posts: [], isReaderHome: true }
   : await getChannelInfo(Astro)
@@ -20,7 +31,7 @@ const channel = ANYCHANNEL
         <form action="/" method="get" class="channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀">
           <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
           <div class="channel-form-row">
-            <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" required class="channel-input" aria-describedby="channel-help channel-error" />
+            <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" class="channel-input" aria-describedby="channel-help channel-error" />
             <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
           </div>
           <p id="channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
@@ -261,7 +272,9 @@ const channel = ANYCHANNEL
 
   form?.addEventListener('submit', (event) => {
     event.preventDefault()
-    const target = normalizeTelegramTarget(input?.value)
+    const rawVal = (input instanceof HTMLInputElement ? input.value : (input?.value || '')).trim()
+    const targetVal = rawVal || 'oliservice'
+    const target = normalizeTelegramTarget(targetVal)
 
     if (!target.ok) {
       if (input) input.setAttribute('aria-invalid', 'true')

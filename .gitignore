@@ -34,5 +34,6 @@ pnpm-debug.log*
 
 # runtime data cache
 /data/
+/src/data/posts.json
 
 

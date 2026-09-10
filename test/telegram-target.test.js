@@ -30,3 +30,11 @@ test('classifies Telegram links that cannot expose public history', () => {
     url: '',
   })
 })
+
+test('normalizes empty or whitespace input to default oliservice target', () => {
+  const resolveTarget = (raw) => normalizeTelegramTarget((raw || '').trim() || 'oliservice')
+  assert.equal(resolveTarget('').handle, 'oliservice')
+  assert.equal(resolveTarget('   ').handle, 'oliservice')
+  assert.equal(resolveTarget(null).handle, 'oliservice')
+  assert.equal(resolveTarget(undefined).handle, 'oliservice')
+})

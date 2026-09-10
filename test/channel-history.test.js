@@ -52,5 +52,5 @@ test('guarantees pinned oliservice slot in getRecentChannels even if overwhelmed
 
   const channels = getRecentChannels(10, { pinHandle: 'oliservice' })
   assert.equal(channels.length, 10)
-  assert.ok(channels.some(c => c.handle === 'oliservice'), 'oliservice must be preserved in leaderboard')
+  assert.equal(channels[0].handle, 'oliservice', 'oliservice must hold the #1 golden seat in leaderboard')
 })
