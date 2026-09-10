@@ -49,28 +49,25 @@ if (channel.posts && channel.posts.length > 0) {
 // Get post IDs for this date from database
 let datePostIds = []
 try {
-  datePostIds = getPostIdsByDate(targetDate, channelName)
+  datePostIds = getPostIdsByDate(targetDate, channelName, tz)
 } catch (e) {
   console.error('Failed to get posts by date:', e.message)
 }
 
-// Filter posts for this date
-// Since we might be viewing an old date not in the current channel fetch, 
-// we should ideally fetch from DB or upstream if possible. 
-// However, `getChannelInfo` currently fetches *latest* or by *cursor*.
-// It doesn't fetch by date directly from Telegram.
-// We will filter what we have. If `getPostIdsByDate` returns IDs, we can't easily fetch those specific full posts
-// unless we have them in DB. `channel.posts` only has current feed.
-// Logic adaptation: We filter `channel.posts` (recent) for the date.
+// Filter posts for this date using Half-Open interval [00:00:00, 24:00:00)
+const dayStartMs = dayjs.tz(targetDate, tz).startOf('day').valueOf()
+const dayEndMs = dayjs.tz(targetDate, tz).add(1, 'day').startOf('day').valueOf()
+
 const posts = channel.posts?.filter(post => {
-    const postDate = dayjs(post.datetime).tz(tz).format('YYYY-MM-DD')
-    return postDate === targetDate
+  if (!post.datetime) return false
+  const postMs = new Date(post.datetime).getTime()
+  return postMs >= dayStartMs && postMs < dayEndMs
 }) || []
 
 // Get adjacent dates
 let adjacentDates = { prevDate: null, nextDate: null }
 try {
-  adjacentDates = getAdjacentDates(targetDate, 30, channelName)
+  adjacentDates = getAdjacentDates(targetDate, 30, channelName, tz)
 } catch (e) {
   console.error('Failed to get adjacent dates:', e.message)
 }

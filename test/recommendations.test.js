@@ -5,6 +5,7 @@ import {
   getBundledSeed,
   getRecommendedChannels,
   getRandomChannel,
+  addUserChannelToPool,
 } from '../src/lib/recommendations/index.js'
 
 test('parseTgNavMarkdown correctly extracts channel handle, title, category and desc', () => {
@@ -46,4 +47,18 @@ test('getRandomChannel returns a valid channel and respects excludeHandle', () =
   const picked = getRandomChannel(firstHandle)
   assert.ok(picked, 'Should return a channel')
   assert.notEqual(picked.handle.toLowerCase(), firstHandle.toLowerCase(), 'Should not return excluded handle')
+})
+
+test('addUserChannelToPool dynamically adds user-entered channels into recommendation pool', () => {
+  const added = addUserChannelToPool({
+    handle: 'my_custom_user_channel',
+    title: 'Custom User Channel',
+    description: 'A user submitted channel',
+  })
+  assert.equal(added, true)
+  const channels = getRecommendedChannels()
+  const found = channels.find(c => c.handle === 'my_custom_user_channel')
+  assert.ok(found, 'Should find newly added user channel in recommendation pool')
+  assert.equal(found.title, 'Custom User Channel')
+  assert.equal(found.category, '用戶探索')
 })

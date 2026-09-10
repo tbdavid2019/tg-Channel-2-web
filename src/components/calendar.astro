@@ -1,35 +1,33 @@
 ---
-import dayjs from 'dayjs'
+import dayjs from '../lib/dayjs'
 import 'dayjs/locale/zh-tw'
 import { getEnv } from '../lib/env'
 import { getDatesWithPosts, getDatesByMonth } from '../lib/db'
 
 const { SITE_URL } = Astro.locals
 const locale = getEnv(import.meta.env, Astro, 'LOCALE') || 'en'
+const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') || 'Asia/Taipei'
 const currentChannel = Astro.params?.channel || getEnv(import.meta.env, Astro, 'CHANNEL') || ''
 
 dayjs.locale(locale)
 
-// Get current month from URL or default to today
+// Get current month from URL or default to today in target timezone
 const urlMonth = Astro.url.searchParams.get('month')
-const today = dayjs()
-// If month param exists, use it, otherwise use current date
-const targetDate = urlMonth ? dayjs(urlMonth) : today
+const today = dayjs().tz(tz)
+// If month param exists, use it, otherwise use current date in target timezone
+const targetDate = urlMonth ? dayjs(urlMonth).tz(tz) : today
 const currentMonth = targetDate.startOf('month')
 
 // Get dates with posts for the target month
 let datesWithPosts = []
 try {
   // We need to fetch all posts for the target month
-  // The DB function expects 'YYYY-MM' format
+  // The DB function expects 'YYYY-MM' format and respects timezone
   const yearMonth = currentMonth.format('YYYY-MM')
-  // Use the new function we added to db/index.js
-  // If it's not available yet (during transition), fallback to empty
   if (getDatesByMonth) {
-    datesWithPosts = getDatesByMonth(yearMonth, currentChannel)
+    datesWithPosts = getDatesByMonth(yearMonth, currentChannel, tz)
   } else {
-    // Fallback for types that might not have updated yet
-    datesWithPosts = getDatesWithPosts(31, currentChannel) 
+    datesWithPosts = getDatesWithPosts(31, currentChannel, tz) 
   }
 } catch (e) {
   console.error('Failed to get dates with posts:', e.message)

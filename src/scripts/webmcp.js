@@ -178,6 +178,38 @@ export const webMcpTools = [
       window.location.assign(targetUrl)
       return { ok: true, navigatingTo: targetUrl }
     }
+  },
+  {
+    name: 'add-channel-recommendation',
+    description: 'Dynamically register a user-entered public Telegram channel into the recommendation pool so it can be discovered via random exploration.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        channel: {
+          type: 'string',
+          description: 'Telegram username or @handle (e.g. "@oliservice", "technews_tw")'
+        }
+      },
+      required: ['channel']
+    },
+    async execute({ channel }) {
+      if (!channel) return { ok: false, error: 'Channel input required' }
+      const target = normalizeTelegramTarget(channel)
+      if (!target.ok) return { ok: false, error: 'Invalid channel target' }
+      try {
+        const res = await fetch(`/random?json=1&add=${encodeURIComponent(target.handle)}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        return {
+          ok: true,
+          handle: target.handle,
+          message: `Added @${target.handle} to recommendation pool`,
+          totalPoolCount: data.totalPoolCount,
+        }
+      } catch (err) {
+        return { ok: false, error: err.message }
+      }
+    }
   }
 ]
 

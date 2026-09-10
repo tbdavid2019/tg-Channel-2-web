@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { getVisitedChannels, recordChannelVisit } from '../db/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -252,7 +253,10 @@ export async function syncRecommendations() {
 
 /**
  * Get all available recommended channels.
- * Automatically initiates background refresh if cache is stale.
+ * Dynamically incorporates:
+ * 1. Curated high-activity seeds
+ * 2. Remote directory recommendations (tgnav.com)
+ * 3. User-entered and visited channels from history (動態納入使用者自行輸入與瀏覽過的頻道)
  */
 export function getRecommendedChannels() {
   const cached = readCacheFile()
@@ -264,17 +268,67 @@ export function getRecommendedChannels() {
   }
 
   const seed = getBundledSeed()
+  const channelMap = new Map()
 
-  if (cached && Array.isArray(cached.channels) && cached.channels.length > 0) {
-    const existing = new Set(cached.channels.map(c => c.handle.toLowerCase()))
-    const missingSeed = seed.filter(s => !existing.has(s.handle.toLowerCase()))
-    if (missingSeed.length > 0) {
-      return [...missingSeed, ...cached.channels]
+  // 1. Curated seed channels
+  for (const item of seed) {
+    if (item && item.handle) {
+      channelMap.set(item.handle.toLowerCase(), { ...item })
     }
-    return cached.channels
   }
 
-  return seed
+  // 2. Synced channels from remote directory
+  if (cached && Array.isArray(cached.channels)) {
+    for (const item of cached.channels) {
+      if (item && item.handle) {
+        channelMap.set(item.handle.toLowerCase(), { ...item })
+      }
+    }
+  }
+
+  // 3. User-entered and visited channels (動態納入使用者自行輸入與瀏覽過的頻道，隨機池非固定)
+  try {
+    const visited = getVisitedChannels()
+    for (const item of visited) {
+      if (!item || !item.handle) continue
+      const key = item.handle.toLowerCase()
+      if (!channelMap.has(key)) {
+        channelMap.set(key, {
+          handle: item.handle,
+          title: item.title || `@${item.handle}`,
+          description: item.description || '',
+          category: '用戶探索',
+          source: 'user_input',
+          updatedAt: item.updatedAt || Date.now(),
+        })
+      } else {
+        const existing = channelMap.get(key)
+        if (!existing.description && item.description) {
+          existing.description = item.description
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read user-entered visited channels:', err.message)
+  }
+
+  return Array.from(channelMap.values())
+}
+
+/**
+ * Dynamically register a user-entered channel into the recommendation pool.
+ */
+export function addUserChannelToPool({ handle, title = '', description = '', category = '用戶探索' } = {}) {
+  if (!handle) return false
+  const cleanHandle = String(handle).replace(/^@/, '').trim().toLowerCase()
+  if (!/^[a-zA-Z0-9_]{3,64}$/.test(cleanHandle)) return false
+
+  recordChannelVisit({
+    handle: cleanHandle,
+    title: title || `@${cleanHandle}`,
+    description,
+  })
+  return true
 }
 
 /**

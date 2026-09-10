@@ -41,3 +41,16 @@ test('expires visits older than seven days', () => {
 
   assert.equal(getRecentChannels().some(channel => channel.handle === 'expiredchannel'), false)
 })
+
+test('guarantees pinned oliservice slot in getRecentChannels even if overwhelmed by other channels', () => {
+  recordChannelVisit({ handle: 'oliservice', title: 'Oli Service' })
+  for (let index = 0; index < 15; index += 1) {
+    recordChannelVisit({ handle: `heavy_traffic_${index}`, title: `Heavy ${index}` })
+    recordChannelVisit({ handle: `heavy_traffic_${index}`, title: `Heavy ${index}` })
+    recordChannelVisit({ handle: `heavy_traffic_${index}`, title: `Heavy ${index}` })
+  }
+
+  const channels = getRecentChannels(10, { pinHandle: 'oliservice' })
+  assert.equal(channels.length, 10)
+  assert.ok(channels.some(c => c.handle === 'oliservice'), 'oliservice must be preserved in leaderboard')
+})

@@ -1,6 +1,12 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+import timezone from 'dayjs/plugin/timezone.js'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -46,6 +52,15 @@ function writeDb(data) {
   }
 }
 
+function extractLocalDate(datetime) {
+  const tz = process.env.TIMEZONE || 'Asia/Taipei'
+  try {
+    return dayjs(datetime).tz(tz).format('YYYY-MM-DD')
+  } catch {
+    return String(datetime || '').split('T')[0]
+  }
+}
+
 /**
  * Save or update a post in the database
  */
@@ -53,7 +68,7 @@ export function savePost(post, channel = '') {
   if (!post.id || !post.datetime) return
   
   const db = readDb()
-  const date = post.datetime.split('T')[0] // Extract YYYY-MM-DD
+  const date = extractLocalDate(post.datetime)
   const postChannel = (channel || post.channel || '').toLowerCase()
   
   const existingIndex = db.posts.findIndex(p => (p.channel || '').toLowerCase() === postChannel && p.id == post.id)
@@ -91,7 +106,7 @@ export function savePosts(posts, channel = '') {
   for (const post of posts) {
     if (!post.id || !post.datetime) continue
     
-    const date = post.datetime.split('T')[0]
+    const date = extractLocalDate(post.datetime)
     const postChannel = (channel || post.channel || '').toLowerCase()
     const existingIndex = db.posts.findIndex(p => (p.channel || '').toLowerCase() === postChannel && p.id == post.id)
     
@@ -139,7 +154,7 @@ function pruneChannelHistory(history, now = Date.now()) {
 }
 
 /** Record a successful public channel visit without storing visitor identity. */
-export function recordChannelVisit({ handle, title = '', avatar = '' } = {}) {
+export function recordChannelVisit({ handle, title = '', avatar = '', description = '' } = {}) {
   const normalizedHandle = String(handle || '').toLowerCase()
   if (!isValidHistoryHandle(normalizedHandle)) return
 
@@ -151,6 +166,9 @@ export function recordChannelVisit({ handle, title = '', avatar = '' } = {}) {
   if (existing) {
     existing.title = String(title || existing.title || '').slice(0, 200)
     existing.avatar = String(avatar || existing.avatar || '').slice(0, 1000)
+    if (description) {
+      existing.description = String(description || existing.description || '').slice(0, 500)
+    }
     existing.visits.push(now)
     existing.visits = existing.visits.slice(-50000)
   } else {
@@ -158,6 +176,7 @@ export function recordChannelVisit({ handle, title = '', avatar = '' } = {}) {
       handle: normalizedHandle,
       title: String(title || '').slice(0, 200),
       avatar: String(avatar || '').slice(0, 1000),
+      description: String(description || '').slice(0, 500),
       visits: [now],
     })
   }
@@ -165,8 +184,8 @@ export function recordChannelVisit({ handle, title = '', avatar = '' } = {}) {
   writeDb({ ...db, channelHistory: history })
 }
 
-/** Return the ten most-used public channels from the rolling seven-day window. */
-export function getRecentChannels(limit = 10) {
+/** Return the most-used public channels from the rolling seven-day window, with optional pinned slot. */
+export function getRecentChannels(limit = 10, { pinHandle = '' } = {}) {
   const now = Date.now()
   const db = readDb()
   const history = pruneChannelHistory(db.channelHistory, now)
@@ -175,36 +194,78 @@ export function getRecentChannels(limit = 10) {
       handle: entry.handle,
       title: entry.title || `@${entry.handle}`,
       avatar: entry.avatar || '',
+      description: entry.description || '',
       count: entry.visits.length,
       lastVisitedAt: Math.max(...entry.visits),
     }))
     .sort((a, b) => b.count - a.count || b.lastVisitedAt - a.lastVisitedAt)
-    .slice(0, Math.max(0, limit))
+
+  let finalResult = result.slice(0, Math.max(0, limit))
+
+  if (pinHandle) {
+    const norm = pinHandle.toLowerCase()
+    const inTop = finalResult.some(c => c.handle.toLowerCase() === norm)
+    if (!inTop) {
+      const pinnedItem = result.find(c => c.handle.toLowerCase() === norm)
+      if (pinnedItem) {
+        if (finalResult.length >= limit) {
+          finalResult[finalResult.length - 1] = pinnedItem
+        } else {
+          finalResult.push(pinnedItem)
+        }
+      }
+    }
+  }
 
   if (JSON.stringify(history) !== JSON.stringify(db.channelHistory)) {
     writeDb({ ...db, channelHistory: history })
   }
 
-  return result
+  return finalResult
+}
+
+/** Return visited/user-entered channels from history suitable for recommendation pool */
+export function getVisitedChannels() {
+  const db = readDb()
+  return (db.channelHistory || [])
+    .filter(entry => entry.handle && isValidHistoryHandle(entry.handle))
+    .map(entry => ({
+      handle: entry.handle,
+      title: entry.title || `@${entry.handle}`,
+      avatar: entry.avatar || '',
+      description: entry.description || '',
+      category: '用戶探索',
+      source: 'user_input',
+      updatedAt: Math.max(...(entry.visits || [Date.now()])),
+    }))
 }
 
 /**
  * Get dates with posts (for calendar)
- * Returns dates from the last N days
+ * Returns dates from the last N days using timezone-aware midnight boundaries [Today - (N-1), Tomorrow 00:00:00)
  */
-export function getDatesWithPosts(days = 30, channel = '') {
+export function getDatesWithPosts(days = 30, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - days)
-  const cutoffStr = cutoffDate.toISOString().split('T')[0]
   const targetChannel = channel ? channel.toLowerCase() : null
+  const todayStart = dayjs().tz(tz).startOf('day')
+  const startMs = todayStart.subtract(days - 1, 'day').valueOf()
+  const endMs = todayStart.add(1, 'day').valueOf() // Left-closed, Right-open: [Start, Tomorrow 00:00:00)
   
   const dateMap = {}
   
   for (const post of db.posts) {
     if (targetChannel && (post.channel || '').toLowerCase() !== targetChannel) continue
-    if (post.date >= cutoffStr) {
-      dateMap[post.date] = (dateMap[post.date] || 0) + 1
+    if (post.datetime) {
+      const postMs = new Date(post.datetime).getTime()
+      if (postMs >= startMs && postMs < endMs) {
+        const localDate = dayjs(post.datetime).tz(tz).format('YYYY-MM-DD')
+        dateMap[localDate] = (dateMap[localDate] || 0) + 1
+      }
+    } else if (post.date) {
+      const cutoffStr = todayStart.subtract(days - 1, 'day').format('YYYY-MM-DD')
+      if (post.date >= cutoffStr) {
+        dateMap[post.date] = (dateMap[post.date] || 0) + 1
+      }
     }
   }
   
@@ -215,16 +276,26 @@ export function getDatesWithPosts(days = 30, channel = '') {
 
 /**
  * Get dates comprising posts for a specific month
+ * Uses Half-Open interval [MonthStart 00:00:00, NextMonthStart 00:00:00)
  * @param {string} yearMonth - Format 'YYYY-MM'
  */
-export function getDatesByMonth(yearMonth, channel = '') {
+export function getDatesByMonth(yearMonth, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
   const targetChannel = channel ? channel.toLowerCase() : null
+  const monthStart = dayjs.tz(`${yearMonth}-01`, tz).startOf('month')
+  const startMs = monthStart.valueOf()
+  const endMs = monthStart.add(1, 'month').startOf('month').valueOf()
   const dateMap = {}
   
   for (const post of db.posts) {
     if (targetChannel && (post.channel || '').toLowerCase() !== targetChannel) continue
-    if (post.date.startsWith(yearMonth)) {
+    if (post.datetime) {
+      const postMs = new Date(post.datetime).getTime()
+      if (postMs >= startMs && postMs < endMs) {
+        const localDate = dayjs(post.datetime).tz(tz).format('YYYY-MM-DD')
+        dateMap[localDate] = (dateMap[localDate] || 0) + 1
+      }
+    } else if (post.date && post.date.startsWith(yearMonth)) {
       dateMap[post.date] = (dateMap[post.date] || 0) + 1
     }
   }
@@ -235,39 +306,74 @@ export function getDatesByMonth(yearMonth, channel = '') {
 }
 
 /**
- * Get post IDs for a specific date
+ * Query posts within a human date range using Half-Open interval [Start, End + 1 day)
+ * e.g. "9/1 ~ 9/9" includes up to 9/9 23:59:59.999 (< 9/10 00:00:00)
  */
-export function getPostIdsByDate(date, channel = '') {
+export function getPostsBetween(startDate, endDate, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
   const targetChannel = channel ? channel.toLowerCase() : null
-  return db.posts.filter(p => p.date === date && (!targetChannel || (p.channel || '').toLowerCase() === targetChannel))
+  const startMs = dayjs.tz(startDate, tz).startOf('day').valueOf()
+  const endMs = dayjs.tz(endDate, tz).add(1, 'day').startOf('day').valueOf()
+
+  return db.posts.filter(p => {
+    if (targetChannel && (p.channel || '').toLowerCase() !== targetChannel) return false
+    if (!p.datetime) return false
+    const postMs = new Date(p.datetime).getTime()
+    return postMs >= startMs && postMs < endMs
+  })
+}
+
+/**
+ * Get post IDs for a specific date using Half-Open interval [Date 00:00:00, NextDay 00:00:00)
+ */
+export function getPostIdsByDate(date, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
+  const db = readDb()
+  const targetChannel = channel ? channel.toLowerCase() : null
+  const startMs = dayjs.tz(date, tz).startOf('day').valueOf()
+  const endMs = dayjs.tz(date, tz).add(1, 'day').startOf('day').valueOf()
+
+  return db.posts.filter(p => {
+    if (targetChannel && (p.channel || '').toLowerCase() !== targetChannel) return false
+    if (p.datetime) {
+      const postMs = new Date(p.datetime).getTime()
+      return postMs >= startMs && postMs < endMs
+    }
+    return p.date === date
+  })
 }
 
 /**
  * Get the first post ID for a specific date (for pagination)
  */
-export function getFirstPostIdByDate(date, channel = '') {
-  const db = readDb()
-  const targetChannel = channel ? channel.toLowerCase() : null
-  const post = db.posts.find(p => p.date === date && (!targetChannel || (p.channel || '').toLowerCase() === targetChannel))
-  return post?.id
+export function getFirstPostIdByDate(date, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
+  const posts = getPostIdsByDate(date, channel, tz)
+  return posts[0]?.id
 }
 
 /**
  * Get available dates for pagination (returns array of dates with posts)
  */
-export function getAvailableDates(days = 30, channel = '') {
-  const dates = getDatesWithPosts(days, channel)
+export function getAvailableDates(days = 30, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
+  const dates = getDatesWithPosts(days, channel, tz)
   return dates.map(d => d.date)
 }
 
 /**
  * Get previous and next date relative to a given date
  */
-export function getAdjacentDates(currentDate, days = 30, channel = '') {
-  const dates = getAvailableDates(days, channel)
+export function getAdjacentDates(currentDate, days = 30, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
+  const dates = getAvailableDates(days, channel, tz)
   const currentIndex = dates.indexOf(currentDate)
   
+  if (currentIndex === -1) {
+    return {
+      prevDate: null,
+      nextDate: null,
+      currentIndex: -1,
+      totalDates: dates.length,
+    }
+  }
+
   return {
     prevDate: currentIndex > 0 ? dates[currentIndex - 1] : null,
     nextDate: currentIndex < dates.length - 1 ? dates[currentIndex + 1] : null,
@@ -291,6 +397,7 @@ export default {
   savePosts,
   getDatesWithPosts,
   getDatesByMonth,
+  getPostsBetween,
   getPostIdsByDate,
   getFirstPostIdByDate,
   getAvailableDates,
@@ -298,4 +405,5 @@ export default {
   getTotalPostCount,
   recordChannelVisit,
   getRecentChannels,
+  getVisitedChannels,
 }
