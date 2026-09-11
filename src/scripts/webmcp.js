@@ -216,6 +216,9 @@ export const webMcpTools = [
 export async function initWebMcp() {
   if (typeof window === 'undefined') return
 
+  if (window.__webmcp_initialized) return
+  window.__webmcp_initialized = true
+
   // Expose global inspector and runner for AI agents, extensions, and testing
   window.__webmcp = {
     version: '1.0.0',
@@ -243,6 +246,10 @@ export async function initWebMcp() {
           execute: tool.execute
         })
       } catch (err) {
+        // Silently tolerate already-registered tools (e.g. declarative HTML form toolname="search-articles")
+        if (err?.name === 'InvalidStateError' || err?.message?.toLowerCase().includes('duplicate')) {
+          continue
+        }
         console.warn(`[WebMCP] Failed to register tool ${tool.name}:`, err)
       }
     }

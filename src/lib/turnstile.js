@@ -39,6 +39,8 @@ export function shouldBypassTurnstile(pathname) {
     pathname === '/rss.xml' ||
     pathname === '/rss.json' ||
     pathname === '/llms.txt' ||
+    pathname === '/mcp' ||
+    pathname.startsWith('/mcp/') ||
     pathname.startsWith('/docs/') ||
     pathname.startsWith('/.well-known/')
   ) {
