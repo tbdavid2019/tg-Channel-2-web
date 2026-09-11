@@ -1,6 +1,43 @@
-import { getEnv, ASSET_VERSION } from './lib/env'
+import { getEnv, ASSET_VERSION } from './lib/env.js'
+import {
+  getTurnstileConfig,
+  shouldBypassTurnstile,
+  validateClearanceCookie,
+  renderChallengePage,
+  TURNSTILE_COOKIE_NAME,
+} from './lib/turnstile.js'
 
 export async function onRequest(context, next) {
+  const turnstileConfig = getTurnstileConfig(import.meta.env, context)
+  context.locals.TURNSTILE_SITE_KEY = turnstileConfig.siteKey
+
+  const pathname = context.url.pathname
+
+  if (turnstileConfig.enabled && !shouldBypassTurnstile(pathname)) {
+    const cookieHeader = context.request.headers.get('cookie') || ''
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${TURNSTILE_COOKIE_NAME}=([^;]+)`))
+    const cookieValue = match ? decodeURIComponent(match[1]) : null
+    const userAgent = context.request.headers.get('user-agent') || ''
+
+    const isCleared = cookieValue
+      ? await validateClearanceCookie(cookieValue, turnstileConfig.secretKey, userAgent)
+      : false
+
+    if (!isCleared) {
+      const challengeHtml = renderChallengePage({
+        siteKey: turnstileConfig.siteKey,
+        brand: '888 Telegram 頻道瀏覽器',
+      })
+      return new Response(challengeHtml, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'private, no-store, max-age=0, must-revalidate',
+        },
+      })
+    }
+  }
+
   const anyChannel = getEnv(import.meta.env, context, 'ANYCHANNEL') === 'true'
   const defaultChannel = getEnv(import.meta.env, context, 'CHANNEL')
   const channelParam = context.params?.channel

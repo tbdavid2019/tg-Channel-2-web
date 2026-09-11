@@ -65,6 +65,9 @@ docker run -d \
 | `RSS_BEAUTIFY`                                         | 設定非空值時，RSS XML 使用內建 XSLT 顯示。                  | `true`                     |
 | `COMMENTS`                                             | 設定非空值時，在單篇文章頁顯示 Telegram discussion widget。 | `true`                     |
 | `GA_MEASUREMENT_ID`                                    | Google Analytics 4 measurement ID。                         | `G-XXXXXXXXXX`             |
+| `TURNSTILE_SITE_KEY`                                   | Cloudflare Turnstile 前端 Site Key（預設已有預設值）。       | `0x4AAAAAAEvqf7unH6MrhIv2` |
+| `TURNSTILE_SECRET`                                     | Cloudflare Turnstile 後端 Secret Key（設定後啟用人機防護）。 | `0x4AAAAAA...`             |
+| `TURNSTILE_ENABLED`                                    | 是否啟用 Turnstile 防爬蟲人機驗證（預設 `true`）。          | `true`                     |
 | `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT`     | 插入受信任的 HTML 或 script。                               | 見下方說明                 |
 
 ### 嵌入內容
