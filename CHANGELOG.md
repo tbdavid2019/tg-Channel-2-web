@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-09-29
+
+### Fixed
+
+- **熱門頻道瀏覽數固定不變 (`src/components/popular-channels.astro`)**：榜單原先混用寫死的預設瀏覽數與近 7 天瀏覽紀錄，並採用兩者較大的數字，導致實際次數低於預設值時畫面長期不變。移除靜態頻道與數字，改以近 7 天實際瀏覽紀錄排序；`oliservice` 無近期紀錄時仍保留黃金席位並顯示 0 次。
+
+### Deployed
+
+- 修正以 commit `3b6b483` 推送至 `master`，GitHub Actions 建置映像成功。正式主機 `broadcastchannel1`、`broadcastchannel2`、`broadcastchannel3` 已更新至映像 `c4e4c1939381`；三個服務端口與公開網域皆回應 HTTP 200。
+
 ## 2026-09-11
 
 ### Security
