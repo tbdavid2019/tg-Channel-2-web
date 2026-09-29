@@ -665,8 +665,6 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
     </style>
     <Fragment set:html={getEnv(import.meta.env, Astro, 'FOOTER_INJECT')} />
-    <script>
-      import '../scripts/turnstile-forms.js'
-    </script>
+    <script src="../scripts/turnstile-forms.js"></script>
   </body>
 </html>
