@@ -79,8 +79,7 @@ const isReaderHome = Boolean(channel?.isReaderHome)
 const currentChannelTitle = String(channel?.title || '')
 const currentSeoTitle = String(seo?.title || '')
 
-const GOOGLE_SEARCH_SITE = getEnv(import.meta.env, Astro, 'GOOGLE_SEARCH_SITE')
-const searchAction = GOOGLE_SEARCH_SITE ? 'https://www.google.com/search' : '/search/result'
+const searchAction = '/search/input'
 
 const TAGS = getEnv(import.meta.env, Astro, 'TAGS')
 const tags = TAGS ? TAGS.split(',').filter(Boolean) : []
@@ -198,7 +197,6 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             
             <input class="search-icon" name="icon" type="checkbox" aria-label="開啟搜尋" data-i18n-aria-label="searchToggle" />
             <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容">
-              {GOOGLE_SEARCH_SITE ? <input type="hidden" name="as_sitesearch" value={GOOGLE_SEARCH_SITE} /> : null}
               <label class="visually-hidden" for="site-search" data-i18n="searchLabel">搜尋網站內容</label>
               <input id="site-search" type="search" name="q" placeholder="搜尋文章與標籤" data-i18n-placeholder="searchPlaceholder" />
             </form>

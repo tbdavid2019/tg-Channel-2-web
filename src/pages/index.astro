@@ -292,6 +292,6 @@ const channel = ANYCHANNEL
 
     if (input) input.setAttribute('aria-invalid', 'false')
     if (error) error.textContent = ''
-    window.location.assign(`/${target.handle}/`)
+    window.location.assign(`/?channel=${encodeURIComponent(target.handle)}`)
   })
 </script>

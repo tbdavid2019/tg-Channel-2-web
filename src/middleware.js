@@ -12,8 +12,12 @@ export async function onRequest(context, next) {
   context.locals.TURNSTILE_SITE_KEY = turnstileConfig.siteKey
 
   const pathname = context.url.pathname
+  const routePath = pathname.replace(/\/+$/, '') || '/'
+  const isChannelSubmission = routePath === '/' && context.url.searchParams.has('channel')
+  const isSearchSubmission = routePath === '/search/input' && Boolean(context.url.searchParams.get('q')?.trim())
+  const requiresTurnstile = context.request.method === 'GET' && (isChannelSubmission || isSearchSubmission)
 
-  if (turnstileConfig.enabled && !shouldBypassTurnstile(pathname)) {
+  if (turnstileConfig.enabled && requiresTurnstile && !shouldBypassTurnstile(pathname)) {
     const cookieHeader = context.request.headers.get('cookie') || ''
     const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${TURNSTILE_COOKIE_NAME}=([^;]+)`))
     const cookieValue = match ? decodeURIComponent(match[1]) : null

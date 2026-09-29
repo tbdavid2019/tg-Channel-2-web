@@ -140,8 +140,8 @@ const message = messages[errorCode] || messages.no_public_preview
     const isAnyChannel = stateSection?.getAttribute('data-any-channel') === 'true'
     const readerBase = stateSection?.getAttribute('data-reader-base') || 'https://telegram.david888.com'
     const targetPath = isAnyChannel
-      ? `/${target.handle}/`
-      : `${readerBase.replace(/\/+$/, '')}/${target.handle}/`
+      ? `/?channel=${encodeURIComponent(target.handle)}`
+      : `${readerBase.replace(/\/+$/, '')}/?channel=${encodeURIComponent(target.handle)}`
 
     window.location.assign(targetPath)
   })
