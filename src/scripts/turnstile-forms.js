@@ -109,7 +109,7 @@ document.addEventListener('submit', async (event) => {
     form.dataset.turnstileVerified = 'true'
     delete form.dataset.turnstileToken
     setStatus(form)
-    form.requestSubmit(event.submitter || undefined)
+    form.requestSubmit()
   } catch {
     delete form.dataset.turnstilePending
     delete form.dataset.turnstileToken

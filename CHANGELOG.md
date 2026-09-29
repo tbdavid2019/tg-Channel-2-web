@@ -7,6 +7,7 @@
 - **熱門頻道瀏覽數固定不變 (`src/components/popular-channels.astro`)**：榜單原先混用寫死的預設瀏覽數與近 7 天瀏覽紀錄，並採用兩者較大的數字，導致實際次數低於預設值時畫面長期不變。移除靜態頻道與數字，改以近 7 天實際瀏覽紀錄排序；`oliservice` 無近期紀錄時仍保留黃金席位並顯示 0 次。
 - **公開閱讀頁面 Turnstile 攔截**：取消一般公開頁面的整頁驗證；首頁頻道輸入與站內搜尋只在送出時驗證，通過後的 24 小時內沿用 clearance cookie。搜尋結果、標籤連結與公開頻道可直接開啟；設定 `GOOGLE_SEARCH_SITE` 時仍導向原本的 Google 站內搜尋。
 - **輸入表單未顯示 Turnstile widget**：在首頁頻道輸入、錯誤頁頻道輸入與側欄站內搜尋表單加入可見 widget。送出時呼叫 Siteverify，並核對回傳的 action 與 hostname；驗證成功後再執行原本的導向或搜尋。
+- **搜尋送出與側欄 widget 排版**：Enter 送出搜尋時改用原生 `requestSubmit()`，避免將搜尋輸入欄當成 submit button 傳入；側欄 widget 置中顯示。
 
 ### Deployed
 

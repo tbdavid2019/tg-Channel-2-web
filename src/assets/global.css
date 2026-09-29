@@ -273,7 +273,14 @@ body {
 }
 
 .search-form .turnstile-widget {
+  display: flex;
+  width: 100%;
+  justify-content: center;
   margin: 8px 0 0;
+}
+
+.search-form .turnstile-status {
+  text-align: center;
 }
 
 .turnstile-status {
