@@ -69,7 +69,7 @@ export function shouldBypassTurnstile(pathname) {
  * Verify Turnstile token with Cloudflare API
  */
 export async function verifyTurnstileToken({ secretKey, token, clientIp }) {
-  if (!token || typeof token !== 'string' || token.length > 4096) {
+  if (!token || typeof token !== 'string' || token.length > 2048) {
     return { success: false, error: 'invalid-token' }
   }
 

@@ -10,6 +10,7 @@ import {
 export async function onRequest(context, next) {
   const turnstileConfig = getTurnstileConfig(import.meta.env, context)
   context.locals.TURNSTILE_SITE_KEY = turnstileConfig.siteKey
+  context.locals.TURNSTILE_ENABLED = turnstileConfig.enabled
 
   const pathname = context.url.pathname
   const routePath = pathname.replace(/\/+$/, '') || '/'

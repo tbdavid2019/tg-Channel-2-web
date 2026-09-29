@@ -6,6 +6,27 @@ import {
   TURNSTILE_COOKIE_MAX_AGE,
 } from '../../lib/turnstile.js'
 
+const allowedActions = new Set(['site_access', 'channel_search', 'article_search'])
+
+function getRequestHostname(request) {
+  const origin = request.headers.get('origin')
+  if (origin) {
+    try {
+      return new URL(origin).hostname.toLowerCase()
+    } catch {
+      return ''
+    }
+  }
+
+  const forwardedHost = request.headers.get('x-forwarded-host')?.split(',')[0].trim()
+  const host = forwardedHost || request.headers.get('host') || new URL(request.url).hostname
+  try {
+    return new URL(host.includes('://') ? host : `https://${host}`).hostname.toLowerCase()
+  } catch {
+    return ''
+  }
+}
+
 export async function POST(context) {
   const { request } = context
   const { secretKey, enabled } = getTurnstileConfig(import.meta.env, context)
@@ -33,6 +54,10 @@ export async function POST(context) {
   if (!token || typeof token !== 'string') {
     return Response.json({ success: false, error: 'missing-token' }, { status: 400 })
   }
+  const action = typeof body?.action === 'string' ? body.action : 'site_access'
+  if (!allowedActions.has(action)) {
+    return Response.json({ success: false, error: 'invalid-action' }, { status: 400 })
+  }
 
   // Determine client IP
   const clientIp =
@@ -55,6 +80,12 @@ export async function POST(context) {
       { success: false, error: result.error || 'verification-failed', details: result.errorCodes },
       { status: 403 }
     )
+  }
+
+  const verifiedAction = result.data?.action
+  const verifiedHostname = String(result.data?.hostname || '').toLowerCase()
+  if (verifiedAction !== action || verifiedHostname !== getRequestHostname(request)) {
+    return Response.json({ success: false, error: 'verification-context-mismatch' }, { status: 403 })
   }
 
   // Create signed clearance cookie

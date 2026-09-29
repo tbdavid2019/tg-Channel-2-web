@@ -4,6 +4,8 @@ import { getChannelInfo } from '../lib/telegram'
 import { normalizeTelegramTarget } from '../lib/telegram/normalize'
 import { getEnv } from '../lib/env'
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+const turnstileEnabled = Boolean(Astro.locals.TURNSTILE_ENABLED && Astro.locals.TURNSTILE_SITE_KEY)
+const turnstileSiteKey = Astro.locals.TURNSTILE_SITE_KEY
 console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
 
 // 若表單提交（或網址帶有 ?channel=），使用者未輸入時預設導向 oliservice
@@ -28,12 +30,18 @@ const channel = ANYCHANNEL
         <h1 id="reader-title" data-i18n="homepageHeading">把頻道內容，讀成清楚的時間線</h1>
         <p class="reader-lede" data-i18n="homepageLead">輸入公開頻道的 username 或連結，直接查看貼文、圖片與日期分組。</p>
 
-        <form action="/" method="get" class="channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀">
+        <form action="/" method="get" class="channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀" data-turnstile-action={turnstileEnabled ? 'channel_search' : undefined}>
           <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
           <div class="channel-form-row">
             <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" class="channel-input" aria-describedby="channel-help channel-error" />
             <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
           </div>
+          {turnstileEnabled && (
+            <>
+              <div class="turnstile-widget" data-turnstile-widget data-sitekey={turnstileSiteKey} data-action="channel_search" aria-label="Cloudflare Turnstile"></div>
+              <p class="turnstile-status" aria-live="polite" hidden></p>
+            </>
+          )}
           <p id="channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
           <p id="channel-error" class="channel-error" role="alert"></p>
         </form>

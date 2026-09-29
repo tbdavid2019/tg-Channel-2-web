@@ -10,6 +10,8 @@ import RandomRecommendation from '../components/random-recommendation.astro'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
 const { channel } = Astro.props
+const turnstileEnabled = Boolean(Astro.locals.TURNSTILE_ENABLED && Astro.locals.TURNSTILE_SITE_KEY)
+const turnstileSiteKey = Astro.locals.TURNSTILE_SITE_KEY
 
 const locale = getEnv(import.meta.env, Astro, 'LOCALE')
 const GA_MEASUREMENT_ID = getEnv(import.meta.env, Astro, 'GA_MEASUREMENT_ID')
@@ -196,9 +198,15 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
           <slot name="aside">
             
             <input class="search-icon" name="icon" type="checkbox" aria-label="開啟搜尋" data-i18n-aria-label="searchToggle" />
-            <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容">
+            <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容" data-turnstile-action={turnstileEnabled ? 'article_search' : undefined}>
               <label class="visually-hidden" for="site-search" data-i18n="searchLabel">搜尋網站內容</label>
-              <input id="site-search" type="search" name="q" placeholder="搜尋文章與標籤" data-i18n-placeholder="searchPlaceholder" />
+              <input id="site-search" type="search" name="q" placeholder="搜尋文章與標籤" data-i18n-placeholder="searchPlaceholder" required />
+              {turnstileEnabled && (
+                <>
+                  <div class="turnstile-widget" data-turnstile-widget data-sitekey={turnstileSiteKey} data-action="article_search" data-size="compact" aria-label="Cloudflare Turnstile"></div>
+                  <p class="turnstile-status" aria-live="polite" hidden></p>
+                </>
+              )}
             </form>
 
             {
@@ -657,5 +665,8 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
     </style>
     <Fragment set:html={getEnv(import.meta.env, Astro, 'FOOTER_INJECT')} />
+    <script>
+      import '../scripts/turnstile-forms.js'
+    </script>
   </body>
 </html>

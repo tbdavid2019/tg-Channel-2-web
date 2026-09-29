@@ -12,6 +12,8 @@ const displayChannel = {
 
 const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 const readerBase = getEnv(import.meta.env, Astro, 'READER_URL') || 'https://telegram.david888.com'
+const turnstileEnabled = Boolean(Astro.locals.TURNSTILE_ENABLED && Astro.locals.TURNSTILE_SITE_KEY)
+const turnstileSiteKey = Astro.locals.TURNSTILE_SITE_KEY
 
 const messages = {
   invite: {
@@ -76,7 +78,7 @@ const message = messages[errorCode] || messages.no_public_preview
     <h1 data-i18n={message.titleKey}>{message.title}</h1>
     <p class="status-description" data-i18n={message.descriptionKey}>{message.description}</p>
 
-    <form action="/" method="get" class="channel-form state-channel-form" id="state-channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀">
+    <form action="/" method="get" class="channel-form state-channel-form" id="state-channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀" data-turnstile-action={turnstileEnabled ? 'channel_search' : undefined}>
       <label class="channel-label" for="state-channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
       <div class="channel-form-row">
         <input
@@ -92,6 +94,12 @@ const message = messages[errorCode] || messages.no_public_preview
         />
         <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
       </div>
+      {turnstileEnabled && (
+        <>
+          <div class="turnstile-widget" data-turnstile-widget data-sitekey={turnstileSiteKey} data-action="channel_search" aria-label="Cloudflare Turnstile"></div>
+          <p class="turnstile-status" aria-live="polite" hidden></p>
+        </>
+      )}
       <p id="state-channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
       <p id="state-channel-error" class="channel-error" role="alert"></p>
     </form>

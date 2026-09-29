@@ -267,6 +267,26 @@ body {
   font: var(--text-control) / 1.4 var(--font-cjk);
 }
 
+.turnstile-widget {
+  min-height: 65px;
+  margin: 10px 0 4px;
+}
+
+.search-form .turnstile-widget {
+  margin: 8px 0 0;
+}
+
+.turnstile-status {
+  margin: 4px 0 0;
+  color: var(--secondary-color);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.turnstile-status.is-error {
+  color: var(--highlight-color);
+}
+
 .search-icon {
   display: none;
 }
