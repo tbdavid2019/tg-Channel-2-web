@@ -267,6 +267,15 @@ body {
   font: var(--text-control) / 1.4 var(--font-cjk);
 }
 
+.search-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--secondary-color);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .turnstile-widget {
   min-height: 65px;
   margin: 10px 0 4px;
