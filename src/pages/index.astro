@@ -31,7 +31,7 @@ const channel = ANYCHANNEL
         <p class="reader-lede" data-i18n="homepageLead">輸入公開頻道的 username 或連結，直接查看貼文、圖片與日期分組。</p>
 
         <form action="/" method="get" class="channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀" data-turnstile-action={turnstileEnabled ? 'channel_search' : undefined}>
-          <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入頻道或群組</label>
+          <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入要閱讀的頻道或群組</label>
           <div class="channel-form-row">
             <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" class="channel-input" aria-describedby="channel-help channel-error" />
             <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
@@ -130,7 +130,7 @@ const channel = ANYCHANNEL
     background: var(--background-color);
     color: var(--foreground-color);
     font-family: var(--font-cjk);
-    font-size: 1rem;
+    font-size: 1.0625rem;
   }
 
   .channel-input::placeholder {
