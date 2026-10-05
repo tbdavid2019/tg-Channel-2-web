@@ -16,8 +16,7 @@ html {
 }
 
 #aside-container {
-  position: sticky;
-  top: 0;
+  position: static;
 }
 
 #aside-container .nav {
@@ -83,12 +82,6 @@ html {
 }
 
 @media screen and (min-width: 600px) {
-  #aside-container {
-    height: 100vh;
-    height: 100svh;
-    overflow-y: auto;
-  }
-
   .search-form {
     display: block;
   }
