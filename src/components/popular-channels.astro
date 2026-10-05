@@ -92,6 +92,15 @@ function getChannelHref(handle) {
     box-shadow: var(--shadows);
   }
 
+  @media screen and (min-width: 1025px) and (min-height: 760px) {
+    .popular-channels {
+      position: sticky;
+      top: calc(72px + 24px);
+      align-self: flex-start;
+      width: 100%;
+    }
+  }
+
   .popular-heading .eyebrow {
     margin: 0 0 6px;
     color: var(--accent-color);
