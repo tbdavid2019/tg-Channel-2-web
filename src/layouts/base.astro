@@ -151,6 +151,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     <meta name="twitter:image:alt" content={`${brand} 公開頻道閱讀器品牌圖`} />
     <script type="application/ld+json" is:inline set:html={structuredData}></script>
     {breadcrumbStructuredData && <script type="application/ld+json" is:inline set:html={breadcrumbStructuredData}></script>}
+    <script is:inline defer src="https://flow.aiurl.tw/script.js?siteId=fa0befe4-904f-43a4-8d95-b2a6012dfbbe"></script>
     {
       GA_MEASUREMENT_ID && (
         <>
