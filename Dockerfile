@@ -1,4 +1,4 @@
-FROM node:lts-slim AS base
+FROM node:24.22.1-slim AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -20,7 +20,7 @@ RUN export $(grep -v '^#' .env.example | xargs) && \
     pnpm run build
 
 # Result image
-FROM node:lts-alpine AS runtime
+FROM node:24.22.1-alpine AS runtime
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
