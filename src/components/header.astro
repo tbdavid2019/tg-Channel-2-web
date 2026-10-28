@@ -212,17 +212,17 @@ if (postMatch) {
       </div>
     </div>
   </div>
-
-  {
-    !channel?.isReaderHome && hideDescription !== 'true' && safeDescriptionHTML.length > 0 && (
-      <div class="channel-intro-banner">
-        <div class="channel-intro-inner">
-          <div class="channel-intro-content" set:html={safeDescriptionHTML} />
-        </div>
-      </div>
-    )
-  }
 </header>
+
+{
+  !channel?.isReaderHome && hideDescription !== 'true' && safeDescriptionHTML.length > 0 && (
+    <div class="channel-intro-banner">
+      <div class="channel-intro-inner">
+        <div class="channel-intro-content" set:html={safeDescriptionHTML} />
+      </div>
+    </div>
+  )
+}
 
 <!-- Quick Channel Modal Dialog -->
 <div
@@ -757,16 +757,16 @@ if (postMatch) {
     filter: invert(34%) sepia(74%) saturate(836%) hue-rotate(344deg) brightness(92%) contrast(94%);
   }
 
-  /* Channel intro banner */
+  /* Channel intro banner (Channel owner announcement - scrolls naturally with page) */
   .channel-intro-banner {
-    border-top: 1px solid var(--card-border-subtle, #ebd9ab);
+    border-bottom: 1px solid var(--card-border);
     background: color-mix(in srgb, var(--canvas) 45%, var(--card-bg));
   }
 
   .channel-intro-inner {
     width: min(1140px, calc(100% - 32px));
     margin: 0 auto;
-    padding: 10px 0;
+    padding: 14px 0;
   }
 
   .channel-intro-content {
