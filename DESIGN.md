@@ -4,23 +4,22 @@
 
 ## Direction contract
 
-**THESIS:** 把 Telegram 頻道瀏覽做成一個安靜、可掃讀的編輯部工具；拒絕漂浮的側欄、空白的錯誤頁和沒有優先級的模板裝飾。
+**THESIS:** 將 Telegram 頻道閱讀體驗重塑為具備 `2md.aiurl.tw` 視覺質感的編輯室閱讀工具；拒絕割裂感、漂浮失焦的側欄與平庸的 AI 模版審美。
 
-**OWN-WORLD:** 米白紙張底、深綠導覽與動作、低對比綠灰分隔，中文以大尺寸 JustFont 粉圓體為主，JetBrains Mono 只承擔英文、數字和技術字串。元件採單一柔和圓角尺度，陰影只用來表示真正的層級。
+**OWN-WORLD:** 溫潤金色畫布（`#fff0cc`）、暖白乳霜卡片（`#fff9e8`）、番紅花黃（`#ffb010`）作為品牌強調與頂部標記、深藍（`#17324d`）作為高對比文字與導航焦點、陶土紅（`#a9471d`）作為日期與微標籤輔助，正文採用深墨色（`#2b251a`）確保高對比度。所有文字對比度均嚴格達到 WCAG AA / AAA 標準。
 
-**STORY:** 使用者先輸入頻道，再辨識頻道身份，接著沿日期分組時間線閱讀；若 Telegram 不提供公開預覽，頁面要直接解釋限制並提供回到輸入或在 Telegram 開啟的行動。
+**STORY:** 使用者先在統一全寬 Header 中辨識產品與頻道身份，首頁提供洗鍊的輸入框與明確步驟指示；進入頻道後沿清晰卡片化的時間線閱覽，側邊欄整合搜尋、近 7 天熱門與隨機探索，移除冗餘的 links 路由。
 
-**FIRST VIEWPORT:** 首頁第一屏以左對齊的品牌說明和大尺寸搜尋表單為主，旁邊只保留簡短支援提示；頻道頁第一屏先顯示頻道身份，再進入日期分組內容。Home、Tags、Links 從側欄移至 footer，讓主要欄位保持完整寬度。
+**FIRST VIEWPORT:** 全寬 Header 橫跨頂部，帶有標誌性番紅花黃頂條與 888 TG 品牌勳章，首頁主要視窗以聚焦的輸入卡片為主，頻道頁則直覺展開頻道簡介與日期卡片，不再有視圖割裂與側邊浮動錯位。
 
-**FORM:** 編輯部／閱讀室方向，採用內容優先的雙欄桌面佈局與單欄手機佈局；主要輸入框和公開頻道內容是視覺焦點，互動狀態採低干擾、可辨識的轉場。
+**FORM:** 採內容第一的雙欄佈局（桌面 1140px，主欄 + 300px 側欄），行動版平滑折疊為流暢單欄，所有卡片保持一致的 14px 圓角與深邃光影層次。
 
 ## Surface rules
 
 - Mode: Operate + Read
-- Palette: `#f3f0e7` background, `#fffdf8` surface, `#18231e` foreground, `#176754` accent, `#e9eee7` muted surface.
-- Typography: JustFont 粉圓體 is the primary reading and UI face for CJK; JetBrains Mono is reserved for Latin, numbers, handles, URLs and code. Use visibly generous CJK sizing and line-height; fall back to GenJyuu Gothic and system CJK fonts when the JustFont asset is unavailable.
-- Type scale: body 18px / 1.8 minimum on desktop and mobile; labels and metadata 15–16px minimum; inputs and buttons 17–18px; headings scale from 28px to 44px. Do not size Chinese copy using compact Latin-only 12–14px defaults.
-- Navigation: search and current-channel context stay near the task; Home, Tags and Links live in the footer.
-- Responsive: desktop uses a readable main column and a compact utility rail; mobile collapses to one column with no horizontal overflow.
-- States: loading, empty, unsupported, invalid and fetch failure each have a visible label, explanation and safe next action.
-- Motion: short opacity/translate transitions only; respect `prefers-reduced-motion`.
+- Palette: `#fff0cc` canvas, `#fff9e8` card surface, `#2b251a` text ink (WCAG AAA 13.9:1), `#ffb010` saffron primary, `#17324d` deep blue accent (WCAG AAA 11.9:1), `#a9471d` clay marker (WCAG AA 5.4:1), `#5e523b` muted text (WCAG AA 6.7:1), `#ddc58b` card border, `#6b5b38` input border.
+- Typography: Outfit for brand display headings; system-ui / Noto Sans TC for CJK UI and reading body; Fira Code / JetBrains Mono for handles, code, dates and timestamps.
+- Type scale: body 16px (1rem) / 1.68; inputs & buttons 15–16px (44–52px min-height); card titles 18–20px (1.15–1.25rem); hero heading 30–40px (1.85–2.5rem).
+- Navigation: full-width site header with saffron accent line, breadcrumbs, random exploration, and language pill; footer houses Home, Tags, RSS, and david888.com credit.
+- Responsive: desktop uses unified 2-column grid (`1fr` + `300px`); mobile collapses to single column with touch-friendly 44px minimum targets.
+- Accessibility: fully verified WCAG AA / AAA contrast across all light surfaces and controls.

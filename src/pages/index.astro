@@ -6,7 +6,6 @@ import { getEnv } from '../lib/env'
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 const turnstileEnabled = Boolean(Astro.locals.TURNSTILE_ENABLED && Astro.locals.TURNSTILE_SITE_KEY)
 const turnstileSiteKey = Astro.locals.TURNSTILE_SITE_KEY
-console.log(`[DEBUG] ANYCHANNEL lookup: ${getEnv(import.meta.env, Astro, 'ANYCHANNEL')} (Is True: ${ANYCHANNEL})`)
 
 // 若表單提交（或網址帶有 ?channel=），使用者未輸入時預設導向 oliservice
 if (ANYCHANNEL && Astro.url.searchParams.has('channel')) {
@@ -65,47 +64,55 @@ const channel = ANYCHANNEL
 
 <style>
   .reader-hero {
-    padding: clamp(32px, 6vw, 72px) clamp(22px, 5vw, 64px);
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--box-border-radius);
+    padding: clamp(28px, 4vw, 44px) clamp(20px, 3.5vw, 36px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
     box-shadow: var(--shadows);
   }
 
   .eyebrow {
-    margin: 0 0 18px;
-    color: var(--accent-color);
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    background: var(--canvas);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--deep-blue);
     font-family: var(--font-mono);
-    font-size: 0.875rem;
-    letter-spacing: 0.08em;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    margin: 0 0 16px;
+    letter-spacing: 0.04em;
   }
 
   .reader-hero h1 {
-    max-width: 18ch;
     margin: 0;
-    color: var(--foreground-color);
-    font-size: clamp(2rem, 5vw, 3.75rem);
-    line-height: 1.35;
-    letter-spacing: -0.04em;
+    color: var(--deep-blue);
+    font-family: var(--font-display);
+    font-size: clamp(1.85rem, 4.5vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
   }
 
   .reader-lede {
-    max-width: 48ch;
-    margin: 24px 0 40px;
-    color: var(--secondary-color);
-    font-size: 1.125rem;
-    line-height: 1.8;
+    max-width: 54ch;
+    margin: 16px 0 28px;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.65;
   }
 
   .channel-form {
-    max-width: 780px;
+    max-width: 100%;
   }
 
   .channel-label {
     display: block;
-    margin-bottom: 12px;
-    color: var(--foreground-color);
-    font-size: 1.0625rem;
+    margin-bottom: 10px;
+    color: var(--deep-blue);
+    font-size: 0.95rem;
     font-weight: 700;
   }
 
@@ -116,43 +123,52 @@ const channel = ANYCHANNEL
   }
 
   .channel-input {
-    min-height: 56px;
+    min-height: 52px;
     min-width: 0;
-    padding: 12px 16px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--box-border-radius);
-    background: var(--background-color);
-    color: var(--foreground-color);
-    font-family: var(--font-cjk);
-    font-size: 1.0625rem;
+    padding: 12px 18px;
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    transition: all 0.15s ease;
   }
 
   .channel-input::placeholder {
-    color: var(--secondary-color);
-    opacity: 0.85;
+    color: var(--text-muted);
+    opacity: 0.75;
+  }
+
+  .channel-input:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 1px;
+    border-color: var(--deep-blue);
   }
 
   .channel-input[aria-invalid='true'] {
-    border-color: var(--highlight-color);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--highlight-color) 18%, transparent);
+    border-color: var(--clay);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--clay) 20%, transparent);
   }
 
   .channel-submit {
-    min-height: 56px;
-    padding: 12px 24px;
-    border: 1px solid var(--accent-color);
-    border-radius: var(--box-border-radius);
-    background: var(--accent-color);
-    color: #fffdf8;
+    min-height: 52px;
+    padding: 12px 28px;
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    background: var(--primary);
+    color: var(--ink);
     cursor: pointer;
-    font-family: var(--font-cjk);
-    font-size: 1.125rem;
+    font-family: var(--font-ui);
+    font-size: 1.05rem;
     font-weight: 700;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .channel-submit:hover {
-    background: var(--foreground-color);
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 176, 16, 0.35);
   }
 
   .channel-submit:active {
@@ -161,10 +177,13 @@ const channel = ANYCHANNEL
 
   .channel-help,
   .channel-error {
-    margin: 12px 0 0;
-    color: var(--secondary-color);
-    font-size: 1rem;
-    line-height: 1.6;
+    margin: 10px 0 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .channel-help {
+    color: var(--text-muted);
   }
 
   .channel-error:empty {
@@ -172,95 +191,99 @@ const channel = ANYCHANNEL
   }
 
   .channel-error {
-    color: var(--highlight-color);
+    color: var(--clay);
+    font-weight: 600;
   }
 
   .reader-note {
     display: flex;
     gap: 10px;
-    align-items: flex-start;
-    max-width: 62ch;
-    margin: 32px 0 0;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-    color: var(--secondary-color);
-    font-size: 1rem;
-    line-height: 1.7;
+    align-items: center;
+    margin: 28px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--card-border-subtle);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 
   .reader-note-mark {
     display: inline-grid;
     flex: 0 0 auto;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     place-items: center;
-    border: 1px solid var(--accent-color);
+    border: 1.5px solid var(--deep-blue);
     border-radius: 50%;
-    color: var(--accent-color);
+    color: var(--deep-blue);
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 0.78rem;
+    font-weight: 700;
   }
 
+  /* 3-Step feature guide matching 2md.aiurl.tw cards */
   .reader-points {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    margin-top: 28px;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    gap: 14px;
+    margin-top: 24px;
   }
 
   .reader-point {
     display: flex;
-    gap: 14px;
-    padding: 20px 18px;
-    border-right: 1px solid var(--border-color);
-  }
-
-  .reader-point:last-child {
-    border-right: 0;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(43, 37, 26, 0.04);
   }
 
   .step-number {
-    color: var(--accent-color);
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    line-height: 1.8;
+    font-family: var(--font-brand);
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--deep-blue);
+    background: var(--canvas);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
   }
 
   .reader-point div {
     display: grid;
-    gap: 4px;
+    gap: 3px;
   }
 
   .reader-point strong {
-    color: var(--foreground-color);
-    font-size: 1rem;
+    color: var(--deep-blue);
+    font-size: 0.95rem;
+    font-weight: 700;
   }
 
   .reader-point span:last-child {
-    color: var(--secondary-color);
-    font-size: 0.9375rem;
-    line-height: 1.6;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
   }
 
   @media screen and (max-width: 640px) {
+    .channel-form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .channel-submit {
+      width: 100%;
+    }
+
     .reader-points {
       grid-template-columns: 1fr;
-    }
-
-    .popular-channels {
-      grid-template-columns: 1fr;
-      gap: 20px;
-      padding: 22px 18px;
-    }
-
-    .reader-point {
-      border-right: 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .reader-point:last-child {
-      border-bottom: 0;
+      gap: 10px;
     }
   }
 </style>

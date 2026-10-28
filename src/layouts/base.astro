@@ -27,7 +27,7 @@ const twitter = getEnv(import.meta.env, Astro, 'TWITTER')
 const twitterHandle = String(twitter || 'oobwei').replace(/^@/, '')
 const pageTitle = channel?.isReaderHome
   ? `${brand}｜公開頻道與文章閱讀`
-  : seo?.title && ['Tags', 'Links'].includes(seo.title)
+  : seo?.title && seo.title === 'Tags'
     ? `${seo.title}｜${brand}`
     : `${channel?.title || brand}｜Telegram 公開頻道閱讀器`
 const genericDescription = '888 Telegram 頻道瀏覽器：輸入公開頻道的 @username、裸 username 或 t.me 連結，閱讀文章、圖片與日期分組內容；私人、邀請連結與沒有公開預覽的內容會顯示支援狀態。'
@@ -86,15 +86,6 @@ const searchAction = '/search/input'
 const TAGS = getEnv(import.meta.env, Astro, 'TAGS')
 const tags = TAGS ? TAGS.split(',').filter(Boolean) : []
 
-const LINKS = getEnv(import.meta.env, Astro, 'LINKS')
-const links = (LINKS || '')
-  .split(';')
-  .filter(Boolean)
-  .map((link) => {
-    const [title, href] = link.split(',')
-    return { title, href }
-  })
-
 const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
   .split(';')
   .filter(Boolean)
@@ -109,11 +100,15 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#126b57" />
+    <meta name="theme-color" content="#ffb010" />
     <meta name="application-name" content={brand} />
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
     <link rel="canonical" href={canonical} />
+    <!-- Google Fonts: Outfit, Fira Code, Noto Sans TC (2md.aiurl.tw typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href={assetUrl('/favicon.svg')} />
     <link rel="icon" type="image/png" sizes="32x32" href={assetUrl('/favicon-32x32.png')} />
     <link rel="shortcut icon" href={assetUrl('/favicon.ico')} />
@@ -192,17 +187,21 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       </aside>
       
       <div id="container">
-        <div id="main-container">
+        <main id="main-container">
           <slot />
-        </div>
-        <div id="aside-container">
+        </main>
+        <aside id="aside-container">
           <slot name="aside">
             
-            <input class="search-icon" name="icon" type="checkbox" aria-label="開啟文章搜尋" data-i18n-aria-label="searchToggle" />
-            <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容" data-turnstile-action={turnstileEnabled ? 'article_search' : undefined}>
-              <label class="search-label" for="site-search" data-i18n="searchLabel">搜尋文章與標籤</label>
-              <input id="site-search" type="search" name="q" placeholder="輸入文章關鍵字或標籤" data-i18n-placeholder="searchPlaceholder" required />
-            </form>
+            <div class="sidebar-card sidebar-search">
+              <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容" data-turnstile-action={turnstileEnabled ? 'article_search' : undefined}>
+                <label class="sidebar-card-title search-label" for="site-search" data-i18n="searchLabel">搜尋文章與標籤</label>
+                <div class="sidebar-search-row">
+                  <input id="site-search" type="search" name="q" placeholder="輸入文章關鍵字或標籤" data-i18n-placeholder="searchPlaceholder" required />
+                  <button type="submit" class="sidebar-search-btn" aria-label="搜尋" title="搜尋">🔍</button>
+                </div>
+              </form>
+            </div>
 
             {
               getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true' ? (
@@ -231,22 +230,6 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
 
             <PopularChannels currentHandle={channel?.handle} />
 
-            {links.length > 0 && (
-              <div class="sidebar-card sidebar-links">
-                <h3 class="sidebar-card-title" data-i18n="links">相關連結</h3>
-                <ul class="sidebar-links-list">
-                  {links.map((link) => (
-                    <li>
-                      <a href={link.href} target="_blank" rel="noopener" class="sidebar-link-item">
-                        <span>{link.title}</span>
-                        <span class="sidebar-link-arrow">↗</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
             {
               getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT') && (
                 <div class="sidebar-inject" set:html={getEnv(import.meta.env, Astro, 'SIDEBAR_INJECT')} />
@@ -254,7 +237,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             }
           
           </slot>
-        </div>
+        </aside>
       </div>
     </div>
 
@@ -269,7 +252,6 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         <nav class="footer-nav" aria-label="網站導覽">
           <a href={SITE_URL} class={`footer-link ${Astro.url.pathname === '/' ? 'current' : ''}`} data-i18n="home">首頁</a>
           {tags.length > 0 && <a href={`${SITE_URL}tags`} class={`footer-link ${Astro.url.pathname === '/tags' ? 'current' : ''}`} data-i18n="tags">標籤</a>}
-          {links.length > 0 && <a href={`${SITE_URL}links`} class={`footer-link ${Astro.url.pathname === '/links' ? 'current' : ''}`} data-i18n="links">連結</a>}
         </nav>
 
         <div class="footer-actions">
@@ -422,8 +404,8 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
 
         if (isReaderHome) {
           document.title = dictionary.homePageTitle || (selectedLanguage === 'en' ? '888 Telegram Channel Browser | Public Channel & Post Reader' : '888 Telegram 頻道瀏覽器｜公開頻道與文章閱讀')
-        } else if (currentSeoTitle && ['Tags', 'Links'].includes(currentSeoTitle)) {
-          const transSeoTitle = currentSeoTitle === 'Tags' ? dictionary.tags : dictionary.links
+        } else if (currentSeoTitle && currentSeoTitle === 'Tags') {
+          const transSeoTitle = dictionary.tags
           document.title = `${transSeoTitle}｜${dictionary.brand}`
         } else if (currentChannelTitle) {
           document.title = selectedLanguage === 'en'
@@ -496,14 +478,12 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     </script>
     <script src="../scripts/webmcp.js"></script>
     <a href="#wrapper" id="back-to-top" aria-label="Back to top">
-      <img {...backToTopIcon} alt="Back to Top" />
+      <img src={backToTopIcon.src || backToTopIcon} alt="Back to Top" />
     </a>
     <style>
       .lang-prompt-banner {
-        width: 100%;
-        max-width: 1440px;
-        margin: 0 auto;
-        padding: 12px 20px 0 20px;
+        width: min(1140px, calc(100% - 32px));
+        margin: 12px auto 0;
         box-sizing: border-box;
       }
 
@@ -512,12 +492,12 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 10px 16px;
-        border-radius: 10px;
-        background: #f4f0ff;
-        border: 1px solid #d4ccf7;
-        color: #2b1d4a;
-        box-shadow: 0 2px 8px rgba(112, 56, 232, 0.08);
+        padding: 10px 18px;
+        border-radius: var(--radius-sm);
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        color: var(--text);
+        box-shadow: var(--shadows);
         font-size: 0.875rem;
       }
 
@@ -530,7 +510,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
 
       .lang-prompt-icon {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         flex-shrink: 0;
       }
 
@@ -543,14 +523,15 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
 
       .lang-prompt-text {
         margin: 0;
-        font-weight: 600;
+        font-weight: 700;
+        color: var(--deep-blue);
         line-height: 1.4;
       }
 
       .lang-prompt-sub {
         margin: 0;
         font-size: 0.78rem;
-        opacity: 0.75;
+        color: var(--text-muted);
         line-height: 1.35;
       }
 
@@ -565,39 +546,39 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 5px 12px;
-        min-height: 30px;
+        padding: 6px 14px;
+        min-height: 32px;
         border-radius: 6px;
-        font-family: var(--font-cjk);
+        font-family: var(--font-ui);
         font-size: 0.8125rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.18s ease;
+        transition: all 0.15s ease;
         white-space: nowrap;
       }
 
       .lang-prompt-btn-primary {
-        background: #7038e8;
-        color: #ffffff;
-        border: 1px solid #7038e8;
-        box-shadow: 0 1px 3px rgba(112, 56, 232, 0.3);
+        background: var(--deep-blue);
+        color: var(--warm-cream);
+        border: 1px solid var(--deep-blue);
       }
 
       .lang-prompt-btn-primary:hover {
-        background: #5b2bc2;
-        border-color: #5b2bc2;
+        background: var(--primary);
+        border-color: var(--ink);
+        color: var(--ink);
       }
 
       .lang-prompt-btn-secondary {
-        background: transparent;
-        color: #583ba0;
-        border: 1px solid #c2b4ed;
+        background: var(--input-bg);
+        color: var(--deep-blue);
+        border: 1.5px solid var(--card-border);
       }
 
       .lang-prompt-btn-secondary:hover {
-        background: rgba(112, 56, 232, 0.08);
-        border-color: #7038e8;
-        color: #3b227a;
+        background: var(--primary);
+        border-color: var(--input-border);
+        color: var(--ink);
       }
 
       .lang-prompt-close-btn {
@@ -608,7 +589,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         height: 28px;
         border: none;
         background: transparent;
-        color: #7c7096;
+        color: var(--text-muted);
         border-radius: 50%;
         cursor: pointer;
         font-size: 1rem;
@@ -617,33 +598,8 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
 
       .lang-prompt-close-btn:hover {
-        background: rgba(0, 0, 0, 0.06);
-        color: #1a1a24;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .lang-prompt-inner {
-          background: #1f1833;
-          border-color: #4c3a7a;
-          color: #f1edfc;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-        }
-        .lang-prompt-btn-secondary {
-          color: #d6ccfa;
-          border-color: #5b468e;
-        }
-        .lang-prompt-btn-secondary:hover {
-          background: rgba(112, 56, 232, 0.2);
-          color: #ffffff;
-          border-color: #7038e8;
-        }
-        .lang-prompt-close-btn {
-          color: #a497c2;
-        }
-        .lang-prompt-close-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: #ffffff;
-        }
+        background: var(--canvas);
+        color: var(--ink);
       }
 
       @media screen and (max-width: 640px) {

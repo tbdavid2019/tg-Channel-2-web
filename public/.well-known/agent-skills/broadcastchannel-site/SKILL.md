@@ -14,7 +14,6 @@ Use this skill when you need to read public Telegram channel content from `https
 - `/` is the homepage and includes a channel switcher because this deployment enables `ANYCHANNEL="true"`.
 - `/{channel}` serves a specific public Telegram channel.
 - `/{channel}/posts/{id}` serves a single post page.
-- `/{channel}/links` serves configured outbound links.
 
 ## Feeds
 

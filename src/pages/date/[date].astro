@@ -67,10 +67,8 @@ try {
 const seo = { noindex: true }
 ---
 
-<Layout channel={channel} id="main-container">
-  <slot name="header">
-    <Header channel={channel} />
-  </slot>
+<Layout channel={channel}>
+  <Header slot="header" channel={channel} />
   
   <Calendar />
   

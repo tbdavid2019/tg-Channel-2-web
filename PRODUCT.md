@@ -26,13 +26,14 @@ web
 
 - Astro 靜態／伺服器渲染頁面，內容由 Telegram 公開網頁資料整理而來。
 - 公開頻道通常可顯示；私有連結、邀請連結、沒有公開訊息預覽的群組，以及機器人不是本閱讀器的訊息流，必須明確呈現限制。
-- 目前已有頻道、日期、前後頁、搜尋、標籤、RSS 與社群連結等功能；此次改版不得破壞這些路由與內容功能。
+- 目前已有頻道、日期、前後頁、搜尋、標籤、RSS 與社群連結等功能（已移除多餘 links 路由）；此次改版不得破壞這些路由與內容功能。
 - 站點由 Docker 與 CI/CD 部署，UI 改動需通過測試與 production build。
 
 ## Brand Commitments
 
-- 既有米白＋深綠品牌感予以保留。
-- 中文閱讀是主要情境，正文與所有中文介面文字優先使用 JustFont 粉圓體；JetBrains Mono 只用於英文、數字、username、URL、程式碼與技術資訊。若 JustFont 字型檔未提供則退回現有中文字體與系統 fallback。
+- 配色與版型對齊 2md.aiurl.tw 溫潤高質感風格（番紅花黃 #ffb010、深藍 #17324d、暖白乳霜 #fff9e8、溫暖畫布 #fff0cc、深墨 #2b251a）。
+- 中文與介面閱讀以 Outfit + 現代清晰黑體（system-ui / Noto Sans TC）為主，提供清晰大字級與舒適行高，英文/數字/程式碼使用 Fira Code / JetBrains Mono。
+- 嚴格遵守 WCAG AA/AAA 可讀性色彩對比度規範。
 - 介面語言以繁體中文為主，Telegram username、URL、程式碼等維持原文。
 
 ## Evidence on Hand

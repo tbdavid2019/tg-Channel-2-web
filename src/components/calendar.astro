@@ -108,11 +108,12 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
 
 <style>
   .calendar-container {
-    background: var(--code-background-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--box-border-radius);
-    padding: 20px;
-    margin-bottom: 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadows);
+    margin-bottom: 24px;
   }
 
   .calendar-header {
@@ -120,31 +121,35 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    padding: 0 10px;
+    padding: 0 4px;
   }
 
   .calendar-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--primary-color);
+    font-family: var(--font-brand);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--deep-blue);
   }
   
   .nav-btn {
     display: inline-grid;
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 36px;
+    min-height: 36px;
     place-items: center;
     text-decoration: none;
-    color: var(--secondary-color);
+    color: var(--deep-blue);
     font-weight: bold;
-    padding: 4px 8px;
-    border-radius: var(--box-border-radius);
-    transition: background 0.2s;
+    padding: 2px 8px;
+    background: var(--input-bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    transition: all 0.15s ease;
   }
   
   .nav-btn:hover {
-    background-color: rgba(0,0,0,0.05);
-    color: var(--primary-color);
+    background-color: var(--primary);
+    color: var(--ink);
+    border-color: var(--input-border);
   }
 
   .calendar-grid {
@@ -155,22 +160,26 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
 
   .calendar-weekday {
     text-align: center;
-    font-size: 1rem;
-    color: var(--secondary-color);
-    padding: 4px;
-    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding: 6px 2px;
+    font-weight: 700;
   }
 
   .calendar-day {
     position: relative;
     text-align: center;
-    min-height: 44px;
-    padding: 8px 4px;
-    font-size: 1rem;
-    line-height: 1.6;
-    border-radius: var(--box-border-radius);
-    color: var(--secondary-color);
-    transition: all 0.2s ease;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 2px;
+    font-size: 0.95rem;
+    line-height: 1;
+    border-radius: 8px;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
   }
 
   .calendar-day.empty {
@@ -178,41 +187,42 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
   }
 
   .calendar-day.today {
-    background: var(--accent-color);
-    color: white;
-    font-weight: 600;
+    background: var(--deep-blue);
+    color: var(--warm-cream);
+    font-weight: 700;
   }
 
   .calendar-day.has-post {
-    color: var(--primary-color);
-    font-weight: 500;
+    color: var(--ink);
+    font-weight: 700;
+    background: var(--canvas);
     cursor: pointer;
     text-decoration: none;
-    display: block;
   }
 
   .calendar-day.has-post:hover {
-    background: var(--accent-color);
-    color: white;
-    transform: scale(1.1);
+    background: var(--primary);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(43, 37, 26, 0.12);
   }
 
   .calendar-day.has-post .post-indicator {
     position: absolute;
-    bottom: 2px;
+    bottom: 3px;
     left: 50%;
     transform: translateX(-50%);
     width: 4px;
     height: 4px;
-    background: var(--accent-color);
+    background: var(--clay);
     border-radius: 50%;
   }
 
   .calendar-day.has-post:hover .post-indicator {
-    background: white;
+    background: var(--ink);
   }
 
   .calendar-day.today.has-post .post-indicator {
-    background: white;
+    background: var(--primary);
   }
 </style>

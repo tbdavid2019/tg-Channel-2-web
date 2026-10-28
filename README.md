@@ -86,7 +86,7 @@ SIDEBAR_INJECT='<ins class="adsbygoogle" data-ad-slot="1234567890"></ins>'
 | `/`                     | 頻道首頁與最新文章。     |
 | `/posts/:id`            | 單篇文章。               |
 | `/date/:date`           | 指定日期的文章。         |
-| `/tags`、`/links`       | 標籤與連結頁。           |
+| `/tags`                 | 標籤頁。                 |
 | `/rss.xml`、`/rss.json` | 訂閱來源。               |
 | `/sitemap.xml`          | Sitemap。                |
 | `/llms.txt`             | 給 AI agent 讀取的網站摘要與重要入口。 |
@@ -113,7 +113,3 @@ src/pages/       Astro routes、RSS 與 sitemap
 src/assets/      全站與文章樣式
 public/          靜態資產、字體與 agent 文件
 ```
-
-## 致謝
-
-本專案基於 [Miantiao-me](https://github.com/miantiao-me) 的 [BroadcastChannel](https://github.com/miantiao-me/BroadcastChannel) 延伸。

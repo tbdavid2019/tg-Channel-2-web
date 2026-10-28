@@ -13,10 +13,8 @@ channel.seo = {
 const tags = (getEnv(import.meta.env, Astro, 'TAGS') || '').split(',')
 ---
 
-<Layout channel={channel} id="main-container">
-  <slot name="header">
-    <Header channel={channel} />
-  </slot>
+<Layout channel={channel}>
+  <Header slot="header" channel={channel} />
 
   <h1 class="section-title" data-i18n="tags">標籤</h1>
 
