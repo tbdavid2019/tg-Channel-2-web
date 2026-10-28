@@ -161,7 +161,7 @@ if (isItem && primaryPost) {
           {tocItems.map((item, idx) => (
             <a
               href={`#${item.targetId}`}
-              class={`toc-link ${idx === 0 ? 'is-active' : ''} ${item.level === 3 ? 'is-level-sub' : ''}`}
+              class={`toc-link ${idx === 0 ? 'is-active' : ''} ${item.level === 3 ? 'is-level-sub' : ''} ${item.isAd ? 'is-ad' : ''}`}
               data-target={item.targetId}
               role="listitem"
               title={item.fullTitle}
@@ -233,7 +233,7 @@ if (isItem && primaryPost) {
           {tocItems.map((item, idx) => (
             <a
               href={`#${item.targetId}`}
-              class={`mobile-toc-item ${idx === 0 ? 'is-active' : ''}`}
+              class={`mobile-toc-item ${idx === 0 ? 'is-active' : ''} ${item.isAd ? 'is-ad' : ''}`}
               data-target={item.targetId}
               role="listitem"
             >

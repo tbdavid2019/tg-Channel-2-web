@@ -108,8 +108,14 @@ export function savePosts(posts, channel = '') {
     const existingIndex = channelMap.get(key)
     const existingPost = existingIndex !== undefined ? db.posts[existingIndex] : null
 
-    // Restore memorized isAd if present
-    const isAd = post.isAd !== undefined ? post.isAd : existingPost?.isAd
+    // 1. Instant synchronous heuristic check for explicit promo tags and keywords
+    const text = post.text || post.title || ''
+    const hasPromoTag = /(?:#(?:广告|廣告|商業推廣|商业推广|系统推送|互推|引流|赞助|贊助))/i.test(text)
+    const hasExplicitPromo = /(?:一键解锁|高速专线|多端同时在线|专业加密隧道|USDT支付|首充|特惠套餐|8\.8折)/i.test(text)
+    const heuristicAd = (hasPromoTag || hasExplicitPromo) ? true : undefined
+
+    // Restore memorized isAd if present, or apply heuristic decision
+    const isAd = post.isAd !== undefined ? post.isAd : (existingPost?.isAd !== undefined ? existingPost.isAd : heuristicAd)
     if (isAd !== undefined) {
       post.isAd = isAd
     }

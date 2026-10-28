@@ -18,13 +18,11 @@ const { channel, before = true, after = true, isItem = false, showCalendar = tru
 const posts = channel.posts ?? []
 const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
 
-// Save posts to database for indexing
-let savePosts
+// Save posts to database for indexing and fast ad classification
 try {
   const db = await import('../lib/db')
-  savePosts = db.savePosts
-  if (posts.length > 0) {
-    savePosts(posts, channel.handle)
+  if (posts.length > 0 && db.savePosts) {
+    db.savePosts(posts, channel?.handle)
   }
 } catch (e) {
   console.error('Failed to save posts to database:', e.message)

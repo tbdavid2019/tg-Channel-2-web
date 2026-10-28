@@ -90,6 +90,9 @@ export const uiTranslations = {
     mobileTocToggle: '📑 目錄',
     closeToc: '關閉目錄',
     adBadge: '🛡️ 推廣內容',
+    adFilteredTag: '已自動過濾推廣內容',
+    expandAd: '展開查看',
+    collapseAd: '收合內容',
   },
   en: {
     brand: '888 Telegram Channel Browser',
@@ -182,5 +185,8 @@ export const uiTranslations = {
     mobileTocToggle: '📑 Contents',
     closeToc: 'Close contents',
     adBadge: '🛡️ Sponsored',
+    adFilteredTag: 'Promotional content filtered',
+    expandAd: 'Show content',
+    collapseAd: 'Collapse',
   },
 }

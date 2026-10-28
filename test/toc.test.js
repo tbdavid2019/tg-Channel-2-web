@@ -162,4 +162,14 @@ test('buildTimelineToc generates structured navigation items for posts list', ()
   assert.equal(toc[2].targetId, 'post-503')
   assert.equal(toc[2].title, '🎬 影音訊息 #503')
   assert.equal(toc[2].time, '15:00')
+
+  // 測試 contains isAd 的貼文在 TOC 中標註盾牌與推廣字樣
+  const postsWithAd = [
+    { id: 991, title: '正常頻道更新', datetime: '2026-10-28T09:00:00Z', isAd: false },
+    { id: 992, title: '飞鸟VPN 特惠方案', datetime: '2026-10-28T08:00:00Z', isAd: true },
+  ]
+  const tocWithAd = buildTimelineToc(postsWithAd, 'UTC')
+  assert.equal(tocWithAd[0].title, '正常頻道更新')
+  assert.equal(tocWithAd[1].title, '🛡️ 飞鸟VPN 特惠方案')
+  assert.equal(tocWithAd[1].isAd, true)
 })

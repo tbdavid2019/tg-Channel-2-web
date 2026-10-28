@@ -32,13 +32,23 @@ export async function detectIsAd(text, options = {}) {
   const timeoutMs = options.timeoutMs || CLEF_TIMEOUT_MS
   const threshold = options.threshold ?? 0.70
 
+  // 0. Instant heuristic detection for explicit promo tags and typical sponsor patterns
+  if (!options.skipHeuristics) {
+    const hasPromoTag = /(?:#(?:广告|廣告|商業推廣|商业推广|系统推送|互推|引流|赞助|贊助))/i.test(text)
+    const hasExplicitPromo = /(?:一键解锁|高速专线|多端同时在线|专业加密隧道|USDT支付|首充|特惠套餐|8\.8折)/i.test(text)
+    if (hasPromoTag || hasExplicitPromo) {
+      return true
+    }
+  }
+
   const payload = {
     model: 'clef-flash',
     state: clean.slice(0, 1000),
     questions: {
       is_ad: {
         type: 'noul',
-        instructions: '這篇貼文是否為商業推廣、導流廣告、詐騙、招攬會員、代購或買賣推薦？',
+        instructions:
+          'Determine if this Telegram post is an explicit commercial ad, paid sponsor, bot promotion, VPN/proxy service promotion, casino/gambling ad, crypto shilling, or channel cross-promotion (#互推/#系统推送/#引流). Free software, game, or tool resource sharing by the channel author is NOT an ad. Is it a commercial advertisement or promotional push?',
       },
     },
   }

@@ -11,6 +11,13 @@ test('detectIsAd returns false on empty, short, or invalid inputs without networ
   assert.equal(await detectIsAd(undefined), false)
 })
 
+test('detectIsAd detects explicit promo tags and patterns instantly without network calls', async () => {
+  assert.equal(await detectIsAd('#系统推送 中文TG搜索bot，输入关键词发送'), true)
+  assert.equal(await detectIsAd('飞鸟VPN | 一键解锁全球网络 高速专线'), true)
+  assert.equal(await detectIsAd('本频道开启 #互推 合作，欢迎联系'), true)
+  assert.equal(await detectIsAd('全场 8.8折 优惠，支持 USDT支付'), true)
+})
+
 test('detectIsAd correctly uses primary endpoint and parses noul probability', async () => {
   const server = http.createServer((req, res) => {
     let body = ''

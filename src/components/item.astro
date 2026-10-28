@@ -4,7 +4,7 @@ import 'prismjs/themes/prism.css'
 import dayjs from '../lib/dayjs'
 import { getEnv } from '../lib/env'
 import { sanitizeContent } from '../lib/telegram/sanitize'
-import { extractArticleSections, injectSectionAnchors } from '../lib/telegram/toc'
+import { extractArticleSections, injectSectionAnchors, extractPostExcerpt } from '../lib/telegram/toc'
 
 const locale = getEnv(import.meta.env, Astro, 'LOCALE')
 const timezone = getEnv(import.meta.env, Astro, 'TIMEZONE')
@@ -34,9 +34,11 @@ if (isItem && safeContent.length > 0) {
   })
   finalContent = injectSectionAnchors(safeContent, sections)
 }
+
+const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
 ---
 
-<article class="item" id={`post-${post.id}`} style={{ 'view-transition-name': `post-${post.id}` }}>
+<article class={`item ${post.isAd ? 'is-ad-item' : ''}`} id={`post-${post.id}`} style={{ 'view-transition-name': `post-${post.id}` }}>
   <div class="time-box">
     <div class="dot"></div>
     <div class="time">
@@ -50,19 +52,58 @@ if (isItem && safeContent.length > 0) {
       </span>
     )}
   </div>
-  {finalContent.length > 0 && <div class={`text-box content`} id={isItem ? 'post-content' : undefined} set:html={finalContent} />}
-  {
-    post.tags.length > 0 && (
-      <div class="tag-box" id={isItem ? 'post-tags' : undefined} style={post.content.length === 0 ? 'padding-top: 30px;' : ''}>
-        <div class="tag-icon" />
-        {post.tags.map((tag) => (
-          <a href={`/search/result?q=${encodeURIComponent(tag)}`} title={tag} class="tag">
-            {tag}
-          </a>
-        ))}
+
+  {post.isAd && !isItem ? (
+    <div class="ad-collapsed-card">
+      <div class="ad-collapsed-header">
+        <div class="ad-collapsed-meta">
+          <span class="ad-collapsed-icon" aria-hidden="true">🛡️</span>
+          <span class="ad-collapsed-badge" data-i18n="adFilteredTag">已自動過濾推廣內容</span>
+        </div>
+        <span class="ad-collapsed-excerpt">{adExcerpt}</span>
       </div>
-    )
-  }
+      <button
+        type="button"
+        class="ad-expand-btn"
+        data-toggle-target={`ad-body-${post.id}`}
+        aria-expanded="false"
+      >
+        <span class="ad-expand-text" data-i18n="expandAd">展開查看</span>
+        <span class="ad-expand-icon" aria-hidden="true">▾</span>
+      </button>
+    </div>
+    <div class="ad-collapsible-wrapper" id={`ad-body-${post.id}`} style="display: none;">
+      {finalContent.length > 0 && <div class="text-box content" set:html={finalContent} />}
+      {
+        post.tags && post.tags.length > 0 && (
+          <div class="tag-box" style={post.content.length === 0 ? 'padding-top: 30px;' : ''}>
+            <div class="tag-icon" />
+            {post.tags.map((tag) => (
+              <a href={`/search/result?q=${encodeURIComponent(tag)}`} title={tag} class="tag">
+                {tag}
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  ) : (
+    <>
+      {finalContent.length > 0 && <div class={`text-box content`} id={isItem ? 'post-content' : undefined} set:html={finalContent} />}
+      {
+        post.tags && post.tags.length > 0 && (
+          <div class="tag-box" id={isItem ? 'post-tags' : undefined} style={post.content.length === 0 ? 'padding-top: 30px;' : ''}>
+            <div class="tag-icon" />
+            {post.tags.map((tag) => (
+              <a href={`/search/result?q=${encodeURIComponent(tag)}`} title={tag} class="tag">
+                {tag}
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </>
+  )}
 
   {
     COMMENTS && isItem && (
@@ -80,3 +121,60 @@ if (isItem && safeContent.length > 0) {
     )
   }
 </article>
+
+<script>
+  function setupAdToggle() {
+    // 綁定全域委派事件，防止動態插入或多個卡片事件遺失
+    if (window.__adToggleInitialized) return
+    window.__adToggleInitialized = true
+
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement)?.closest('.ad-expand-btn') as HTMLButtonElement | null
+      if (!btn) return
+
+      const targetId = btn.getAttribute('data-toggle-target')
+      if (!targetId) return
+      const targetEl = document.getElementById(targetId)
+      if (!targetEl) return
+
+      const isHidden = targetEl.style.display === 'none'
+      if (isHidden) {
+        targetEl.style.display = 'block'
+        btn.setAttribute('aria-expanded', 'true')
+        btn.classList.add('is-expanded')
+        const text = btn.querySelector('.ad-expand-text')
+        const icon = btn.querySelector('.ad-expand-icon')
+        if (text) text.textContent = '收合內容'
+        if (icon) icon.textContent = '▴'
+      } else {
+        targetEl.style.display = 'none'
+        btn.setAttribute('aria-expanded', 'false')
+        btn.classList.remove('is-expanded')
+        const text = btn.querySelector('.ad-expand-text')
+        const icon = btn.querySelector('.ad-expand-icon')
+        if (text) text.textContent = '展開查看'
+        if (icon) icon.textContent = '▾'
+      }
+    })
+
+    // 若直接從錨點進入（例如 #post-2762），自動展開該推廣內容以供檢視
+    if (window.location.hash) {
+      try {
+        const target = document.querySelector(window.location.hash)
+        if (target) {
+          const btn = target.querySelector('.ad-expand-btn') as HTMLButtonElement | null
+          if (btn && btn.getAttribute('aria-expanded') === 'false') {
+            btn.click()
+          }
+        }
+      } catch {}
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAdToggle)
+  } else {
+    setupAdToggle()
+  }
+  document.addEventListener('astro:page-load', setupAdToggle)
+</script>

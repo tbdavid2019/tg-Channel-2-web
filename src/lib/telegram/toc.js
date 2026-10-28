@@ -284,15 +284,19 @@ export function buildTimelineToc(posts = [], tz = 'UTC') {
 
     const dt = post.datetime ? dayjs(post.datetime).tz(tz) : null
     const time = dt && dt.isValid() ? dt.format('HH:mm') : ''
+    const isAd = Boolean(post.isAd)
+    const title = isAd ? `🛡️ ${excerpt}` : excerpt
+    const displayFull = isAd ? `🛡️ [已過濾推廣] ${fullTitle}` : (fullTitle || excerpt)
 
     return {
       id: `toc-item-${post.id ?? idx + 1}`,
       targetId: `post-${post.id ?? idx + 1}`,
       postId: post.id ?? idx + 1,
-      title: excerpt,
-      fullTitle: fullTitle || excerpt,
+      title,
+      fullTitle: displayFull,
       time,
       datetime: post.datetime || '',
+      isAd,
     }
   })
 }
