@@ -1,0 +1,418 @@
+---
+import dayjs from '../lib/dayjs'
+import { getEnv } from '../lib/env'
+
+const { channel, posts = [], isItem = false } = Astro.props
+
+const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
+const isAnyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+
+// Determine primary post (for single post view) or latest post (for timeline view)
+const primaryPost = posts[0] || null
+const primaryDatetime = primaryPost?.datetime ? dayjs(primaryPost.datetime).tz(tz) : null
+const formattedDate = primaryDatetime ? primaryDatetime.format('YYYY-MM-DD HH:mm') : ''
+const timeago = primaryDatetime
+  ? primaryDatetime.isBefore(dayjs().subtract(1, 'w'))
+    ? primaryDatetime.format('MM/DD')
+    : primaryDatetime.fromNow()
+  : ''
+
+const channelTitle = channel?.title || (channel?.handle ? `@${channel.handle}` : 'Telegram 頻道')
+const channelHandle = channel?.handle || ''
+const channelUrl = channelHandle
+  ? `https://t.me/${channelHandle}${isItem && primaryPost?.id ? `/${primaryPost.id}` : ''}`
+  : '#'
+const displayDomain = channelHandle ? `t.me/${channelHandle}` : 'telegram.david888.com'
+
+// Back URL and label
+const backUrl = isItem
+  ? (channelHandle ? `/${channelHandle}/` : '/')
+  : (isAnyChannel ? '/' : '#top')
+const backLabel = isItem ? '返回頻道' : (isAnyChannel ? '所有頻道' : '回到頁首')
+const backArrow = isItem || isAnyChannel ? '←' : '↑'
+
+// Helper to extract clean summary label for timeline post
+function getPostSummary(post, index) {
+  if (post.title && post.title.trim().length > 0) {
+    const clean = post.title.replace(/\s+/g, ' ').trim()
+    return clean.length > 26 ? `${clean.slice(0, 26)}…` : clean
+  }
+  if (post.text && post.text.trim().length > 0) {
+    const firstLine = post.text.split('\n')[0].replace(/\s+/g, ' ').trim()
+    if (firstLine.length > 0) {
+      return firstLine.length > 26 ? `${firstLine.slice(0, 26)}…` : firstLine
+    }
+  }
+  if (post.content && (post.content.includes('<video') || post.content.includes('video_player'))) {
+    return `🎬 影音訊息 #${post.id || index + 1}`
+  }
+  if (post.content && post.content.includes('<img')) {
+    return `📷 圖片訊息 #${post.id || index + 1}`
+  }
+  return `貼文 #${post.id || index + 1}`
+}
+
+function getPostFullTitle(post, index) {
+  if (post.title && post.title.trim().length > 0) {
+    return post.title.replace(/\s+/g, ' ').trim()
+  }
+  if (post.text && post.text.trim().length > 0) {
+    return post.text.slice(0, 100).replace(/\s+/g, ' ').trim()
+  }
+  return `貼文 #${post.id || index + 1}`
+}
+
+// Generate TOC items
+let tocItems = []
+
+if (isItem && primaryPost) {
+  // Single article view
+  tocItems.push({
+    id: `post-${primaryPost.id}`,
+    targetId: `post-${primaryPost.id}`,
+    title: getPostSummary(primaryPost, 0),
+    fullTitle: getPostFullTitle(primaryPost, 0),
+  })
+
+  // Check for media attachment
+  if (primaryPost.content && (primaryPost.content.includes('<img') || primaryPost.content.includes('<video'))) {
+    tocItems.push({
+      id: 'post-media',
+      targetId: `post-${primaryPost.id}`,
+      title: '多媒體附件',
+      fullTitle: '多媒體圖片與影片',
+    })
+  }
+
+  // Check for tags
+  if (primaryPost.tags && primaryPost.tags.length > 0) {
+    tocItems.push({
+      id: 'post-tags',
+      targetId: 'post-tags',
+      title: `標籤 (${primaryPost.tags.length})`,
+      fullTitle: `文章標籤: #${primaryPost.tags.join(' #')}`,
+    })
+  }
+
+  // Check for comments
+  const hasComments = Boolean(getEnv(import.meta.env, Astro, 'COMMENTS'))
+  if (hasComments) {
+    tocItems.push({
+      id: 'post-comments',
+      targetId: 'post-comments',
+      title: '頻道留言討論',
+      fullTitle: 'Telegram 頻道留言討論',
+    })
+  }
+} else {
+  // Timeline view: list posts on current page
+  tocItems = posts.map((post, idx) => {
+    return {
+      id: `toc-item-${post.id}`,
+      targetId: `post-${post.id}`,
+      postId: post.id,
+      title: getPostSummary(post, idx),
+      fullTitle: getPostFullTitle(post, idx),
+      time: dayjs(post.datetime).tz(tz).format('HH:mm'),
+    }
+  })
+}
+---
+
+<!-- Desktop Sticky TOC Sidebar (Matches 2md.aiurl.tw layout) -->
+<nav class="toc-sidebar-container" aria-label="文章與目錄導覽">
+  <div class="toc-sidebar-sticky">
+    <!-- Top Back Link -->
+    <div class="toc-back-wrapper">
+      <a href={backUrl} class="toc-back-link">
+        <span class="toc-back-arrow" aria-hidden="true">{backArrow}</span>
+        <span class="toc-back-label" data-i18n={isItem ? 'backToChannel' : (isAnyChannel ? 'allChannels' : 'backToTop')}>
+          {backLabel}
+        </span>
+      </a>
+    </div>
+
+    <hr class="toc-divider" />
+
+    <!-- Source Section (來源) -->
+    <div class="toc-section toc-source-section">
+      <div class="toc-section-kicker" data-i18n="sourceLabel">來源</div>
+      <div class="toc-source-card">
+        <a
+          href={channelUrl}
+          target="_blank"
+          rel="noopener"
+          class="toc-source-title"
+          title={`在 Telegram 開啟 ${channelTitle}`}
+        >
+          <span class="toc-source-name">{channelTitle}</span>
+          <span class="toc-ext-icon" aria-hidden="true">↗</span>
+        </a>
+        <div class="toc-source-domain">{displayDomain}</div>
+      </div>
+    </div>
+
+    <!-- Publish Time Section (發布時間 / 最新發文) -->
+    {formattedDate && (
+      <div class="toc-section toc-time-section">
+        <div class="toc-section-kicker" data-i18n={isItem ? 'publishTimeLabel' : 'latestUpdateLabel'}>
+          {isItem ? '發布時間' : '發布時間'}
+        </div>
+        <div class="toc-time-card">
+          <div class="toc-time-exact">{formattedDate}</div>
+          {timeago && <div class="toc-time-relative">{timeago}</div>}
+        </div>
+      </div>
+    )}
+
+    <hr class="toc-divider" />
+
+    <!-- Table of Contents Section (本文目錄 / 本頁目錄) -->
+    {tocItems.length > 0 && (
+      <div class="toc-section toc-nav-section">
+        <div class="toc-section-kicker" data-i18n={isItem ? 'articleTocLabel' : 'pageTocLabel'}>
+          {isItem ? '本文目錄' : '本文目錄'}
+        </div>
+        <div class="toc-links-list" role="list">
+          {tocItems.map((item, idx) => (
+            <a
+              href={`#${item.targetId}`}
+              class={`toc-link ${idx === 0 ? 'is-active' : ''}`}
+              data-target={item.targetId}
+              role="listitem"
+              title={item.fullTitle}
+            >
+              <span class="toc-link-text">{item.title}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</nav>
+
+<!-- Mobile / Tablet TOC Floating Trigger & Slide-out Sheet -->
+{tocItems.length > 0 && (
+  <div class="mobile-toc-root">
+    <button
+      type="button"
+      class="mobile-toc-fab"
+      id="mobile-toc-fab-btn"
+      aria-haspopup="dialog"
+      aria-expanded="false"
+      aria-label="開啟文章目錄"
+    >
+      <span class="mobile-toc-fab-icon" aria-hidden="true">📑</span>
+      <span class="mobile-toc-fab-text" data-i18n="mobileTocToggle">目錄</span>
+      <span class="mobile-toc-fab-count">{tocItems.length}</span>
+    </button>
+
+    <div class="mobile-toc-backdrop" id="mobile-toc-backdrop" aria-hidden="true"></div>
+
+    <aside
+      class="mobile-toc-sheet"
+      id="mobile-toc-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-label="文章目錄導覽"
+      aria-hidden="true"
+    >
+      <div class="mobile-toc-sheet-header">
+        <div class="mobile-toc-sheet-title">
+          <span class="mobile-toc-sheet-icon" aria-hidden="true">📑</span>
+          <span data-i18n={isItem ? 'articleTocLabel' : 'pageTocLabel'}>
+            {isItem ? '本文目錄' : '本文目錄'}
+          </span>
+          <span class="mobile-toc-badge">{tocItems.length} 篇</span>
+        </div>
+        <button
+          type="button"
+          class="mobile-toc-close-btn"
+          id="mobile-toc-close-btn"
+          aria-label="關閉目錄"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="mobile-toc-sheet-body">
+        <div class="mobile-toc-source-meta">
+          <span class="mobile-toc-meta-label" data-i18n="sourceLabel">來源</span>
+          <div class="mobile-toc-source-row">
+            <span class="mobile-toc-channel-title">{channelTitle}</span>
+            <span class="mobile-toc-channel-domain">{displayDomain}</span>
+          </div>
+        </div>
+
+        <div class="mobile-toc-list" role="list">
+          {tocItems.map((item, idx) => (
+            <a
+              href={`#${item.targetId}`}
+              class={`mobile-toc-item ${idx === 0 ? 'is-active' : ''}`}
+              data-target={item.targetId}
+              role="listitem"
+            >
+              <span class="mobile-toc-num">{String(idx + 1).padStart(2, '0')}</span>
+              <span class="mobile-toc-label">{item.fullTitle}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  </div>
+)}
+
+<script>
+  // High-performance TOC ScrollSpy & Mobile Drawer Controller
+  function initToc() {
+    const desktopLinks = document.querySelectorAll('.toc-link[data-target]');
+    const mobileLinks = document.querySelectorAll('.mobile-toc-item[data-target]');
+    const allLinks = [...desktopLinks, ...mobileLinks];
+
+    if (allLinks.length === 0) return;
+
+    // Mobile sheet controls
+    const fab = document.getElementById('mobile-toc-fab-btn');
+    const sheet = document.getElementById('mobile-toc-sheet');
+    const backdrop = document.getElementById('mobile-toc-backdrop');
+    const closeBtn = document.getElementById('mobile-toc-close-btn');
+
+    function openMobileSheet() {
+      if (!sheet || !backdrop || !fab) return;
+      sheet.classList.add('is-open');
+      backdrop.classList.add('is-open');
+      sheet.setAttribute('aria-hidden', 'false');
+      fab.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileSheet() {
+      if (!sheet || !backdrop || !fab) return;
+      sheet.classList.remove('is-open');
+      backdrop.classList.remove('is-open');
+      sheet.setAttribute('aria-hidden', 'true');
+      fab.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    if (fab) {
+      fab.addEventListener('click', () => {
+        const isOpen = sheet?.classList.contains('is-open');
+        if (isOpen) closeMobileSheet();
+        else openMobileSheet();
+      });
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeMobileSheet);
+    if (backdrop) backdrop.addEventListener('click', closeMobileSheet);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sheet?.classList.contains('is-open')) {
+        closeMobileSheet();
+      }
+    });
+
+    // Active state manager
+    function setActive(targetId) {
+      if (!targetId) return;
+
+      desktopLinks.forEach((link) => {
+        if (link.getAttribute('data-target') === targetId) {
+          link.classList.add('is-active');
+          // Smoothly scroll active TOC item within sidebar if out of view
+          link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+          link.classList.remove('is-active');
+        }
+      });
+
+      mobileLinks.forEach((link) => {
+        if (link.getAttribute('data-target') === targetId) {
+          link.classList.add('is-active');
+        } else {
+          link.classList.remove('is-active');
+        }
+      });
+    }
+
+    // Click handler for all TOC links
+    allLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const targetId = link.getAttribute('data-target');
+        const targetEl = targetId ? document.getElementById(targetId) : null;
+
+        if (targetEl) {
+          e.preventDefault();
+          closeMobileSheet();
+
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+          history.pushState(null, '', `#${targetId}`);
+          setActive(targetId);
+        }
+      });
+    });
+
+    // ScrollSpy using throttled getBoundingClientRect
+    let isTicking = false;
+
+    function handleScroll() {
+      if (isTicking) return;
+      isTicking = true;
+
+      window.requestAnimationFrame(() => {
+        isTicking = false;
+
+        const targetElements = [];
+        desktopLinks.forEach((l) => {
+          const id = l.getAttribute('data-target');
+          const el = id ? document.getElementById(id) : null;
+          if (el) targetElements.push(el);
+        });
+
+        if (targetElements.length === 0) return;
+
+        const headerOffset = 90; // sticky header offset
+        let activeTargetId = null;
+
+        // Check if scrolled near the very top
+        if (window.scrollY < 120) {
+          activeTargetId = targetElements[0].id;
+        }
+        // Check if scrolled to bottom of document
+        else if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
+          activeTargetId = targetElements[targetElements.length - 1].id;
+        } else {
+          for (let i = 0; i < targetElements.length; i++) {
+            const rect = targetElements[i].getBoundingClientRect();
+            if (rect.top <= headerOffset + 80) {
+              activeTargetId = targetElements[i].id;
+            } else {
+              break;
+            }
+          }
+          if (!activeTargetId && targetElements.length > 0) {
+            activeTargetId = targetElements[0].id;
+          }
+        }
+
+        if (activeTargetId) {
+          setActive(activeTargetId);
+        }
+      });
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial check
+    handleScroll();
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initToc);
+  } else {
+    initToc();
+  }
+
+  // Re-run on Astro view transitions if active
+  document.addEventListener('astro:page-load', initToc);
+</script>

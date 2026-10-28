@@ -186,7 +186,12 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         </div>
       </aside>
       
-      <div id="container">
+      <div id="container" class={Astro.slots.has('toc') ? 'has-toc' : ''}>
+        {Astro.slots.has('toc') && (
+          <aside id="toc-container" class="toc-sidebar-wrapper" aria-label="文章目錄導覽">
+            <slot name="toc" />
+          </aside>
+        )}
         <main id="main-container">
           <slot />
         </main>

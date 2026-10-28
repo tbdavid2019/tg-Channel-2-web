@@ -21,7 +21,7 @@ const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('H
 const safeContent = post.content ? sanitizeContent(post.content) : ''
 ---
 
-<article class="item" style={{ 'view-transition-name': `post-${post.id}` }}>
+<article class="item" id={`post-${post.id}`} style={{ 'view-transition-name': `post-${post.id}` }}>
   <div class="time-box">
     <div class="dot"></div>
     <div class="time">
@@ -30,10 +30,10 @@ const safeContent = post.content ? sanitizeContent(post.content) : ''
       </a>
     </div>
   </div>
-  {safeContent.length > 0 && <div class={`text-box content`} set:html={safeContent} />}
+  {safeContent.length > 0 && <div class={`text-box content`} id={isItem ? 'post-content' : undefined} set:html={safeContent} />}
   {
     post.tags.length > 0 && (
-      <div class="tag-box" style={post.content.length === 0 ? 'padding-top: 30px;' : ''}>
+      <div class="tag-box" id={isItem ? 'post-tags' : undefined} style={post.content.length === 0 ? 'padding-top: 30px;' : ''}>
         <div class="tag-icon" />
         {post.tags.map((tag) => (
           <a href={`/search/result?q=${encodeURIComponent(tag)}`} title={tag} class="tag">
@@ -46,7 +46,7 @@ const safeContent = post.content ? sanitizeContent(post.content) : ''
 
   {
     COMMENTS && isItem && (
-      <div class="comments">
+      <div class="comments" id="post-comments">
         <script
           is:inline
           async

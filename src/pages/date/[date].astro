@@ -3,6 +3,7 @@ import Layout from '../../layouts/base.astro'
 import Header from '../../components/header.astro'
 import Calendar from '../../components/calendar.astro'
 import Item from '../../components/item.astro'
+import TocSidebar from '../../components/toc-sidebar.astro'
 import { getChannelInfo } from '../../lib/telegram'
 import { savePosts, getPostIdsByDate, getAdjacentDates } from '../../lib/db'
 import dayjs from 'dayjs'
@@ -69,6 +70,9 @@ const seo = { noindex: true }
 
 <Layout channel={channel}>
   <Header slot="header" channel={channel} />
+  {posts.length > 0 && channel?.handle && (
+    <TocSidebar slot="toc" channel={channel} posts={posts} isItem={false} />
+  )}
   
   <Calendar />
   
