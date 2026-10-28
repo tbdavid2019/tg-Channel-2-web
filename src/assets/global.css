@@ -269,16 +269,10 @@ body {
   line-height: 1.4;
 }
 
-.turnstile-widget {
-  min-height: 65px;
-  margin: 10px 0 4px;
-}
-
-.search-form .turnstile-widget {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  margin: 8px 0 0;
+#cf-turnstile-global {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .search-form .turnstile-status {

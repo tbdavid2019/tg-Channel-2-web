@@ -202,12 +202,6 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             <form class="search-form" action={searchAction} method="get" toolname="search-articles" tooldescription="搜尋 Telegram 頻道的文章與標籤內容" data-turnstile-action={turnstileEnabled ? 'article_search' : undefined}>
               <label class="search-label" for="site-search" data-i18n="searchLabel">搜尋文章與標籤</label>
               <input id="site-search" type="search" name="q" placeholder="輸入文章關鍵字或標籤" data-i18n-placeholder="searchPlaceholder" required />
-              {turnstileEnabled && (
-                <>
-                  <div class="turnstile-widget" data-turnstile-widget data-sitekey={turnstileSiteKey} data-action="article_search" data-size="compact" aria-label="Cloudflare Turnstile"></div>
-                  <p class="turnstile-status" aria-live="polite" hidden></p>
-                </>
-              )}
             </form>
 
             {
@@ -666,6 +660,9 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
     </style>
     <Fragment set:html={getEnv(import.meta.env, Astro, 'FOOTER_INJECT')} />
+    {turnstileEnabled && (
+      <div id="cf-turnstile-global" style="display:none;position:fixed;bottom:16px;right:16px;z-index:99999;" data-sitekey={turnstileSiteKey}></div>
+    )}
     <script src="../scripts/turnstile-forms.js"></script>
   </body>
 </html>

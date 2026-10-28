@@ -96,7 +96,6 @@ export async function POST(context) {
     `${TURNSTILE_COOKIE_NAME}=${cookieValue}`,
     'Path=/',
     `Max-Age=${TURNSTILE_COOKIE_MAX_AGE}`,
-    'HttpOnly',
     'SameSite=Lax',
     ...(isSecure ? ['Secure'] : []),
   ].join('; ')

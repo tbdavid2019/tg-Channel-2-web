@@ -36,12 +36,6 @@ const channel = ANYCHANNEL
             <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" class="channel-input" aria-describedby="channel-help channel-error" />
             <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
           </div>
-          {turnstileEnabled && (
-            <>
-              <div class="turnstile-widget" data-turnstile-widget data-sitekey={turnstileSiteKey} data-action="channel_search" aria-label="Cloudflare Turnstile"></div>
-              <p class="turnstile-status" aria-live="polite" hidden></p>
-            </>
-          )}
           <p id="channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
           <p id="channel-error" class="channel-error" role="alert"></p>
         </form>
