@@ -5,7 +5,7 @@ import { getEnv } from '../lib/env'
 const PINNED_HANDLE = 'oliservice'
 const PINNED_DEFAULT_TITLE = '選出潛力股 | 投資新聞濃縮包 | 333'
 
-const { channels, limit = 10, currentHandle = '' } = Astro.props
+const { channels, limit = 30, currentHandle = '' } = Astro.props
 const rawRecent = channels ?? getRecentChannels(limit, { pinHandle: PINNED_HANDLE })
 
 const visitedChannels = Array.isArray(rawRecent) ? rawRecent : []
@@ -38,6 +38,8 @@ function getChannelHref(handle) {
   }
   return `${readerBase}/${handle}/`
 }
+
+const extraCount = Math.max(0, recentChannels.length - 10)
 ---
 
 {
@@ -52,8 +54,9 @@ function getChannelHref(handle) {
         {recentChannels.map((recentChannel, index) => {
           const isCurrent = currentHandle && recentChannel.handle.toLowerCase() === currentHandle.toLowerCase()
           const isPinned = recentChannel.handle.toLowerCase() === PINNED_HANDLE
+          const isExtra = index >= 10
           return (
-            <li>
+            <li class={isExtra ? 'popular-item-extra' : ''}>
               <a
                 href={getChannelHref(recentChannel.handle)}
                 class={`popular-channel-link ${isCurrent ? 'is-current' : ''} ${isPinned ? 'is-golden' : ''}`}
@@ -76,9 +79,54 @@ function getChannelHref(handle) {
           )
         })}
       </ol>
+      {extraCount > 0 && (
+        <div class="popular-actions">
+          <button
+            type="button"
+            class="popular-more-btn"
+            id="popular-more-toggle"
+            aria-expanded="false"
+            data-extra-count={extraCount}
+          >
+            <span class="popular-more-text" data-i18n="popularMoreToggle">
+              查看更多頻道 (展開 {extraCount} 個遺珠)
+            </span>
+            <span class="popular-more-arrow" aria-hidden="true">↓</span>
+          </button>
+        </div>
+      )}
     </section>
   )
 }
+
+<script>
+  function setupPopularToggle() {
+    const toggleBtn = document.getElementById('popular-more-toggle')
+    const container = toggleBtn?.closest('.popular-channels')
+    if (!toggleBtn || !container) return
+
+    toggleBtn.addEventListener('click', () => {
+      const isExpanded = container.classList.toggle('is-expanded')
+      toggleBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false')
+      const textEl = toggleBtn.querySelector('.popular-more-text')
+      const arrowEl = toggleBtn.querySelector('.popular-more-arrow')
+      const count = toggleBtn.dataset.extraCount || ''
+      if (isExpanded) {
+        if (textEl) textEl.textContent = '收合熱門清單'
+        if (arrowEl) arrowEl.textContent = '↑'
+      } else {
+        if (textEl) textEl.textContent = `查看更多頻道 (展開 ${count} 個遺珠)`
+        if (arrowEl) arrowEl.textContent = '↓'
+      }
+    })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupPopularToggle)
+  } else {
+    setupPopularToggle()
+  }
+</script>
 
 <style>
   .popular-channels {
@@ -92,13 +140,59 @@ function getChannelHref(handle) {
     box-shadow: var(--shadows);
   }
 
-  @media screen and (min-width: 1025px) and (min-height: 760px) {
+  @media screen and (min-width: 961px) {
     .popular-channels {
       position: sticky;
-      top: calc(64px + 20px);
+      top: calc(64px + 16px);
       align-self: flex-start;
       width: 100%;
+      max-height: calc(100vh - 96px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      overscroll-behavior: contain;
     }
+  }
+
+  .popular-item-extra {
+    display: none;
+  }
+
+  .popular-channels.is-expanded .popular-item-extra {
+    display: list-item;
+  }
+
+  .popular-actions {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--input-border);
+  }
+
+  .popular-more-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    background: var(--canvas);
+    color: var(--deep-blue);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .popular-more-btn:hover {
+    background: var(--primary);
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .popular-more-arrow {
+    font-size: 0.875rem;
+    font-weight: 700;
   }
 
   .popular-heading .eyebrow {

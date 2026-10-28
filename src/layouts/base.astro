@@ -243,26 +243,84 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
 
     <footer class="site-footer">
       <div class="site-footer-inner">
-        <div class="footer-brand">
-          <span class="footer-kicker" data-i18n="readerKicker">公開 Telegram 閱讀器</span>
-          <span class="footer-title" data-i18n="brand">{brand}</span>
-          <a href="https://david888.com" target="_blank" rel="noopener" class="footer-credit" data-i18n="technologyBy">技術提供 david888.com</a>
+        <!-- Col 1: Brand & Identity -->
+        <div class="footer-col footer-col-brand">
+          <div class="footer-brand-header">
+            <div class="brand-badge brand-badge-sm" aria-hidden="true">
+              <span class="badge-main">888</span>
+              <span class="badge-sub">TG view</span>
+            </div>
+            <span class="footer-brand-title" data-i18n="brand">{brand}</span>
+          </div>
+          <p class="footer-brand-desc" data-i18n="footerBrandDesc">
+            為公開 Telegram 頻道打造的極簡時間線閱讀器，無須登入即可隨時瀏覽最新發文與歷史訊息。
+          </p>
+          <a href="https://david888.com" target="_blank" rel="noopener" class="footer-credit">
+            <span data-i18n="technologyBy">技術提供 david888.com</span>
+            <span class="footer-credit-arrow" aria-hidden="true">↗</span>
+          </a>
         </div>
 
-        <nav class="footer-nav" aria-label="網站導覽">
-          <a href={SITE_URL} class={`footer-link ${Astro.url.pathname === '/' ? 'current' : ''}`} data-i18n="home">首頁</a>
-          {tags.length > 0 && <a href={`${SITE_URL}tags`} class={`footer-link ${Astro.url.pathname === '/tags' ? 'current' : ''}`} data-i18n="tags">標籤</a>}
-        </nav>
+        <!-- Col 2: Navigation & Discovery -->
+        <div class="footer-col footer-col-nav">
+          <h4 class="footer-heading" data-i18n="quickLinks">快速導覽</h4>
+          <ul class="footer-links-list">
+            <li>
+              <a href={SITE_URL} class={`footer-nav-link ${Astro.url.pathname === '/' ? 'current' : ''}`} data-i18n="home">首頁時間線</a>
+            </li>
+            <li>
+              <a href={`${SITE_URL}random`} class="footer-nav-link" data-i18n="randomRecommend">隨機頻道探索</a>
+            </li>
+            {tags.length > 0 && (
+              <li>
+                <a href={`${SITE_URL}tags`} class={`footer-nav-link ${Astro.url.pathname === '/tags' ? 'current' : ''}`} data-i18n="tags">標籤分類索引</a>
+              </li>
+            )}
+            <li>
+              <button type="button" class="footer-action-link" id="footer-quick-channel-btn">
+                <span data-i18n="quickChannelNav">⚡ 快速開啟頻道 (⌘K)</span>
+              </button>
+            </li>
+          </ul>
+        </div>
 
-        <div class="footer-actions">
-          {RSS_URL && <a href={RSS_URL} target="_blank" rel="alternate" class="footer-link" data-i18n="rss">RSS</a>}
-          <span data-i18n="publicReader">公開內容閱讀工具</span>
-          <div class="language-switcher" role="group" aria-label="介面語言" data-i18n-aria-label="languageLabel">
-            <span class="visually-hidden" data-i18n="languageLabel">介面語言</span>
-            <button type="button" data-language="zh-Hant" aria-pressed="true">繁體中文</button>
-            <span aria-hidden="true">|</span>
-            <button type="button" data-language="en" aria-pressed="false">English</button>
+        <!-- Col 3: Tools & Settings -->
+        <div class="footer-col footer-col-tools">
+          <h4 class="footer-heading" data-i18n="systemTools">系統與設定</h4>
+          <div class="footer-tools-content">
+            <div class="footer-lang-group">
+              <span class="footer-sublabel" data-i18n="languageLabel">介面語言</span>
+              <div class="language-switcher" role="group" aria-label="介面語言" data-i18n-aria-label="languageLabel">
+                <button type="button" data-language="zh-Hant" aria-pressed={initialLanguage === 'zh-Hant' ? 'true' : 'false'}>繁體中文</button>
+                <span class="lang-divider" aria-hidden="true">|</span>
+                <button type="button" data-language="en" aria-pressed={initialLanguage === 'en' ? 'true' : 'false'}>English</button>
+              </div>
+            </div>
+            {RSS_URL && (
+              <div class="footer-feed-group">
+                <a href={RSS_URL} target="_blank" rel="alternate" type="application/rss+xml" class="footer-feed-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+                  <span data-i18n="rss">訂閱 RSS Feed</span>
+                </a>
+              </div>
+            )}
+            <p class="footer-disclaimer" data-i18n="disclaimer">
+              本站僅呈現 Telegram 公開頻道歷史訊息，無須登入即可閱讀。
+            </p>
           </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar: Copyright & Back-to-Top -->
+      <div class="site-footer-bottom">
+        <div class="site-footer-bottom-inner">
+          <p class="footer-copyright">
+            © {new Date().getFullYear()} 888 TG view · 閱讀公開 Telegram 頻道
+          </p>
+          <button type="button" class="footer-back-to-top-link" id="footer-scroll-top-btn">
+            <span data-i18n="backToTop">回到頁首</span>
+            <span aria-hidden="true">↑</span>
+          </button>
         </div>
       </div>
     </footer>
@@ -481,9 +539,60 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
     </script>
     <script src="../scripts/webmcp.js"></script>
-    <a href="#wrapper" id="back-to-top" aria-label="Back to top">
-      <img src={backToTopIcon.src || backToTopIcon} alt="Back to Top" />
-    </a>
+    <button
+      type="button"
+      id="back-to-top"
+      class="back-to-top-fab"
+      aria-label="回到頁首"
+      title="回到頁首"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+      <span class="visually-hidden" data-i18n="backToTop">回到頁首</span>
+    </button>
+    <script>
+      function setupBackToTop() {
+        const fab = document.getElementById('back-to-top')
+        const footerBtn = document.getElementById('footer-scroll-top-btn')
+        const footerQuickBtn = document.getElementById('footer-quick-channel-btn')
+
+        const scrollToTop = (e?: Event) => {
+          if (e) e.preventDefault()
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+
+        if (fab) {
+          const handleScroll = () => {
+            if (window.scrollY > 280) {
+              fab.classList.add('is-visible')
+            } else {
+              fab.classList.remove('is-visible')
+            }
+          }
+          window.addEventListener('scroll', handleScroll, { passive: true })
+          handleScroll()
+          fab.addEventListener('click', scrollToTop)
+        }
+
+        if (footerBtn) {
+          footerBtn.addEventListener('click', scrollToTop)
+        }
+
+        if (footerQuickBtn) {
+          footerQuickBtn.addEventListener('click', () => {
+            const trigger = document.getElementById('quick-channel-trigger')
+            if (trigger) trigger.click()
+          })
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupBackToTop)
+      } else {
+        setupBackToTop()
+      }
+    </script>
     <style>
       .lang-prompt-banner {
         width: min(1140px, calc(100% - 32px));

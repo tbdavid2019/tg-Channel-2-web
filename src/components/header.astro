@@ -126,6 +126,19 @@ if (postMatch) {
     </div>
 
     <div class="header-right">
+      <button
+        type="button"
+        class="header-open-channel-btn"
+        id="quick-channel-trigger"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        title="輸入並開啟任意 Telegram 公開頻道 (快捷鍵 ⌘K / Ctrl+K)"
+      >
+        <span class="open-channel-icon" aria-hidden="true">⚡</span>
+        <span class="open-channel-text">開啟頻道</span>
+        <kbd class="open-channel-kbd">⌘K</kbd>
+      </button>
+
       <a href="/random" class="header-random-link" title="隨機探索 Telegram 公開頻道" data-i18n-title="randomRecommendTitle">
         <span class="random-dice" aria-hidden="true">🎲</span>
         <span class="random-text" data-i18n="randomShort">隨機推薦</span>
@@ -211,14 +224,154 @@ if (postMatch) {
   }
 </header>
 
+<!-- Quick Channel Modal Dialog -->
+<div
+  id="quick-channel-dialog"
+  class="quick-channel-backdrop"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="quick-channel-heading"
+>
+  <div class="quick-channel-panel">
+    <div class="quick-channel-head">
+      <div class="quick-channel-title-group">
+        <span class="quick-channel-brand-icon" aria-hidden="true">⚡</span>
+        <div>
+          <h2 id="quick-channel-heading" class="quick-channel-heading">瀏覽 Telegram 公開頻道</h2>
+          <p class="quick-channel-desc">輸入頻道 username 或連結，立即在線閱讀</p>
+        </div>
+      </div>
+      <button type="button" class="quick-channel-close-btn" id="quick-channel-close" aria-label="關閉視窗">✕</button>
+    </div>
+
+    <form id="quick-channel-form" class="quick-channel-form" autocomplete="off">
+      <div class="quick-channel-input-wrapper">
+        <span class="quick-channel-prefix" aria-hidden="true">@</span>
+        <input
+          type="text"
+          id="quick-channel-input"
+          class="quick-channel-input"
+          placeholder="例如：oliservice 或 t.me/telegramnews"
+          autocomplete="off"
+          spellcheck="false"
+          required
+        />
+        <button type="submit" class="quick-channel-go-btn">
+          前往閱讀 →
+        </button>
+      </div>
+      <p id="quick-channel-feedback" class="quick-channel-feedback" style="display: none;"></p>
+    </form>
+
+    <div class="quick-channel-hints">
+      <span class="quick-hints-label">熱門探索：</span>
+      <div class="quick-hints-chips">
+        <button type="button" class="quick-hint-chip" data-channel="oliservice">選出潛力股 (@oliservice)</button>
+        <button type="button" class="quick-hint-chip" data-channel="telegramnews">Telegram News</button>
+        <button type="button" class="quick-hint-chip" data-channel="durov">Pavel Durov</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupQuickChannelModal() {
+    const trigger = document.getElementById('quick-channel-trigger')
+    const dialog = document.getElementById('quick-channel-dialog')
+    const closeBtn = document.getElementById('quick-channel-close')
+    const form = document.getElementById('quick-channel-form')
+    const input = document.getElementById('quick-channel-input') as HTMLInputElement | null
+    const feedback = document.getElementById('quick-channel-feedback')
+    const hintChips = document.querySelectorAll('.quick-hint-chip')
+
+    if (!trigger || !dialog) return
+
+    function openModal() {
+      dialog.classList.add('is-open')
+      dialog.setAttribute('aria-hidden', 'false')
+      trigger.setAttribute('aria-expanded', 'true')
+      document.body.style.overflow = 'hidden'
+      setTimeout(() => input?.focus(), 60)
+    }
+
+    function closeModal() {
+      dialog.classList.remove('is-open')
+      dialog.setAttribute('aria-hidden', 'true')
+      trigger.setAttribute('aria-expanded', 'false')
+      document.body.style.overflow = ''
+      if (feedback) {
+        feedback.style.display = 'none'
+        feedback.textContent = ''
+      }
+    }
+
+    trigger.addEventListener('click', openModal)
+    closeBtn?.addEventListener('click', closeModal)
+
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeModal()
+    })
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        if (dialog.classList.contains('is-open')) {
+          closeModal()
+        } else {
+          openModal()
+        }
+      }
+      if (e.key === 'Escape' && dialog.classList.contains('is-open')) {
+        closeModal()
+      }
+    })
+
+    function navigateToChannel(raw: string) {
+      let target = String(raw || '').trim()
+      target = target.replace(/^https?:\/\/t\.me\//i, '').replace(/^@/, '').replace(/\/.*$/, '').trim()
+      if (/^[a-zA-Z0-9_]{3,64}$/.test(target)) {
+        window.location.href = `/${target}/`
+      } else {
+        if (feedback) {
+          feedback.style.display = 'block'
+          feedback.textContent = '請輸入正確的 Telegram 頻道 username 或 t.me 連結'
+        }
+      }
+    }
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault()
+      if (input) navigateToChannel(input.value)
+    })
+
+    hintChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const ch = (chip as HTMLElement).dataset.channel
+        if (ch) navigateToChannel(ch)
+      })
+    })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupQuickChannelModal)
+  } else {
+    setupQuickChannelModal()
+  }
+  document.addEventListener('astro:page-load', setupQuickChannelModal)
+</script>
+
 <style>
   .site-header {
     position: sticky;
     top: 0;
-    z-index: 100;
-    background: var(--card-bg);
+    z-index: 1000;
+    background: rgba(255, 249, 232, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--card-border);
-    box-shadow: 0 2px 14px rgba(43, 37, 26, 0.05);
+    box-shadow: 0 4px 16px rgba(43, 37, 26, 0.06);
+    transition: box-shadow 0.2s ease;
   }
 
   /* 2md.aiurl.tw signature saffron top accent bar */
@@ -457,6 +610,50 @@ if (postMatch) {
     flex-shrink: 0;
   }
 
+  /* Quick Channel button in header */
+  .header-open-channel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    min-height: 34px;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: 8px;
+    color: var(--deep-blue);
+    font-size: var(--text-meta);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    line-height: 1;
+  }
+
+  .header-open-channel-btn:hover {
+    background: var(--primary);
+    border-color: var(--ink);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(43, 37, 26, 0.1);
+  }
+
+  .open-channel-icon {
+    font-size: 0.875rem;
+  }
+
+  .open-channel-kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    background: var(--canvas);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    line-height: 1.2;
+  }
+
   .header-random-link {
     display: inline-flex;
     align-items: center;
@@ -584,6 +781,213 @@ if (postMatch) {
     margin-right: 2px;
   }
 
+  /* Quick Channel Modal Dialog */
+  .quick-channel-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(23, 50, 77, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12vh 16px 32px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+
+  .quick-channel-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .quick-channel-panel {
+    width: min(540px, 100%);
+    background: var(--card-bg);
+    border: 2px solid var(--deep-blue);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: 0 12px 40px rgba(23, 50, 77, 0.25);
+    transform: translateY(-8px) scale(0.98);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .quick-channel-backdrop.is-open .quick-channel-panel {
+    transform: translateY(0) scale(1);
+  }
+
+  .quick-channel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .quick-channel-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .quick-channel-brand-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #ff7600;
+    color: #0b1a29;
+    font-size: 1.25rem;
+    font-weight: 800;
+    border: 1.5px solid #142436;
+    flex-shrink: 0;
+  }
+
+  .quick-channel-heading {
+    margin: 0;
+    font-family: var(--font-brand);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--deep-blue);
+    line-height: 1.3;
+  }
+
+  .quick-channel-desc {
+    margin: 4px 0 0;
+    font-size: var(--text-meta);
+    color: var(--text-muted);
+  }
+
+  .quick-channel-close-btn {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--canvas);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .quick-channel-close-btn:hover {
+    background: var(--clay);
+    color: var(--warm-cream);
+    border-color: var(--clay);
+  }
+
+  .quick-channel-form {
+    margin: 0 0 16px;
+  }
+
+  .quick-channel-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .quick-channel-prefix {
+    position: absolute;
+    left: 14px;
+    color: var(--clay);
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 800;
+    pointer-events: none;
+  }
+
+  .quick-channel-input {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 120px 10px 34px;
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: var(--text-body);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .quick-channel-input:focus {
+    outline: none;
+    border-color: var(--deep-blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+
+  .quick-channel-go-btn {
+    position: absolute;
+    right: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    background: var(--primary);
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    color: var(--ink);
+    font-weight: 800;
+    font-size: var(--text-meta);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .quick-channel-go-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .quick-channel-feedback {
+    margin-top: 8px;
+    color: var(--clay);
+    font-size: var(--text-meta);
+    font-weight: 700;
+  }
+
+  .quick-channel-hints {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px dashed var(--card-border-subtle);
+  }
+
+  .quick-hints-label {
+    font-size: var(--text-caption);
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  .quick-hints-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .quick-hint-chip {
+    padding: 4px 10px;
+    background: var(--canvas);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--deep-blue);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+
+  .quick-hint-chip:hover {
+    background: var(--primary);
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
   @media screen and (max-width: 768px) {
     .header-inner {
       padding: 10px 0;
@@ -605,6 +1009,15 @@ if (postMatch) {
 
     .header-right {
       gap: 6px;
+    }
+
+    .header-open-channel-btn {
+      padding: 5px 8px;
+      font-size: 0.8125rem;
+    }
+
+    .header-open-channel-btn .open-channel-kbd {
+      display: none;
     }
 
     .header-random-link {
