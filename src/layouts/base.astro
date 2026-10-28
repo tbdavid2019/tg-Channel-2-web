@@ -369,7 +369,11 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
         document.querySelectorAll('[data-i18n]').forEach((element) => {
           const value = dictionary[element.dataset.i18n]
           if (value !== undefined) {
-            element.textContent = value.replace('{count}', element.dataset.i18nCount || '')
+            const rawCount = element.dataset.i18nCount
+            const formattedCount = rawCount !== undefined && !Number.isNaN(Number(rawCount))
+              ? Number(rawCount).toLocaleString()
+              : (rawCount || '')
+            element.textContent = value.replace('{count}', formattedCount)
           }
         })
         document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
@@ -510,7 +514,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       }
 
       .lang-prompt-icon {
-        font-size: 1.15rem;
+        font-size: 1.125rem;
         flex-shrink: 0;
       }
 
@@ -530,7 +534,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
 
       .lang-prompt-sub {
         margin: 0;
-        font-size: 0.78rem;
+        font-size: 0.8125rem;
         color: var(--text-muted);
         line-height: 1.35;
       }

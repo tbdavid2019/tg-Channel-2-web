@@ -54,3 +54,28 @@ test('guarantees pinned oliservice slot in getRecentChannels even if overwhelmed
   assert.equal(channels.length, 10)
   assert.equal(channels[0].handle, 'oliservice', 'oliservice must hold the #1 golden seat in leaderboard')
 })
+
+test('accurately records and tracks visit counts exceeding 50,000 without capping', () => {
+  const databasePath = process.env.DB_PATH
+  const database = JSON.parse(fs.readFileSync(databasePath, 'utf8'))
+  const now = Date.now()
+  const hourBucket = Math.floor(now / (1000 * 60 * 60)) * (1000 * 60 * 60)
+
+  database.channelHistory.push({
+    handle: 'massive_traffic_channel',
+    title: 'Massive Traffic Channel',
+    avatar: '',
+    hourlyVisits: { [hourBucket]: 75000 },
+    totalVisits: 75000,
+    lastVisitedAt: now,
+  })
+  fs.writeFileSync(databasePath, JSON.stringify(database), 'utf8')
+
+  // Add one more visit to prove incremental updates beyond 50,000 work
+  recordChannelVisit({ handle: 'massive_traffic_channel', title: 'Massive Traffic Channel' })
+
+  const recent = getRecentChannels(10)
+  const target = recent.find(c => c.handle === 'massive_traffic_channel')
+  assert.ok(target, 'massive_traffic_channel should be present in recent channels')
+  assert.equal(target.count, 75001, 'visit count must accurately exceed 50,000 without artificial truncation')
+})

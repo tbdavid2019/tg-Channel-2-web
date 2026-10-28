@@ -65,7 +65,7 @@ if (postMatch) {
           <a href="/" title={brand} data-i18n-title="brand" class="brand-badge-link">
             <div class="brand-badge" aria-hidden="true">
               <span class="badge-main">888</span>
-              <span class="badge-sub">TG</span>
+              <span class="badge-sub">TG view</span>
             </div>
           </a>
           <div class="header-title-box">
@@ -82,7 +82,7 @@ if (postMatch) {
               <a href={homeUrl} title={brand} data-i18n-title="brand" class="breadcrumb-link home-link">
                 <div class="brand-badge brand-badge-sm" aria-hidden="true">
                   <span class="badge-main">888</span>
-                  <span class="badge-sub">TG</span>
+                  <span class="badge-sub">TG view</span>
                 </div>
                 <span class="breadcrumb-text breadcrumb-brand-title" data-i18n="brand">{brand}</span>
               </a>
@@ -261,7 +261,7 @@ if (postMatch) {
     flex-shrink: 0;
   }
 
-  /* 2md.aiurl.tw framed logo badge */
+  /* 888 TG view orange-framed logo badge */
   .brand-badge {
     font-family: var(--font-brand);
     font-weight: 800;
@@ -269,50 +269,56 @@ if (postMatch) {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 48px;
-    height: 42px;
+    min-width: 58px;
+    height: 44px;
     padding: 2px 6px;
     border-radius: 8px;
-    background: var(--primary);
-    border: 2px solid var(--ink);
-    color: var(--ink);
+    background: #ff7600;
+    border: 2px solid #142436;
+    color: #0b1a29;
     line-height: 1;
     letter-spacing: -0.02em;
     user-select: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
   }
 
   .brand-badge:hover {
+    background: #ff8514;
     transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(43, 37, 26, 0.15);
+    box-shadow: 0 4px 12px rgba(255, 118, 0, 0.35);
   }
 
   .brand-badge .badge-main {
     font-size: 1.15rem;
-    font-weight: 800;
+    font-weight: 900;
     line-height: 1;
+    letter-spacing: -0.02em;
   }
 
   .brand-badge .badge-sub {
-    font-size: 0.58rem;
+    font-size: 0.625rem;
     font-weight: 800;
-    letter-spacing: 0.06em;
-    opacity: 0.9;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    margin-top: 1px;
+    opacity: 0.95;
   }
 
   .brand-badge-sm {
-    min-width: 38px;
-    height: 34px;
+    min-width: 48px;
+    height: 36px;
+    padding: 1px 4px;
     border-width: 1.5px;
     border-radius: 6px;
   }
 
   .brand-badge-sm .badge-main {
-    font-size: 0.9rem;
+    font-size: 0.9375rem;
   }
 
   .brand-badge-sm .badge-sub {
-    font-size: 0.5rem;
+    font-size: 0.55rem;
   }
 
   .header-title-box {
@@ -324,7 +330,7 @@ if (postMatch) {
 
   .brand-title {
     font-family: var(--font-brand);
-    font-size: 1.15rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: var(--deep-blue);
     text-decoration: none;
@@ -339,7 +345,7 @@ if (postMatch) {
   }
 
   .header-subtitle {
-    font-size: 0.78rem;
+    font-size: 0.8125rem;
     color: var(--text-muted);
     font-weight: 500;
     white-space: nowrap;
@@ -603,7 +609,7 @@ if (postMatch) {
 
     .header-random-link {
       padding: 5px 8px;
-      font-size: 0.78rem;
+      font-size: 0.8125rem;
     }
 
     .header-random-link .random-text {

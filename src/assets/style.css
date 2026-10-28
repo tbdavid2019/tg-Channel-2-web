@@ -58,12 +58,16 @@
   --font-cjk: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', sans-serif;
   --font-mono: 'Fira Code', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Type scale */
-  --text-hero: clamp(1.85rem, 4.5vw, 2.5rem);
-  --text-title: 1.25rem;
+  /* Harmonious type scale matching 2md.aiurl.tw */
+  --text-hero: clamp(1.75rem, 3.8vw, 2.25rem);
+  --text-h1: 1.5rem;
+  --text-h2: 1.25rem;
+  --text-h3: 1.125rem;
   --text-body: 1rem;
+  --text-ui: 0.9375rem;
   --text-meta: 0.875rem;
-  --text-control: 0.95rem;
+  --text-caption: 0.8125rem;
+  --text-badge: 0.75rem;
   --leading-body: 1.68;
 }
 
@@ -173,7 +177,7 @@ a:hover {
 .sidebar-card-title {
   margin: 0 0 12px;
   font-family: var(--font-brand);
-  font-size: 1.05rem;
+  font-size: var(--text-h3);
   font-weight: 700;
   color: var(--deep-blue);
   display: block;
@@ -203,7 +207,7 @@ a:hover {
   background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 0.92rem;
+  font-size: var(--text-ui);
 }
 
 .sidebar-search-row input:focus {
@@ -222,7 +226,7 @@ a:hover {
   background: var(--primary);
   color: var(--ink);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-body);
   transition: all 0.15s ease;
 }
 
@@ -243,7 +247,7 @@ a:hover {
   border-radius: var(--radius);
   color: var(--deep-blue);
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: var(--text-ui);
   text-decoration: none;
   box-shadow: var(--shadows);
   transition: all 0.15s ease;
@@ -267,7 +271,7 @@ a:hover {
 .tag-chip {
   display: inline-block;
   padding: 4px 10px;
-  font-size: 0.8125rem;
+  font-size: var(--text-caption);
   font-family: var(--font-mono);
   color: var(--clay);
   background: var(--canvas);
@@ -289,7 +293,7 @@ a:hover {
 .channel-page-title {
   margin: 0 0 20px;
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  font-size: var(--text-hero);
   font-weight: 800;
   color: var(--deep-blue);
   letter-spacing: -0.02em;
@@ -317,7 +321,7 @@ a:hover {
   background: var(--canvas);
   border: 1px solid var(--card-border);
   border-radius: 8px;
-  font-size: 0.88rem;
+  font-size: var(--text-meta);
   font-weight: 700;
   color: var(--deep-blue);
   width: fit-content;
@@ -334,7 +338,7 @@ a:hover {
   color: var(--ink);
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: var(--text-badge);
   font-weight: 800;
 }
 
@@ -378,7 +382,7 @@ a:hover {
 
 .time-box .time {
   font-family: var(--font-mono);
-  font-size: 0.84rem;
+  font-size: var(--text-meta);
   font-weight: 600;
   color: var(--clay);
 }
@@ -393,7 +397,7 @@ a:hover {
 }
 
 .item .content {
-  font-size: 1rem;
+  font-size: var(--text-body);
   line-height: var(--leading-body);
   color: var(--text);
   word-break: break-word;
@@ -425,7 +429,7 @@ a:hover {
   border-radius: 6px;
   color: var(--clay);
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: var(--text-caption);
   font-weight: 600;
   text-decoration: none;
   transition: all 0.15s ease;
@@ -471,7 +475,7 @@ a:hover {
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: var(--text-meta);
   overflow-x: auto;
 }
 
@@ -480,7 +484,7 @@ a:hover {
   background: var(--code-background-color);
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.88em;
+  font-size: 0.875em;
 }
 
 .content blockquote {
@@ -490,7 +494,7 @@ a:hover {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: var(--text-ui);
 }
 
 /* Pagination */
@@ -515,7 +519,7 @@ a.page:visited {
   border-radius: var(--radius-pill);
   color: var(--deep-blue);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: var(--text-ui);
   text-decoration: none;
   box-shadow: 0 2px 8px rgba(43, 37, 26, 0.04);
   transition: all 0.15s ease;
@@ -531,7 +535,7 @@ a.page:hover {
 .pages-info {
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 0.875rem;
+  font-size: var(--text-meta);
   color: var(--text-muted);
 }
 
@@ -619,7 +623,7 @@ a.page:hover {
 
 .footer-kicker {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 700;
   color: var(--clay);
   letter-spacing: 0.06em;
@@ -627,13 +631,13 @@ a.page:hover {
 
 .footer-title {
   font-family: var(--font-brand);
-  font-size: 1.1rem;
+  font-size: var(--text-h3);
   font-weight: 700;
   color: var(--deep-blue);
 }
 
 .footer-credit {
-  font-size: 0.85rem;
+  font-size: var(--text-meta);
   color: var(--text-muted);
   text-decoration: none;
 }
@@ -653,7 +657,7 @@ a.page:hover {
 .footer-link {
   color: var(--deep-blue);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--text-ui);
   text-decoration: none;
 }
 
@@ -665,7 +669,7 @@ a.page:hover {
 
 .footer-actions {
   align-items: flex-start;
-  font-size: 0.875rem;
+  font-size: var(--text-meta);
   line-height: 1.5;
 }
 
@@ -683,7 +687,7 @@ a.page:hover {
   background: var(--input-bg);
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.84rem;
+  font-size: var(--text-meta);
   font-weight: 600;
   transition: all 0.15s ease;
 }
@@ -719,14 +723,14 @@ a.page:hover {
 
 .lang-prompt-text {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--text-ui);
   font-weight: 600;
   color: var(--ink);
 }
 
 .lang-prompt-sub {
   margin: 2px 0 0;
-  font-size: 0.8rem;
+  font-size: var(--text-caption);
   color: var(--text-muted);
 }
 
@@ -739,7 +743,7 @@ a.page:hover {
 .lang-prompt-btn {
   padding: 6px 14px;
   border-radius: 6px;
-  font-size: 0.84rem;
+  font-size: var(--text-meta);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -766,7 +770,7 @@ a.page:hover {
 .lang-prompt-close-btn {
   background: transparent;
   border: none;
-  font-size: 1.1rem;
+  font-size: var(--text-h3);
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;

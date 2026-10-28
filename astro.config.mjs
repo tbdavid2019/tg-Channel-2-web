@@ -8,30 +8,30 @@ import sentry from '@sentry/astro'
 import { defineConfig } from 'astro/config'
 import { provider } from 'std-env'
 
-const providers = {
-  vercel: vercel({
-    isr: false,
-    edgeMiddleware: false,
-  }),
-  cloudflare_pages: cloudflare(),
-  netlify: netlify({
-    cacheOnDemandPages: false,
-    edgeMiddleware: false,
-  }),
-  node: node({
-    mode: 'standalone',
-  }),
-  edgeone: edgeone(),
-}
-
 const adapterProvider = (process.env.HOME === '/dev/shm/home' && process.env.TMPDIR === '/dev/shm/tmp')
   ? 'edgeone'
   : process.env.SERVER_ADAPTER || provider
 
+function resolveAdapter(name) {
+  switch (name) {
+    case 'vercel':
+      return vercel({ isr: false, edgeMiddleware: false })
+    case 'cloudflare_pages':
+      return cloudflare()
+    case 'netlify':
+      return netlify({ cacheOnDemandPages: false, edgeMiddleware: false })
+    case 'edgeone':
+      return edgeone()
+    case 'node':
+    default:
+      return node({ mode: 'standalone' })
+  }
+}
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: providers[adapterProvider] || providers.node,
+  adapter: resolveAdapter(adapterProvider),
   integrations: [
     ...(process.env.SENTRY_DSN
       ? [

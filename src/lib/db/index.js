@@ -136,21 +136,61 @@ export function savePosts(posts, channel = '') {
 }
 
 const CHANNEL_HISTORY_TTL_MS = 1000 * 60 * 60 * 24 * 7
+const HOUR_MS = 1000 * 60 * 60
 
 function isValidHistoryHandle(handle) {
   return /^[a-zA-Z0-9_]{3,64}$/.test(handle || '')
 }
 
+function getHourBucket(timestamp) {
+  return Math.floor(timestamp / HOUR_MS) * HOUR_MS
+}
+
 function pruneChannelHistory(history, now = Date.now()) {
   const cutoff = now - CHANNEL_HISTORY_TTL_MS
+  if (!Array.isArray(history)) return []
+
   return history
-    .map(entry => ({
-      ...entry,
-      visits: (Array.isArray(entry.visits) ? entry.visits : [])
-        .map(Number)
-        .filter(timestamp => Number.isFinite(timestamp) && timestamp >= cutoff),
-    }))
-    .filter(entry => entry.visits.length > 0)
+    .map(entry => {
+      const hourlyVisits = { ...(entry.hourlyVisits || {}) }
+      let lastVisitedAt = Number(entry.lastVisitedAt) || 0
+
+      // Migrate legacy raw visits array if present without call stack limit
+      if (Array.isArray(entry.visits)) {
+        for (const rawTs of entry.visits) {
+          const ts = Number(rawTs)
+          if (Number.isFinite(ts) && ts >= cutoff) {
+            const bucket = getHourBucket(ts)
+            hourlyVisits[bucket] = (hourlyVisits[bucket] || 0) + 1
+            if (ts > lastVisitedAt) lastVisitedAt = ts
+          }
+        }
+      }
+
+      // Prune hourly buckets older than the 7-day rolling cutoff
+      let rollingCount = 0
+      for (const [bucketStr, count] of Object.entries(hourlyVisits)) {
+        const bucketTs = Number(bucketStr)
+        const numCount = Number(count) || 0
+        if (!Number.isFinite(bucketTs) || bucketTs < cutoff || numCount <= 0) {
+          delete hourlyVisits[bucketStr]
+        } else {
+          rollingCount += numCount
+          if (bucketTs > lastVisitedAt) lastVisitedAt = bucketTs
+        }
+      }
+
+      const totalVisits = Math.max(Number(entry.totalVisits) || 0, rollingCount)
+
+      return {
+        ...entry,
+        hourlyVisits,
+        totalVisits,
+        rollingCount,
+        lastVisitedAt: lastVisitedAt || now,
+      }
+    })
+    .filter(entry => entry.rollingCount > 0)
 }
 
 /** Record a successful public channel visit without storing visitor identity. */
@@ -159,6 +199,7 @@ export function recordChannelVisit({ handle, title = '', avatar = '', descriptio
   if (!isValidHistoryHandle(normalizedHandle)) return
 
   const now = Date.now()
+  const currentBucket = getHourBucket(now)
   const db = readDb()
   const history = pruneChannelHistory(db.channelHistory, now)
   const existing = history.find(entry => entry.handle === normalizedHandle)
@@ -169,22 +210,28 @@ export function recordChannelVisit({ handle, title = '', avatar = '', descriptio
     if (description) {
       existing.description = String(description || existing.description || '').slice(0, 500)
     }
-    existing.visits.push(now)
-    existing.visits = existing.visits.slice(-50000)
+    existing.hourlyVisits[currentBucket] = (existing.hourlyVisits[currentBucket] || 0) + 1
+    existing.rollingCount = (existing.rollingCount || 0) + 1
+    existing.totalVisits = (existing.totalVisits || 0) + 1
+    existing.lastVisitedAt = Math.max(existing.lastVisitedAt || 0, now)
+    delete existing.visits
   } else {
     history.push({
       handle: normalizedHandle,
       title: String(title || '').slice(0, 200),
       avatar: String(avatar || '').slice(0, 1000),
       description: String(description || '').slice(0, 500),
-      visits: [now],
+      hourlyVisits: { [currentBucket]: 1 },
+      rollingCount: 1,
+      totalVisits: 1,
+      lastVisitedAt: now,
     })
   }
 
   writeDb({ ...db, channelHistory: history })
 }
 
-/** Return the most-used public channels from the rolling seven-day window, with optional pinned slot. */
+/** Return the most-used public channels from the rolling seven-day window, with optional pinned slot. Unbounded counts (>50,000). */
 export function getRecentChannels(limit = 10, { pinHandle = '' } = {}) {
   const now = Date.now()
   const db = readDb()
@@ -195,8 +242,9 @@ export function getRecentChannels(limit = 10, { pinHandle = '' } = {}) {
       title: entry.title || `@${entry.handle}`,
       avatar: entry.avatar || '',
       description: entry.description || '',
-      count: entry.visits.length,
-      lastVisitedAt: Math.max(...entry.visits),
+      count: entry.rollingCount,
+      totalVisits: entry.totalVisits,
+      lastVisitedAt: entry.lastVisitedAt,
     }))
     .sort((a, b) => b.count - a.count || b.lastVisitedAt - a.lastVisitedAt)
 
@@ -233,7 +281,7 @@ export function getVisitedChannels() {
       description: entry.description || '',
       category: '用戶探索',
       source: 'user_input',
-      updatedAt: Math.max(...(entry.visits || [Date.now()])),
+      updatedAt: entry.lastVisitedAt || (Array.isArray(entry.visits) && entry.visits.length > 0 ? entry.visits[entry.visits.length - 1] : Date.now()),
     }))
 }
 
