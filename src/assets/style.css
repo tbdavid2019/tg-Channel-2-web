@@ -1486,25 +1486,43 @@ a.page:hover {
 }
 
 @media screen and (max-width: 640px) {
+  #wrapper {
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+
   #container {
     width: calc(100% - 24px);
-    margin-bottom: 40px;
+    margin: 16px auto 48px;
+    padding-bottom: 72px; /* Bottom clearance for floating action buttons */
+  }
+
+  .items {
+    padding-bottom: 16px;
   }
 
   .item {
-    padding: 18px 16px;
+    padding: 16px 14px;
   }
 
   .channel-page-title {
-    font-size: 1.6rem;
+    font-size: 1.45rem;
+    margin-bottom: 16px;
   }
 
   #back-to-top,
   .back-to-top-fab {
-    bottom: 20px;
-    right: 20px;
-    width: 42px;
-    height: 42px;
+    bottom: max(16px, calc(12px + env(safe-area-inset-bottom, 0px)));
+    right: max(16px, calc(12px + env(safe-area-inset-right, 0px)));
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobile-toc-fab {
+    bottom: max(16px, calc(12px + env(safe-area-inset-bottom, 0px)));
+    left: max(16px, calc(12px + env(safe-area-inset-left, 0px)));
+    padding: 7px 13px;
+    font-size: 0.8125rem;
   }
 
   .site-footer-bottom-inner {

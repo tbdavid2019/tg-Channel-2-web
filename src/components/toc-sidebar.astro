@@ -260,18 +260,15 @@ if (isItem && primaryPost) {
       window.__tocKeydownHandler = null;
     }
 
-    // 1. 保證行動版懸浮按鈕與抽屜掛載在 document.body，不受任何父容器 overflow/display 限制
+    // 1. 清理可能因 ViewTransition 殘留的重複 mobile-toc-root，保留唯一單一實體
     const mobileRoots = document.querySelectorAll('.mobile-toc-root');
-    if (mobileRoots.length > 0) {
+    if (mobileRoots.length > 1) {
       for (let i = 0; i < mobileRoots.length - 1; i++) {
         mobileRoots[i].remove();
       }
-      const activeMobileRoot = mobileRoots[mobileRoots.length - 1];
-      if (activeMobileRoot.parentElement && activeMobileRoot.parentElement !== document.body) {
-        document.body.appendChild(activeMobileRoot);
-      }
     }
 
+    const activeRoot = document.querySelector('.mobile-toc-root');
     const desktopLinks = document.querySelectorAll('.toc-link[data-target]');
     const mobileLinks = document.querySelectorAll('.mobile-toc-item[data-target]');
     const allLinks = [...desktopLinks, ...mobileLinks];
@@ -286,11 +283,11 @@ if (isItem && primaryPost) {
       if (el) targetElements.push(el);
     });
 
-    // Mobile sheet controls
-    const fab = document.getElementById('mobile-toc-fab-btn');
-    const sheet = document.getElementById('mobile-toc-sheet');
-    const backdrop = document.getElementById('mobile-toc-backdrop');
-    const closeBtn = document.getElementById('mobile-toc-close-btn');
+    // Mobile sheet controls (從當前 activeRoot 取得，確保唯一且無衝突)
+    const fab = (activeRoot?.querySelector('#mobile-toc-fab-btn') || document.getElementById('mobile-toc-fab-btn')) as HTMLElement | null;
+    const sheet = (activeRoot?.querySelector('#mobile-toc-sheet') || document.getElementById('mobile-toc-sheet')) as HTMLElement | null;
+    const backdrop = (activeRoot?.querySelector('#mobile-toc-backdrop') || document.getElementById('mobile-toc-backdrop')) as HTMLElement | null;
+    const closeBtn = (activeRoot?.querySelector('#mobile-toc-close-btn') || document.getElementById('mobile-toc-close-btn')) as HTMLElement | null;
     const sidebarContainer = document.querySelector('#toc-container');
 
     let closeTimer = null;

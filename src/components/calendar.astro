@@ -227,4 +227,30 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
   .calendar-day.today.has-post .post-indicator {
     background: var(--primary);
   }
+
+  @media screen and (max-width: 640px) {
+    .calendar-container {
+      padding: 12px 10px;
+      margin-bottom: 18px;
+    }
+
+    .calendar-grid {
+      gap: 2px;
+    }
+
+    .calendar-day {
+      min-height: 36px;
+      font-size: 0.875rem;
+      border-radius: 6px;
+    }
+
+    .calendar-title {
+      font-size: 1rem;
+    }
+
+    .nav-btn {
+      min-width: 32px;
+      min-height: 32px;
+    }
+  }
 </style>
