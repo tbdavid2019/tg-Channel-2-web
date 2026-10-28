@@ -89,6 +89,7 @@ export const uiTranslations = {
     copyPostLink: '複製文章連結',
     mobileTocToggle: '📑 目錄',
     closeToc: '關閉目錄',
+    adBadge: '🛡️ 推廣內容',
   },
   en: {
     brand: '888 Telegram Channel Browser',
@@ -180,5 +181,6 @@ export const uiTranslations = {
     copyPostLink: 'Copy post link',
     mobileTocToggle: '📑 Contents',
     closeToc: 'Close contents',
+    adBadge: '🛡️ Sponsored',
   },
 }

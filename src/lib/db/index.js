@@ -106,6 +106,13 @@ export function savePosts(posts, channel = '') {
     const effectiveChannel = (channel || post.channel || '').toLowerCase()
     const key = `${effectiveChannel}:${post.id}`
     const existingIndex = channelMap.get(key)
+    const existingPost = existingIndex !== undefined ? db.posts[existingIndex] : null
+
+    // Restore memorized isAd if present
+    const isAd = post.isAd !== undefined ? post.isAd : existingPost?.isAd
+    if (isAd !== undefined) {
+      post.isAd = isAd
+    }
 
     const newPost = {
       id: parseInt(post.id),
@@ -113,7 +120,8 @@ export function savePosts(posts, channel = '') {
       datetime: post.datetime,
       date,
       title: post.title?.substring(0, 200) || '',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      ...(isAd !== undefined ? { isAd } : {}),
     }
 
     if (existingIndex !== undefined) {
@@ -130,6 +138,95 @@ export function savePosts(posts, channel = '') {
     db.posts.sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
     writeDb(db)
   }
+
+  // Asynchronously classify and memorize ads for unclassified posts
+  queueAdClassification(posts, channel)
+}
+
+const inFlightAdKeys = new Set()
+
+/**
+ * Queue unclassified posts for background ad detection and DB memorization.
+ * Operates purely asynchronously (fire-and-forget) to guarantee zero blocking on SSR.
+ * Resolves race conditions by fetching a fresh DB snapshot right before write,
+ * and uses inFlightAdKeys to prevent redundant duplicate requests (cache stampede).
+ */
+export function queueAdClassification(posts, channel = '') {
+  if (process.env.AD_DETECTION_DISABLED === 'true' || !Array.isArray(posts) || posts.length === 0) {
+    return
+  }
+
+  setTimeout(async () => {
+    const keysToProcess = []
+    try {
+      const { detectIsAd } = await import('../ad-detector.js')
+      const initialDb = readDb()
+
+      // Determine which posts need classification and aren't already in-flight
+      const targetPosts = []
+      for (const p of posts) {
+        if (!p.id) continue
+        const effectiveChannel = (channel || p.channel || '').toLowerCase()
+        const key = `${effectiveChannel}:${p.id}`
+
+        if (inFlightAdKeys.has(key)) continue
+
+        const stored = initialDb.posts.find(item =>
+          (item.channel || '').toLowerCase() === effectiveChannel && item.id === parseInt(p.id)
+        )
+
+        // Only evaluate if stored post has no isAd decision yet
+        if (stored && stored.isAd === undefined) {
+          const text = p.text || p.title || ''
+          if (text.trim().length > 0) {
+            inFlightAdKeys.add(key)
+            keysToProcess.push(key)
+            targetPosts.push({ key, effectiveChannel, id: parseInt(p.id), text, postRef: p })
+          }
+        }
+      }
+
+      if (targetPosts.length === 0) return
+
+      // Perform evaluations
+      const classifiedResults = []
+      for (const item of targetPosts) {
+        try {
+          const isAd = await detectIsAd(item.text)
+          classifiedResults.push({ ...item, isAd })
+          item.postRef.isAd = isAd
+        } catch (e) {
+          console.warn(`[AdDetector] Error classifying post ${item.key}:`, e.message)
+        }
+      }
+
+      // Fetch fresh DB snapshot before writing to prevent stale overwrites
+      if (classifiedResults.length > 0) {
+        const freshDb = readDb()
+        let updated = false
+
+        for (const res of classifiedResults) {
+          const match = freshDb.posts.find(p =>
+            (p.channel || '').toLowerCase() === res.effectiveChannel && p.id === res.id
+          )
+          if (match && match.isAd === undefined) {
+            match.isAd = res.isAd
+            updated = true
+          }
+        }
+
+        if (updated) {
+          writeDb(freshDb)
+        }
+      }
+    } catch (e) {
+      console.warn('[AdDetector] Background classification worker error:', e.message)
+    } finally {
+      for (const key of keysToProcess) {
+        inFlightAdKeys.delete(key)
+      }
+    }
+  }, 10)
 }
 
 /**
@@ -436,6 +533,7 @@ export function getTotalPostCount(channel = '') {
 export default {
   savePost,
   savePosts,
+  queueAdClassification,
   getDatesWithPosts,
   getDatesByMonth,
   getPostsBetween,

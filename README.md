@@ -11,6 +11,8 @@
 - 提供 RSS XML、RSS JSON 與 sitemap。
 - 支援單一頻道與任意公開頻道瀏覽模式。
 - 內建響應式時間軸、按日期分組的文章清單與日曆導覽。
+- **2md.aiurl.tw 風格左側目錄側邊欄 (TOC)**：支援 ScrollSpy 即時閱讀定位、單篇文章章節解析、行動版抽屜式導覽與平滑捲動跳轉。
+- **Clef-Flash SystemOne AI 雙決策模型推廣廣告過濾**：整合自建 GPU 主節點與 CPU 備援節點，30 秒逾時保護、Fail-Open 永不阻塞與瀏覽即記憶持久化機制。
 - 首頁提供近七天熱門公開頻道 Top 10，並支援繁體中文／English 介面切換。
 - 提供完整 Open Graph、Twitter Card、JSON-LD、PWA manifest、8 品牌 favicon 與 `/llms.txt`。
 - 支援 `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT` 等自訂嵌入內容。
@@ -68,6 +70,9 @@ docker run -d \
 | `TURNSTILE_SITE_KEY`                                   | Cloudflare Turnstile 前端 Site Key（預設已有預設值）。       | `0x4AAAAAAEvqf7unH6MrhIv2` |
 | `TURNSTILE_SECRET`                                     | Cloudflare Turnstile 後端 Secret Key（設定後啟用人機防護）。 | `0x4AAAAAA...`             |
 | `TURNSTILE_ENABLED`                                    | 是否啟用 Turnstile 防爬蟲人機驗證（預設 `true`）。          | `true`                     |
+| `AD_DETECTION_DISABLED`                                | 設為 `true` 時停用 Clef-Flash AI 廣告過濾。                 | `false`                    |
+| `CLEF_PRIMARY_URL`                                     | Clef-Flash SystemOne 主推論端點。                           | `https://clef.create360.ai/v1/systemone` |
+| `CLEF_FALLBACK_URL`                                    | Clef-Flash SystemOne 備援端點。                             | `https://clef.aiurl.tw/v1/systemone`     |
 | `HEADER_INJECT`、`FOOTER_INJECT`、`SIDEBAR_INJECT`     | 插入受信任的 HTML 或 script。                               | 見下方說明                 |
 
 ### 嵌入內容

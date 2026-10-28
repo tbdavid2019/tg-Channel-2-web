@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-28
+
+### Added
+
+- **2md.aiurl.tw 風格左側目錄側邊欄 (`src/components/toc-sidebar.astro`, `src/lib/telegram/toc.js`)**：
+  - 新增經典編輯室左側目錄導航，完美對齊 `2md.aiurl.tw` 溫潤紙本質感（陶土紅 kicker、深藍左側垂直活動指示條、等寬字體時間與來源）。
+  - **智慧章節與摘要解析**：單篇文章模式自動解析 `<h2>-<h4>` 與加粗段落小標（如 `The US code`、`Limits` 等）；頻道時間線模式自動截取每篇貼文首句摘要並附加媒體圖示（📷、🎬）。
+  - **高效能 ScrollSpy**：滾動時透過 `requestAnimationFrame` 節流即時計算視窗焦點，動態高亮目前閱讀段落，並僅在側欄內部調整捲動位置。
+  - **響應式行動版抽屜**：桌面版（$\ge$ 1200px）為三欄固定黏貼，行動版與平板自動轉為左下角懸浮按鈕 `📑 目錄 (篇數)` 與滑出式底部抽屜。
+- **Clef-Flash SystemOne AI 雙決策模型推廣廣告過濾 (`src/lib/ad-detector.js`, `src/lib/db/index.js`)**：
+  - 整合自建 Clef-Flash SystemOne Typed 決策端點，零 Token 生成消耗，直接輸出 Logits 布林機率判定商業推廣與導流廣告。
+  - **雙節點備援機制**：優先呼叫 Primary（`https://clef.create360.ai/v1/systemone`，GPU 極速 <200ms），異常時自動平滑切換至 Fallback 2（`https://clef.aiurl.tw/v1/systemone`，CPU Q4_K_M）。
+  - **Fail-Open 彈性與 30 秒逾時保護**：設定 30 秒逾時；若兩台決策節點皆離線或發生錯誤，系統保證正常運作不拋錯、不阻塞頁面。
+  - **瀏覽即記憶持久化**：背景佇列非同步判定，並將結果持久化記憶至 `posts.json`（`isAd: boolean`），下次瀏覽或重整直接讀取快取（0ms 開銷）。
+  - 前端貼文於時間標籤旁優雅標記 `🛡️ 推廣內容`。
+
+### Fixed
+
+- **滾動死循環卡死修復 (`src/components/toc-sidebar.astro`)**：移除原先在 `scroll` 事件監聽中對 TOC 連結呼叫 `link.scrollIntoView()` 造成的視窗捲軸死循環與跳動問題。
+- **行動版抽屜遮擋修復 (`src/assets/style.css`)**：為關閉狀態之抽屜與遮罩加上 `display: none` 與 `pointer-events: none`，並將行動版根節點提升至 `document.body` 避免觸控攔截與捲軸異常。
+- **貼文標題錨點滾動邊距 (`src/assets/style.css`)**：為 `.item`、章節錨點及內容 Landmarks 統一設定 `scroll-margin-top: 84px`，確保點擊跳轉時不被上方浮動 Header 遮擋。
+
 ## 2026-09-29
 
 ### Fixed

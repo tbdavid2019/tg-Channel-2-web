@@ -1,13 +1,19 @@
 ---
 import dayjs from '../lib/dayjs'
 import { getEnv } from '../lib/env'
+import { sanitizeContent } from '../lib/telegram/sanitize'
+import {
+  extractPostExcerpt,
+  extractArticleSections,
+  buildTimelineToc,
+} from '../lib/telegram/toc'
 
 const { channel, posts = [], isItem = false } = Astro.props
 
 const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
 const isAnyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+const hasComments = Boolean(getEnv(import.meta.env, Astro, 'COMMENTS'))
 
-// Determine primary post (for single post view) or latest post (for timeline view)
 const primaryPost = posts[0] || null
 const primaryDatetime = primaryPost?.datetime ? dayjs(primaryPost.datetime).tz(tz) : null
 const formattedDate = primaryDatetime ? primaryDatetime.format('YYYY-MM-DD HH:mm') : ''
@@ -24,98 +30,76 @@ const channelUrl = channelHandle
   : '#'
 const displayDomain = channelHandle ? `t.me/${channelHandle}` : 'telegram.david888.com'
 
-// Back URL and label
 const backUrl = isItem
   ? (channelHandle ? `/${channelHandle}/` : '/')
   : (isAnyChannel ? '/' : '#top')
 const backLabel = isItem ? '返回頻道' : (isAnyChannel ? '所有頻道' : '回到頁首')
 const backArrow = isItem || isAnyChannel ? '←' : '↑'
 
-// Helper to extract clean summary label for timeline post
-function getPostSummary(post, index) {
-  if (post.title && post.title.trim().length > 0) {
-    const clean = post.title.replace(/\s+/g, ' ').trim()
-    return clean.length > 26 ? `${clean.slice(0, 26)}…` : clean
-  }
-  if (post.text && post.text.trim().length > 0) {
-    const firstLine = post.text.split('\n')[0].replace(/\s+/g, ' ').trim()
-    if (firstLine.length > 0) {
-      return firstLine.length > 26 ? `${firstLine.slice(0, 26)}…` : firstLine
-    }
-  }
-  if (post.content && (post.content.includes('<video') || post.content.includes('video_player'))) {
-    return `🎬 影音訊息 #${post.id || index + 1}`
-  }
-  if (post.content && post.content.includes('<img')) {
-    return `📷 圖片訊息 #${post.id || index + 1}`
-  }
-  return `貼文 #${post.id || index + 1}`
-}
-
-function getPostFullTitle(post, index) {
-  if (post.title && post.title.trim().length > 0) {
-    return post.title.replace(/\s+/g, ' ').trim()
-  }
-  if (post.text && post.text.trim().length > 0) {
-    return post.text.slice(0, 100).replace(/\s+/g, ' ').trim()
-  }
-  return `貼文 #${post.id || index + 1}`
-}
-
-// Generate TOC items
 let tocItems = []
 
 if (isItem && primaryPost) {
-  // Single article view
-  tocItems.push({
-    id: `post-${primaryPost.id}`,
-    targetId: `post-${primaryPost.id}`,
-    title: getPostSummary(primaryPost, 0),
-    fullTitle: getPostFullTitle(primaryPost, 0),
+  const safeContent = primaryPost.content ? sanitizeContent(primaryPost.content) : ''
+  const sections = extractArticleSections(safeContent, {
+    hasMedia: Boolean(safeContent.includes('<img') || safeContent.includes('<video')),
+    hasTags: Boolean(primaryPost.tags && primaryPost.tags.length > 0),
+    tagsCount: primaryPost.tags?.length || 0,
+    hasComments,
+    postId: primaryPost.id,
   })
 
-  // Check for media attachment
-  if (primaryPost.content && (primaryPost.content.includes('<img') || primaryPost.content.includes('<video'))) {
+  const hasCustomHeadings = sections.some((s) => !s.isLandmark)
+
+  if (hasCustomHeadings) {
+    const excerpt = extractPostExcerpt(primaryPost, 26)
     tocItems.push({
-      id: 'post-media',
+      id: `toc-post-${primaryPost.id}`,
       targetId: `post-${primaryPost.id}`,
-      title: '多媒體附件',
-      fullTitle: '多媒體圖片與影片',
+      title: excerpt,
+      fullTitle: primaryPost.title || excerpt,
+      level: 1,
     })
-  }
 
-  // Check for tags
-  if (primaryPost.tags && primaryPost.tags.length > 0) {
-    tocItems.push({
-      id: 'post-tags',
-      targetId: 'post-tags',
-      title: `標籤 (${primaryPost.tags.length})`,
-      fullTitle: `文章標籤: #${primaryPost.tags.join(' #')}`,
-    })
-  }
+    for (const sec of sections) {
+      tocItems.push({
+        id: `toc-sec-${sec.id}`,
+        targetId: sec.id,
+        title: sec.title,
+        fullTitle: sec.title,
+        level: sec.level || 2,
+      })
+    }
 
-  // Check for comments
-  const hasComments = Boolean(getEnv(import.meta.env, Astro, 'COMMENTS'))
-  if (hasComments) {
-    tocItems.push({
-      id: 'post-comments',
-      targetId: 'post-comments',
-      title: '頻道留言討論',
-      fullTitle: 'Telegram 頻道留言討論',
-    })
+    if (primaryPost.tags && primaryPost.tags.length > 0) {
+      tocItems.push({
+        id: 'toc-post-tags',
+        targetId: 'post-tags',
+        title: `標籤 (${primaryPost.tags.length})`,
+        fullTitle: `標籤: #${primaryPost.tags.join(' #')}`,
+        level: 3,
+      })
+    }
+
+    if (hasComments) {
+      tocItems.push({
+        id: 'toc-post-comments',
+        targetId: 'post-comments',
+        title: '頻道留言',
+        fullTitle: 'Telegram 頻道留言討論',
+        level: 3,
+      })
+    }
+  } else {
+    tocItems = sections.map((sec) => ({
+      id: `toc-${sec.id}`,
+      targetId: sec.id,
+      title: sec.title,
+      fullTitle: sec.title,
+      level: 2,
+    }))
   }
 } else {
-  // Timeline view: list posts on current page
-  tocItems = posts.map((post, idx) => {
-    return {
-      id: `toc-item-${post.id}`,
-      targetId: `post-${post.id}`,
-      postId: post.id,
-      title: getPostSummary(post, idx),
-      fullTitle: getPostFullTitle(post, idx),
-      time: dayjs(post.datetime).tz(tz).format('HH:mm'),
-    }
-  })
+  tocItems = buildTimelineToc(posts, tz)
 }
 ---
 
@@ -156,7 +140,7 @@ if (isItem && primaryPost) {
     {formattedDate && (
       <div class="toc-section toc-time-section">
         <div class="toc-section-kicker" data-i18n={isItem ? 'publishTimeLabel' : 'latestUpdateLabel'}>
-          {isItem ? '發布時間' : '發布時間'}
+          {isItem ? '發布時間' : '最新發文'}
         </div>
         <div class="toc-time-card">
           <div class="toc-time-exact">{formattedDate}</div>
@@ -171,13 +155,13 @@ if (isItem && primaryPost) {
     {tocItems.length > 0 && (
       <div class="toc-section toc-nav-section">
         <div class="toc-section-kicker" data-i18n={isItem ? 'articleTocLabel' : 'pageTocLabel'}>
-          {isItem ? '本文目錄' : '本文目錄'}
+          {isItem ? '本文目錄' : '本頁目錄'}
         </div>
         <div class="toc-links-list" role="list">
           {tocItems.map((item, idx) => (
             <a
               href={`#${item.targetId}`}
-              class={`toc-link ${idx === 0 ? 'is-active' : ''}`}
+              class={`toc-link ${idx === 0 ? 'is-active' : ''} ${item.level === 3 ? 'is-level-sub' : ''}`}
               data-target={item.targetId}
               role="listitem"
               title={item.fullTitle}
@@ -207,7 +191,7 @@ if (isItem && primaryPost) {
       <span class="mobile-toc-fab-count">{tocItems.length}</span>
     </button>
 
-    <div class="mobile-toc-backdrop" id="mobile-toc-backdrop" aria-hidden="true"></div>
+    <div class="mobile-toc-backdrop" id="mobile-toc-backdrop" aria-hidden="true" style="display: none;"></div>
 
     <aside
       class="mobile-toc-sheet"
@@ -216,12 +200,13 @@ if (isItem && primaryPost) {
       aria-modal="true"
       aria-label="文章目錄導覽"
       aria-hidden="true"
+      style="display: none;"
     >
       <div class="mobile-toc-sheet-header">
         <div class="mobile-toc-sheet-title">
           <span class="mobile-toc-sheet-icon" aria-hidden="true">📑</span>
           <span data-i18n={isItem ? 'articleTocLabel' : 'pageTocLabel'}>
-            {isItem ? '本文目錄' : '本文目錄'}
+            {isItem ? '本文目錄' : '本頁目錄'}
           </span>
           <span class="mobile-toc-badge">{tocItems.length} 篇</span>
         </div>
@@ -263,22 +248,62 @@ if (isItem && primaryPost) {
 )}
 
 <script>
-  // High-performance TOC ScrollSpy & Mobile Drawer Controller
+  // High-performance TOC Controller with Zero Scroll Loop and Protected Mobile Sheet
   function initToc() {
+    // 清理舊的監聽器，確保 idempotent
+    if (window.__tocScrollHandler) {
+      window.removeEventListener('scroll', window.__tocScrollHandler);
+      window.__tocScrollHandler = null;
+    }
+    if (window.__tocKeydownHandler) {
+      document.removeEventListener('keydown', window.__tocKeydownHandler);
+      window.__tocKeydownHandler = null;
+    }
+
+    // 1. 保證行動版懸浮按鈕與抽屜掛載在 document.body，不受任何父容器 overflow/display 限制
+    const mobileRoots = document.querySelectorAll('.mobile-toc-root');
+    if (mobileRoots.length > 0) {
+      for (let i = 0; i < mobileRoots.length - 1; i++) {
+        mobileRoots[i].remove();
+      }
+      const activeMobileRoot = mobileRoots[mobileRoots.length - 1];
+      if (activeMobileRoot.parentElement && activeMobileRoot.parentElement !== document.body) {
+        document.body.appendChild(activeMobileRoot);
+      }
+    }
+
     const desktopLinks = document.querySelectorAll('.toc-link[data-target]');
     const mobileLinks = document.querySelectorAll('.mobile-toc-item[data-target]');
     const allLinks = [...desktopLinks, ...mobileLinks];
 
     if (allLinks.length === 0) return;
 
+    // 快取目錄對應的目標 DOM 元素，避免在每個 scroll frame 反覆 document.getElementById
+    const targetElements = [];
+    desktopLinks.forEach((l) => {
+      const id = l.getAttribute('data-target');
+      const el = id ? document.getElementById(id) : null;
+      if (el) targetElements.push(el);
+    });
+
     // Mobile sheet controls
     const fab = document.getElementById('mobile-toc-fab-btn');
     const sheet = document.getElementById('mobile-toc-sheet');
     const backdrop = document.getElementById('mobile-toc-backdrop');
     const closeBtn = document.getElementById('mobile-toc-close-btn');
+    const sidebarContainer = document.querySelector('#toc-container');
+
+    let closeTimer = null;
 
     function openMobileSheet() {
       if (!sheet || !backdrop || !fab) return;
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+      backdrop.style.display = 'block';
+      sheet.style.display = 'flex';
+      void sheet.offsetHeight; // force reflow for smooth transform animation
       sheet.classList.add('is-open');
       backdrop.classList.add('is-open');
       sheet.setAttribute('aria-hidden', 'false');
@@ -293,34 +318,43 @@ if (isItem && primaryPost) {
       sheet.setAttribute('aria-hidden', 'true');
       fab.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
+      closeTimer = setTimeout(() => {
+        if (!sheet.classList.contains('is-open')) {
+          sheet.style.display = 'none';
+          backdrop.style.display = 'none';
+        }
+      }, 260);
     }
 
     if (fab) {
-      fab.addEventListener('click', () => {
+      fab.onclick = () => {
         const isOpen = sheet?.classList.contains('is-open');
         if (isOpen) closeMobileSheet();
         else openMobileSheet();
-      });
+      };
     }
 
-    if (closeBtn) closeBtn.addEventListener('click', closeMobileSheet);
-    if (backdrop) backdrop.addEventListener('click', closeMobileSheet);
+    if (closeBtn) closeBtn.onclick = closeMobileSheet;
+    if (backdrop) backdrop.onclick = closeMobileSheet;
 
-    document.addEventListener('keydown', (e) => {
+    window.__tocKeydownHandler = (e) => {
       if (e.key === 'Escape' && sheet?.classList.contains('is-open')) {
         closeMobileSheet();
       }
-    });
+    };
+    document.addEventListener('keydown', window.__tocKeydownHandler);
 
-    // Active state manager
+    // 活躍標記管理器：絕不調用 scrollIntoView()！
+    // 僅在目錄側欄內部做 scrollTop 滾動，避免干擾使用者與 window
     function setActive(targetId) {
       if (!targetId) return;
+
+      let activeDesktopLink = null;
 
       desktopLinks.forEach((link) => {
         if (link.getAttribute('data-target') === targetId) {
           link.classList.add('is-active');
-          // Smoothly scroll active TOC item within sidebar if out of view
-          link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          activeDesktopLink = link;
         } else {
           link.classList.remove('is-active');
         }
@@ -333,9 +367,22 @@ if (isItem && primaryPost) {
           link.classList.remove('is-active');
         }
       });
+
+      if (sidebarContainer && activeDesktopLink) {
+        const linkTop = activeDesktopLink.offsetTop;
+        const linkHeight = activeDesktopLink.offsetHeight;
+        const cScrollTop = sidebarContainer.scrollTop;
+        const cHeight = sidebarContainer.clientHeight;
+
+        if (linkTop < cScrollTop) {
+          sidebarContainer.scrollTop = Math.max(0, linkTop - 12);
+        } else if (linkTop + linkHeight > cScrollTop + cHeight) {
+          sidebarContainer.scrollTop = linkTop + linkHeight - cHeight + 12;
+        }
+      }
     }
 
-    // Click handler for all TOC links
+    // 點擊目錄項目平滑滾動（扣除 header 84px offset）
     allLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
         const targetId = link.getAttribute('data-target');
@@ -345,14 +392,16 @@ if (isItem && primaryPost) {
           e.preventDefault();
           closeMobileSheet();
 
-          targetEl.scrollIntoView({ behavior: 'smooth' });
+          const top = targetEl.getBoundingClientRect().top + window.scrollY - 84;
+          window.scrollTo({ top, behavior: 'smooth' });
+
           history.pushState(null, '', `#${targetId}`);
           setActive(targetId);
         }
       });
     });
 
-    // ScrollSpy using throttled getBoundingClientRect
+    // ScrollSpy 滾動監聽（RAF 節流計算，無副作用）
     let isTicking = false;
 
     function handleScroll() {
@@ -361,30 +410,19 @@ if (isItem && primaryPost) {
 
       window.requestAnimationFrame(() => {
         isTicking = false;
-
-        const targetElements = [];
-        desktopLinks.forEach((l) => {
-          const id = l.getAttribute('data-target');
-          const el = id ? document.getElementById(id) : null;
-          if (el) targetElements.push(el);
-        });
-
         if (targetElements.length === 0) return;
 
-        const headerOffset = 90; // sticky header offset
+        const headerOffset = 90;
         let activeTargetId = null;
 
-        // Check if scrolled near the very top
-        if (window.scrollY < 120) {
+        if (window.scrollY < 80) {
           activeTargetId = targetElements[0].id;
-        }
-        // Check if scrolled to bottom of document
-        else if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
+        } else if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50) {
           activeTargetId = targetElements[targetElements.length - 1].id;
         } else {
           for (let i = 0; i < targetElements.length; i++) {
             const rect = targetElements[i].getBoundingClientRect();
-            if (rect.top <= headerOffset + 80) {
+            if (rect.top <= headerOffset + 60) {
               activeTargetId = targetElements[i].id;
             } else {
               break;
@@ -401,18 +439,16 @@ if (isItem && primaryPost) {
       });
     }
 
+    window.__tocScrollHandler = handleScroll;
     window.addEventListener('scroll', handleScroll, { passive: true });
-    // Initial check
     handleScroll();
   }
 
-  // Initialize on page load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initToc);
   } else {
     initToc();
   }
 
-  // Re-run on Astro view transitions if active
   document.addEventListener('astro:page-load', initToc);
 </script>
