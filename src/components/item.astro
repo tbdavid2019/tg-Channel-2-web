@@ -11,7 +11,8 @@ const timezone = getEnv(import.meta.env, Astro, 'TIMEZONE')
 
 locale && dayjs.locale(locale)
 
-const { SITE_URL } = Astro.locals
+const rawSiteUrl = Astro.locals.SITE_URL || '/'
+const SITE_URL = rawSiteUrl.replace(/^https?:\/\/[^/]+/i, '') || '/'
 const { post, isItem } = Astro.props
 
 const channel = getEnv(import.meta.env, Astro, 'CHANNEL')

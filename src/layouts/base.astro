@@ -18,8 +18,11 @@ const GA_MEASUREMENT_ID = getEnv(import.meta.env, Astro, 'GA_MEASUREMENT_ID')
 
 const seo = channel?.seo
 const brand = '888 Telegram 頻道瀏覽器'
-const siteBase = new URL(SITE_URL || Astro.url.origin, Astro.url.origin)
-siteBase.protocol = 'https:'
+const forwardedHost = Astro.request.headers.get('x-forwarded-host') || Astro.request.headers.get('host') || 'telegram.david888.com'
+const forwardedProto = Astro.request.headers.get('x-forwarded-proto') || 'https'
+const fallbackOrigin = `${forwardedProto}://${forwardedHost}`
+const siteBase = new URL(SITE_URL || '/', fallbackOrigin)
+siteBase.protocol = forwardedProto.endsWith(':') ? forwardedProto : `${forwardedProto}:`
 const siteOrigin = siteBase.origin
 const currentPath = Astro.url.pathname === '/' ? '' : Astro.url.pathname.replace(/\/+$/, '')
 const canonical = `${siteOrigin}${currentPath}`

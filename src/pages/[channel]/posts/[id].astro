@@ -5,7 +5,7 @@ import { getChannelInfo } from '../../../lib/telegram'
 const { channel: channelName, id } = Astro.params
 
 // Update SITE_URL for local context
-Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
+Astro.locals.SITE_URL = `/${channelName}/`
 // Update RSS_URL for the channel-specific RSS feed
 Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
 

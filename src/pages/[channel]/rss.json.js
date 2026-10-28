@@ -3,8 +3,11 @@ import { getChannelInfo } from '../../lib/telegram'
 export async function GET(Astro) {
   const { channel: channelName } = Astro.params
   
+  const forwardedProto = Astro.request.headers.get('x-forwarded-proto') || 'https'
+  const forwardedHost = Astro.request.headers.get('x-forwarded-host') || Astro.request.headers.get('host') || 'telegram.david888.com'
+  const origin = `${forwardedProto}://${forwardedHost}`
   // Update SITE_URL for this channel
-  Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
+  Astro.locals.SITE_URL = `${origin}/${channelName}/`
   
   const tag = Astro.url.searchParams.get('tag')
   const channel = await getChannelInfo(Astro, {

@@ -12,7 +12,8 @@ import { getEnv } from '../lib/env'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const { SITE_URL } = Astro.locals
+const rawSiteUrl = Astro.locals.SITE_URL || '/'
+const SITE_URL = rawSiteUrl.replace(/^https?:\/\/[^/]+/i, '') || '/'
 const { channel, before = true, after = true, isItem = false, showCalendar = true } = Astro.props
 const posts = channel.posts ?? []
 const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'

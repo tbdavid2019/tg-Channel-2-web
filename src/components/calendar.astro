@@ -4,7 +4,9 @@ import 'dayjs/locale/zh-tw'
 import { getEnv } from '../lib/env'
 import { getDatesWithPosts, getDatesByMonth } from '../lib/db'
 
-const { SITE_URL } = Astro.locals
+const rawSiteUrl = Astro.locals.SITE_URL || '/'
+// Strip accidental http://localhost or host prefixes for clean relative links
+const SITE_URL = rawSiteUrl.replace(/^https?:\/\/[^/]+/i, '') || '/'
 const locale = getEnv(import.meta.env, Astro, 'LOCALE') || 'en'
 const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') || 'Asia/Taipei'
 const currentChannel = Astro.params?.channel || getEnv(import.meta.env, Astro, 'CHANNEL') || ''

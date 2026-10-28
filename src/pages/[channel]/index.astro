@@ -13,7 +13,7 @@ if (normalizedTarget.ok && normalizedTarget.handle !== channelName) {
 }
 
 // Update SITE_URL for local context to point to the channel
-Astro.locals.SITE_URL = `${Astro.url.origin}/${channelName}/`
+Astro.locals.SITE_URL = `/${channelName}/`
 // Update RSS_URL for the channel-specific RSS feed
 Astro.locals.RSS_URL = `${Astro.locals.SITE_URL}rss.xml`
 
