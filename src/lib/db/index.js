@@ -4,6 +4,7 @@ import fs from 'fs'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import timezone from 'dayjs/plugin/timezone.js'
+import { fastHeuristicCheck } from '../ad-detector.js'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -108,14 +109,21 @@ export function savePosts(posts, channel = '') {
     const existingIndex = channelMap.get(key)
     const existingPost = existingIndex !== undefined ? db.posts[existingIndex] : null
 
-    // 1. Instant synchronous heuristic check for explicit promo tags and keywords
+    // 1. Instant synchronous heuristic check for explicit promo tags and software resource sharing
     const text = post.text || post.title || ''
-    const hasPromoTag = /(?:#(?:广告|廣告|商業推廣|商业推广|系统推送|互推|引流|赞助|贊助))/i.test(text)
-    const hasExplicitPromo = /(?:一键解锁|高速专线|多端同时在线|专业加密隧道|USDT支付|首充|特惠套餐|8\.8折)/i.test(text)
-    const heuristicAd = (hasPromoTag || hasExplicitPromo) ? true : undefined
+    const fastDecision = fastHeuristicCheck(text)
 
-    // Restore memorized isAd if present, or apply heuristic decision
-    const isAd = post.isAd !== undefined ? post.isAd : (existingPost?.isAd !== undefined ? existingPost.isAd : heuristicAd)
+    // Restore memorized isAd if present, or apply heuristic decision.
+    // High-confidence fastDecision overrides stale/inaccurate stored flags.
+    let isAd = undefined
+    if (fastDecision !== null) {
+      isAd = fastDecision
+    } else if (post.isAd !== undefined) {
+      isAd = post.isAd
+    } else if (existingPost?.isAd !== undefined) {
+      isAd = existingPost.isAd
+    }
+
     if (isAd !== undefined) {
       post.isAd = isAd
     }
@@ -181,13 +189,18 @@ export function queueAdClassification(posts, channel = '') {
           (item.channel || '').toLowerCase() === effectiveChannel && item.id === parseInt(p.id)
         )
 
-        // Only evaluate if stored post has no isAd decision yet
-        if (stored && stored.isAd === undefined) {
+        // Evaluate if stored post has no isAd decision yet, or if it needs correction
+        if (stored) {
           const text = p.text || p.title || ''
-          if (text.trim().length > 0) {
-            inFlightAdKeys.add(key)
-            keysToProcess.push(key)
-            targetPosts.push({ key, effectiveChannel, id: parseInt(p.id), text, postRef: p })
+          const fastDecision = fastHeuristicCheck(text)
+          const needsCorrection = stored.isAd === true && fastDecision === false
+
+          if (stored.isAd === undefined || needsCorrection) {
+            if (text.trim().length > 0) {
+              inFlightAdKeys.add(key)
+              keysToProcess.push(key)
+              targetPosts.push({ key, effectiveChannel, id: parseInt(p.id), text, postRef: p })
+            }
           }
         }
       }
@@ -215,7 +228,7 @@ export function queueAdClassification(posts, channel = '') {
           const match = freshDb.posts.find(p =>
             (p.channel || '').toLowerCase() === res.effectiveChannel && p.id === res.id
           )
-          if (match && match.isAd === undefined) {
+          if (match && (match.isAd === undefined || match.isAd !== res.isAd)) {
             match.isAd = res.isAd
             updated = true
           }

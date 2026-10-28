@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import http from 'node:http'
-import { detectIsAd } from '../src/lib/ad-detector.js'
+import { detectIsAd, fastHeuristicCheck } from '../src/lib/ad-detector.js'
 
 test('detectIsAd returns false on empty, short, or invalid inputs without network calls', async () => {
   assert.equal(await detectIsAd(''), false)
@@ -11,11 +11,31 @@ test('detectIsAd returns false on empty, short, or invalid inputs without networ
   assert.equal(await detectIsAd(undefined), false)
 })
 
+test('fastHeuristicCheck correctly distinguishes promo tags from open-source tools', () => {
+  // Explicit promotions -> true
+  assert.equal(fastHeuristicCheck('#系统推送 中文TG搜索bot，输入关键词发送'), true)
+  assert.equal(fastHeuristicCheck('飞鸟VPN | 一键解锁全球网络 高速专线'), true)
+  assert.equal(fastHeuristicCheck('本频道开启 #互推 合作，欢迎联系'), true)
+  assert.equal(fastHeuristicCheck('#频道互推 #群组推荐 资源分享 互推：@bot'), true)
+  assert.equal(fastHeuristicCheck('全场 8.8折 优惠，支持 USDT支付'), true)
+  assert.equal(fastHeuristicCheck('❗️ 看片卡顿？平台受限？线路不稳？永久免费'), true)
+
+  // Open-source / tool sharing -> false
+  assert.equal(fastHeuristicCheck('▎信创PDF工具箱 v7.1纯前端、离线运行的 PDF 工具箱'), false)
+  assert.equal(fastHeuristicCheck('▎植物大战僵尸pvz融合版 2.1.4植物大战僵尸的融合版本，可以一键通关，修改画布'), false)
+  assert.equal(fastHeuristicCheck('▎文件时间属性修改-NewFileTime v8.31一款小巧、便携、智能、有效的Windows文件时间属性修改软件'), false)
+
+  // Neutral / general text -> null (delegated to Clef-Flash)
+  assert.equal(fastHeuristicCheck('今天天氣真好，大家過得如何？'), null)
+})
+
 test('detectIsAd detects explicit promo tags and patterns instantly without network calls', async () => {
   assert.equal(await detectIsAd('#系统推送 中文TG搜索bot，输入关键词发送'), true)
   assert.equal(await detectIsAd('飞鸟VPN | 一键解锁全球网络 高速专线'), true)
   assert.equal(await detectIsAd('本频道开启 #互推 合作，欢迎联系'), true)
   assert.equal(await detectIsAd('全场 8.8折 优惠，支持 USDT支付'), true)
+  assert.equal(await detectIsAd('#频道互推 #群组推荐 各种频道'), true)
+  assert.equal(await detectIsAd('▎信创PDF工具箱 v7.1纯前端、离线运行的 PDF 工具箱'), false)
 })
 
 test('detectIsAd correctly uses primary endpoint and parses noul probability', async () => {

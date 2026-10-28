@@ -9,6 +9,32 @@ export const CLEF_FALLBACK_URL = 'https://clef.aiurl.tw/v1/systemone'
 export const CLEF_TIMEOUT_MS = 30000
 
 /**
+ * Fast synchronous heuristic classifier for known promo tags and open-source tool sharing.
+ * Returns true (definitely ad), false (definitely tool / content sharing), or null (requires Clef evaluation).
+ *
+ * @param {string} text
+ * @returns {boolean|null}
+ */
+export function fastHeuristicCheck(text) {
+  if (!text || typeof text !== 'string') return null
+
+  // 1. Explicit commercial / cross-promotion triggers (instant true)
+  const promoPattern = /(?:#[\w\u4e00-\u9fa5]*(?:广告|廣告|商業推廣|商业推广|系统推送|互推|引流|群组推荐|频道互推|赞助|贊助)|(?:互推|引流)[：:]\s*@|飞鸟VPN|红杏云|趣连VPN|一键解锁|高速专线|多端同时在线|专业加密隧道|USDT支付|首充|特惠套餐|8\.8折|小众机场测评|二手机场|看片卡顿|平台受限|线路不稳|不花钱也能用得爽|企业级加密传输)/i
+  if (promoPattern.test(text)) {
+    return true
+  }
+
+  // 2. High-confidence non-ad tool / open-source resource sharing (instant false)
+  // Tool and software sharing (e.g. starting with ▎) without commercial triggers is not an ad
+  const isToolSharing = /^▎/m.test(text) && /(?:开源|GitHub|离线运行|多平台的|免激活|免费开源|Python 开发|安卓应用|Windows|软件|工具|应用|游戏|播放器|转换器|壁纸|教程|学习|修改版|融合版)/i.test(text)
+  if (isToolSharing) {
+    return false
+  }
+
+  return null
+}
+
+/**
  * Evaluates whether a post text is an advertisement using Clef-Flash SystemOne.
  *
  * @param {string} text - The post text content to evaluate
@@ -34,10 +60,9 @@ export async function detectIsAd(text, options = {}) {
 
   // 0. Instant heuristic detection for explicit promo tags and typical sponsor patterns
   if (!options.skipHeuristics) {
-    const hasPromoTag = /(?:#(?:广告|廣告|商業推廣|商业推广|系统推送|互推|引流|赞助|贊助))/i.test(text)
-    const hasExplicitPromo = /(?:一键解锁|高速专线|多端同时在线|专业加密隧道|USDT支付|首充|特惠套餐|8\.8折)/i.test(text)
-    if (hasPromoTag || hasExplicitPromo) {
-      return true
+    const heuristic = fastHeuristicCheck(text)
+    if (heuristic !== null) {
+      return heuristic
     }
   }
 
@@ -99,6 +124,7 @@ export async function detectIsAd(text, options = {}) {
 
 export default {
   detectIsAd,
+  fastHeuristicCheck,
   CLEF_PRIMARY_URL,
   CLEF_FALLBACK_URL,
   CLEF_TIMEOUT_MS,
