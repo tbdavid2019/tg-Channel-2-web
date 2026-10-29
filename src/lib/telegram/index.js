@@ -20,10 +20,7 @@ function escapeAttr(str) {
 
 const cache = new LRUCache({
   ttl: 1000 * 60 * 10, // 10 minutes - refresh frequently for new posts
-  maxSize: 50 * 1024 * 1024, // 50MB
-  sizeCalculation: (item) => {
-    return JSON.stringify(item).length
-  },
+  max: 1000, // Up to 1000 channel/post entries in memory
 })
 
 function getVideoStickers($, item, { staticProxy, index }) {
@@ -255,14 +252,13 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
         after: after || undefined,
         q: q || undefined,
       },
-      retry: 5,
-      retryDelay: 2000, // 2 seconds between retries to avoid rate limiting
-      timeout: 30000, // 30 second timeout
+      retry: 1,
+      retryDelay: 500,
+      timeout: 8000, // 8 second timeout to protect thread pool from hanging upstreams
     })
   } catch (error) {
     console.error('Fetch error:', error.message, { url, before, after, q, type, id })
-    // Return empty result instead of throwing - don't cache failures
-    return {
+    const failedResult = {
       handle: channel,
       posts: [],
       title: '',
@@ -272,11 +268,14 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
       errorCode: 'fetch_failed',
       telegramUrl: normalizedTarget.url,
     }
+    // Short 60s cache for failures to protect Telegram upstream from crawler bombardment
+    cache.set(cacheKey, failedResult, { ttl: 60 * 1000 })
+    return failedResult
   }
 
   if (!html) {
     console.error('Empty response received', { url, before, after, q, type, id })
-    return {
+    const emptyResult = {
       handle: channel,
       posts: [],
       title: '',
@@ -286,6 +285,8 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
       errorCode: 'empty_response',
       telegramUrl: normalizedTarget.url,
     }
+    cache.set(cacheKey, emptyResult, { ttl: 60 * 1000 })
+    return emptyResult
   }
 
   const $ = cheerio.load(html, {}, false)

@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import { getEnv } from '../lib/env'
+import { savePosts } from '../lib/db'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -18,14 +19,13 @@ const { channel, before = true, after = true, isItem = false, showCalendar = tru
 const posts = channel.posts ?? []
 const tz = getEnv(import.meta.env, Astro, 'TIMEZONE') ?? 'UTC'
 
-// Save posts to database for indexing and fast ad classification
-try {
-  const db = await import('../lib/db')
-  if (posts.length > 0 && db.savePosts) {
-    db.savePosts(posts, channel?.handle)
+// Save posts to database for indexing and fast ad classification (in-memory fast path)
+if (posts.length > 0 && channel?.handle) {
+  try {
+    savePosts(posts, channel.handle)
+  } catch (e) {
+    console.error('Failed to save posts to database:', e.message)
   }
-} catch (e) {
-  console.error('Failed to save posts to database:', e.message)
 }
 
 // Get unique dates from posts for date-based pagination

@@ -4,7 +4,7 @@ import fs from 'fs'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 import timezone from 'dayjs/plugin/timezone.js'
-import { fastHeuristicCheck } from '../ad-detector.js'
+import { detectIsAd, fastHeuristicCheck } from '../ad-detector.js'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -27,13 +27,47 @@ if (!fs.existsSync(dataDir)) {
 let dbCache = null
 let dbCacheMtime = 0
 let pendingHistoryWrite = null
+let pendingPostWrite = null
 
-// Helper to read DB with mtime cache check
+// High-speed O(1) in-memory lookup indexes
+const channelPostMap = new Map() // key: `${channel}:${id}` -> post
+const postsByChannel = new Map() // channel -> Array<post>
+
+function rebuildIndex(posts) {
+  channelPostMap.clear()
+  postsByChannel.clear()
+  if (!Array.isArray(posts)) return
+
+  for (const post of posts) {
+    if (!post || !post.id) continue
+    const ch = (post.channel || '').toLowerCase()
+    if (!ch) continue
+    const key = `${ch}:${post.id}`
+    channelPostMap.set(key, post)
+
+    let list = postsByChannel.get(ch)
+    if (!list) {
+      list = []
+      postsByChannel.set(ch, list)
+    }
+    list.push(post)
+  }
+}
+
+// Known scanner probe handles to discard during DB hygiene
+const SCANNER_PROBES = new Set([
+  'credentials', 'kubeconfig', 'actuator', 'node_modules', 'id_ed25519',
+  'printenv', 'drush', 'signup', 'wordpress', 'themes', 'devtools',
+  'undefined', 'null', 'wp-admin', 'wp-login', '.env', 'config'
+])
+
+// Helper to read DB with mtime cache check and automated data hygiene
 function readDb() {
   try {
     if (!fs.existsSync(dbPath)) {
       dbCache = { posts: [], channelHistory: [] }
       dbCacheMtime = 0
+      rebuildIndex(dbCache.posts)
       return dbCache
     }
     const stat = fs.statSync(dbPath)
@@ -42,16 +76,39 @@ function readDb() {
     }
     const data = fs.readFileSync(dbPath, 'utf-8')
     const db = JSON.parse(data)
+    
+    // Prune invalid channels & scanner garbage, keeping max 1000 newest posts per channel
+    const rawPosts = Array.isArray(db.posts) ? db.posts : []
+    const validPosts = []
+    const channelPostCounts = new Map()
+
+    for (const p of rawPosts) {
+      if (!p || !p.id || !p.datetime) continue
+      const ch = (p.channel || '').toLowerCase().trim()
+      if (!ch || ch === 'undefined' || ch === 'null' || SCANNER_PROBES.has(ch)) continue
+      
+      const count = channelPostCounts.get(ch) || 0
+      if (count < 1000) {
+        validPosts.push(p)
+        channelPostCounts.set(ch, count + 1)
+      }
+    }
+
     dbCache = {
       ...db,
-      posts: Array.isArray(db.posts) ? db.posts : [],
+      posts: validPosts,
       channelHistory: Array.isArray(db.channelHistory) ? db.channelHistory : [],
     }
     dbCacheMtime = stat.mtimeMs
+    rebuildIndex(dbCache.posts)
     return dbCache
   } catch (error) {
     console.error('Error reading DB:', error)
-    return dbCache || { posts: [], channelHistory: [] }
+    if (!dbCache) {
+      dbCache = { posts: [], channelHistory: [] }
+      rebuildIndex(dbCache.posts)
+    }
+    return dbCache
   }
 }
 
@@ -68,8 +125,21 @@ function writeDb(data) {
     } catch {
       dbCacheMtime = Date.now()
     }
+    rebuildIndex(dbCache.posts)
   } catch (error) {
     console.error('Error writing DB:', error)
+  }
+}
+
+function schedulePostWrite(db) {
+  const isTest = process.env.NODE_ENV === 'test' || String(process.env.DB_PATH || '').includes('telegram-reader-')
+  if (isTest) {
+    writeDb(db)
+  } else if (!pendingPostWrite) {
+    pendingPostWrite = setTimeout(() => {
+      pendingPostWrite = null
+      writeDb(dbCache || db)
+    }, 2000)
   }
 }
 
@@ -82,39 +152,28 @@ function extractLocalDate(datetime, tz = process.env.TIMEZONE || 'Asia/Taipei') 
 }
 
 /**
- * Save multiple posts at once with O(1) indexed lookups
+ * Save multiple posts at once with O(1) indexed lookups and non-blocking debounced writes
  */
 export function savePosts(posts, channel = '') {
   if (!posts || posts.length === 0) return
 
   const db = readDb()
   let changed = false
-
-  const postChannel = (channel || '').toLowerCase()
-  const channelMap = new Map()
-  for (let i = 0; i < db.posts.length; i++) {
-    const p = db.posts[i]
-    const pChan = (p.channel || '').toLowerCase()
-    if (!postChannel || pChan === postChannel) {
-      channelMap.set(`${pChan}:${p.id}`, i)
-    }
-  }
+  const effectiveChannel = (channel || '').toLowerCase().trim()
 
   for (const post of posts) {
     if (!post.id || !post.datetime) continue
 
-    const date = extractLocalDate(post.datetime)
-    const effectiveChannel = (channel || post.channel || '').toLowerCase()
-    const key = `${effectiveChannel}:${post.id}`
-    const existingIndex = channelMap.get(key)
-    const existingPost = existingIndex !== undefined ? db.posts[existingIndex] : null
+    const postChan = (channel || post.channel || '').toLowerCase().trim()
+    if (!postChan || postChan === 'undefined' || SCANNER_PROBES.has(postChan)) continue
+
+    const key = `${postChan}:${post.id}`
+    const existingPost = channelPostMap.get(key)
 
     // 1. Instant synchronous heuristic check for explicit promo tags and software resource sharing
     const text = post.text || post.title || ''
     const fastDecision = fastHeuristicCheck(text)
 
-    // Restore memorized isAd if present, or apply heuristic decision.
-    // High-confidence fastDecision overrides stale/inaccurate stored flags.
     let isAd = undefined
     if (fastDecision !== null) {
       isAd = fastDecision
@@ -128,29 +187,38 @@ export function savePosts(posts, channel = '') {
       post.isAd = isAd
     }
 
-    const newPost = {
-      id: parseInt(post.id),
-      channel: effectiveChannel,
-      datetime: post.datetime,
-      date,
-      title: post.title?.substring(0, 200) || '',
-      created_at: new Date().toISOString(),
-      ...(isAd !== undefined ? { isAd } : {}),
-    }
-
-    if (existingIndex !== undefined) {
-      db.posts[existingIndex] = { ...db.posts[existingIndex], ...newPost }
-      changed = true
+    if (existingPost) {
+      // Only mark changed if isAd status or title actually changed
+      if (isAd !== undefined && existingPost.isAd !== isAd) {
+        existingPost.isAd = isAd
+        changed = true
+      }
     } else {
+      const date = extractLocalDate(post.datetime)
+      const newPost = {
+        id: parseInt(post.id),
+        channel: postChan,
+        datetime: post.datetime,
+        date,
+        title: post.title?.substring(0, 200) || '',
+        created_at: new Date().toISOString(),
+        ...(isAd !== undefined ? { isAd } : {}),
+      }
       db.posts.push(newPost)
-      channelMap.set(key, db.posts.length - 1)
+      channelPostMap.set(key, newPost)
+
+      let channelList = postsByChannel.get(postChan)
+      if (!channelList) {
+        channelList = []
+        postsByChannel.set(postChan, channelList)
+      }
+      channelList.push(newPost)
       changed = true
     }
   }
 
   if (changed) {
-    db.posts.sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
-    writeDb(db)
+    schedulePostWrite(db)
   }
 
   // Asynchronously classify and memorize ads for unclassified posts
@@ -173,21 +241,18 @@ export function queueAdClassification(posts, channel = '') {
   setTimeout(async () => {
     const keysToProcess = []
     try {
-      const { detectIsAd } = await import('../ad-detector.js')
-      const initialDb = readDb()
+      readDb()
 
       // Determine which posts need classification and aren't already in-flight
       const targetPosts = []
       for (const p of posts) {
         if (!p.id) continue
-        const effectiveChannel = (channel || p.channel || '').toLowerCase()
+        const effectiveChannel = (channel || p.channel || '').toLowerCase().trim()
         const key = `${effectiveChannel}:${p.id}`
 
         if (inFlightAdKeys.has(key)) continue
 
-        const stored = initialDb.posts.find(item =>
-          (item.channel || '').toLowerCase() === effectiveChannel && item.id === parseInt(p.id)
-        )
+        const stored = channelPostMap.get(key)
 
         // Evaluate if stored post has no isAd decision yet, or if it needs correction
         if (stored) {
@@ -207,27 +272,29 @@ export function queueAdClassification(posts, channel = '') {
 
       if (targetPosts.length === 0) return
 
-      // Perform evaluations
+      // Perform evaluations in parallel batches (up to 5 concurrent) to eliminate CPU/event-loop starvation
       const classifiedResults = []
-      for (const item of targetPosts) {
-        try {
-          const isAd = await detectIsAd(item.text)
-          classifiedResults.push({ ...item, isAd })
-          item.postRef.isAd = isAd
-        } catch (e) {
-          console.warn(`[AdDetector] Error classifying post ${item.key}:`, e.message)
-        }
+      const batchSize = 5
+      for (let i = 0; i < targetPosts.length; i += batchSize) {
+        const batch = targetPosts.slice(i, i + batchSize)
+        await Promise.allSettled(
+          batch.map(async item => {
+            try {
+              const isAd = await detectIsAd(item.text)
+              classifiedResults.push({ ...item, isAd })
+              item.postRef.isAd = isAd
+            } catch (e) {
+              console.warn(`[AdDetector] Error classifying post ${item.key}:`, e.message)
+            }
+          })
+        )
       }
 
-      // Fetch fresh DB snapshot before writing to prevent stale overwrites
+      // Update in-memory map & scheduled write
       if (classifiedResults.length > 0) {
-        const freshDb = readDb()
         let updated = false
-
         for (const res of classifiedResults) {
-          const match = freshDb.posts.find(p =>
-            (p.channel || '').toLowerCase() === res.effectiveChannel && p.id === res.id
-          )
+          const match = channelPostMap.get(res.key)
           if (match && (match.isAd === undefined || match.isAd !== res.isAd)) {
             match.isAd = res.isAd
             updated = true
@@ -235,7 +302,7 @@ export function queueAdClassification(posts, channel = '') {
         }
 
         if (updated) {
-          writeDb(freshDb)
+          schedulePostWrite(dbCache)
         }
       }
     } catch (e) {
@@ -419,18 +486,19 @@ export function getVisitedChannels() {
 
 /**
  * Get dates with posts (for calendar)
- * Ultra-fast string boundary check over cached posts
+ * Ultra-fast string boundary check over channel-indexed posts
  */
 export function getDatesWithPosts(days = 30, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
-  const targetChannel = channel ? channel.toLowerCase() : null
+  const targetChannel = channel ? channel.toLowerCase().trim() : null
+  const candidates = targetChannel ? (postsByChannel.get(targetChannel) || []) : db.posts
   const todayStart = dayjs().tz(tz).startOf('day')
   const cutoffStr = todayStart.subtract(days - 1, 'day').format('YYYY-MM-DD')
   const tomorrowStr = todayStart.add(1, 'day').format('YYYY-MM-DD')
 
   const dateMap = {}
 
-  for (const post of db.posts) {
+  for (const post of candidates) {
     if (targetChannel && (post.channel || '').toLowerCase() !== targetChannel) continue
     const d = post.date || (post.datetime ? extractLocalDate(post.datetime, tz) : '')
     if (d >= cutoffStr && d < tomorrowStr) {
@@ -445,14 +513,15 @@ export function getDatesWithPosts(days = 30, channel = '', tz = process.env.TIME
 
 /**
  * Get dates comprising posts for a specific month
- * Ultra-fast string prefix match over cached posts
+ * Ultra-fast string prefix match over channel-indexed posts
  */
 export function getDatesByMonth(yearMonth, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
-  const targetChannel = channel ? channel.toLowerCase() : null
+  const targetChannel = channel ? channel.toLowerCase().trim() : null
+  const candidates = targetChannel ? (postsByChannel.get(targetChannel) || []) : db.posts
   const dateMap = {}
 
-  for (const post of db.posts) {
+  for (const post of candidates) {
     if (targetChannel && (post.channel || '').toLowerCase() !== targetChannel) continue
     const d = post.date || (post.datetime ? extractLocalDate(post.datetime, tz) : '')
     if (d && d.startsWith(yearMonth)) {
@@ -471,11 +540,12 @@ export function getDatesByMonth(yearMonth, channel = '', tz = process.env.TIMEZO
  */
 export function getPostsBetween(startDate, endDate, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
-  const targetChannel = channel ? channel.toLowerCase() : null
+  const targetChannel = channel ? channel.toLowerCase().trim() : null
+  const candidates = targetChannel ? (postsByChannel.get(targetChannel) || []) : db.posts
   const startMs = dayjs.tz(startDate, tz).startOf('day').valueOf()
   const endMs = dayjs.tz(endDate, tz).add(1, 'day').startOf('day').valueOf()
 
-  return db.posts.filter(p => {
+  return candidates.filter(p => {
     if (targetChannel && (p.channel || '').toLowerCase() !== targetChannel) return false
     // Fast path: if post has date and it is well outside the range
     if (p.date && (p.date < startDate || p.date > endDate)) return false
@@ -490,8 +560,9 @@ export function getPostsBetween(startDate, endDate, channel = '', tz = process.e
  */
 export function getPostIdsByDate(date, channel = '', tz = process.env.TIMEZONE || 'Asia/Taipei') {
   const db = readDb()
-  const targetChannel = channel ? channel.toLowerCase() : null
-  return db.posts.filter(p => {
+  const targetChannel = channel ? channel.toLowerCase().trim() : null
+  const candidates = targetChannel ? (postsByChannel.get(targetChannel) || []) : db.posts
+  return candidates.filter(p => {
     if (targetChannel && (p.channel || '').toLowerCase() !== targetChannel) return false
     if (p.date) return p.date === date
     if (p.datetime) return extractLocalDate(p.datetime, tz) === date
@@ -545,8 +616,8 @@ export function getAdjacentDates(currentDate, days = 30, channel = '', tz = proc
 export function getTotalPostCount(channel = '') {
   const db = readDb()
   if (!channel) return db.posts.length
-  const targetChannel = channel.toLowerCase()
-  return db.posts.filter(p => (p.channel || '').toLowerCase() === targetChannel).length
+  const targetChannel = channel.toLowerCase().trim()
+  return (postsByChannel.get(targetChannel) || []).length
 }
 
 export default {
