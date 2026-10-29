@@ -86,6 +86,15 @@ function readDb() {
       if (!p || !p.id || !p.datetime) continue
       const ch = (p.channel || '').toLowerCase().trim()
       if (!ch || ch === 'undefined' || ch === 'null' || SCANNER_PROBES.has(ch)) continue
+
+      // Reconcile false positive ads (e.g. daybuy store news or tool sharing)
+      if (p.isAd === true) {
+        const text = p.text || p.title || ''
+        const fast = fastHeuristicCheck(text, ch)
+        if (fast === false) {
+          p.isAd = false
+        }
+      }
       
       const count = channelPostCounts.get(ch) || 0
       if (count < 1000) {
@@ -172,7 +181,7 @@ export function savePosts(posts, channel = '') {
 
     // 1. Instant synchronous heuristic check for explicit promo tags and software resource sharing
     const text = post.text || post.title || ''
-    const fastDecision = fastHeuristicCheck(text)
+    const fastDecision = fastHeuristicCheck(text, postChan)
 
     let isAd = undefined
     if (fastDecision !== null) {
@@ -257,7 +266,7 @@ export function queueAdClassification(posts, channel = '') {
         // Evaluate if stored post has no isAd decision yet, or if it needs correction
         if (stored) {
           const text = p.text || p.title || ''
-          const fastDecision = fastHeuristicCheck(text)
+          const fastDecision = fastHeuristicCheck(text, effectiveChannel)
           const needsCorrection = stored.isAd === true && fastDecision === false
 
           if (stored.isAd === undefined || needsCorrection) {
@@ -280,7 +289,7 @@ export function queueAdClassification(posts, channel = '') {
         await Promise.allSettled(
           batch.map(async item => {
             try {
-              const isAd = await detectIsAd(item.text)
+              const isAd = await detectIsAd(item.text, { channel: item.effectiveChannel })
               classifiedResults.push({ ...item, isAd })
               item.postRef.isAd = isAd
             } catch (e) {

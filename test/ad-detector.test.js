@@ -25,6 +25,11 @@ test('fastHeuristicCheck correctly distinguishes promo tags from open-source too
   assert.equal(fastHeuristicCheck('▎植物大战僵尸pvz融合版 2.1.4植物大战僵尸的融合版本，可以一键通关，修改画布'), false)
   assert.equal(fastHeuristicCheck('▎文件时间属性修改-NewFileTime v8.31一款小巧、便携、智能、有效的Windows文件时间属性修改软件'), false)
 
+  // Channel first-party content & shopping deals -> false
+  assert.equal(fastHeuristicCheck('新品情報連結 https://www.daybuy.tw/costco/275349/ 澳洲原裝進口精油洗手液', 'daybuy'), false)
+  assert.equal(fastHeuristicCheck('優惠情報 https://www.daybuy.tw/costco/274619/ Costco會員皮夾優惠活動', 'daybuy'), false)
+  assert.equal(fastHeuristicCheck('Costco好市多現場目擊 特展情報看這邊', 'daybuy'), false)
+
   // Neutral / general text -> null (delegated to Clef-Flash)
   assert.equal(fastHeuristicCheck('今天天氣真好，大家過得如何？'), null)
 })
@@ -36,6 +41,9 @@ test('detectIsAd detects explicit promo tags and patterns instantly without netw
   assert.equal(await detectIsAd('全场 8.8折 优惠，支持 USDT支付'), true)
   assert.equal(await detectIsAd('#频道互推 #群组推荐 各种频道'), true)
   assert.equal(await detectIsAd('▎信创PDF工具箱 v7.1纯前端、离线运行的 PDF 工具箱'), false)
+  assert.equal(await detectIsAd('新品情報連結 https://www.daybuy.tw/costco/275349/ 澳洲原裝進口洗手液', { channel: 'daybuy' }), false)
+  // Even in shopping channel, explicit commercial spam must still be flagged
+  assert.equal(await detectIsAd('本頻道開啟 #互推 合作，日用優惠快來 互推：@bot', { channel: 'daybuy' }), true)
 })
 
 test('detectIsAd correctly uses primary endpoint and parses noul probability', async () => {

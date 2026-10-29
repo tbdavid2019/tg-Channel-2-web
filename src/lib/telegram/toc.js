@@ -253,9 +253,10 @@ export function injectSectionAnchors(content, sections) {
   // 注入 post-media 錨點（若存在多媒體 landmark 且尚未注入）
   const hasMediaSection = sections.some((s) => s.id === 'post-media')
   if (hasMediaSection && !result.includes('id="post-media"')) {
-    const mediaPattern = /(<img|<video|<audio|class="[^"]*(?:image-preview|video-preview|audio-preview))/i
-    if (mediaPattern.test(result)) {
-      result = result.replace(mediaPattern, '<span id="post-media" class="article-heading-anchor"></span>$1')
+    // 嚴格在最外層多媒體容器或標籤前注入，避免破壞 HTML 標籤內屬性結構
+    const mediaContainerPattern = /(<(?:div|figure)[^>]*class="[^"]*(?:image-list-container|media-container)[^"]*"[^>]*>|<button[^>]*class="[^"]*image-preview-button[^"]*"[^>]*>|<(?:img|video|audio)\b[^>]*>)/i
+    if (mediaContainerPattern.test(result)) {
+      result = result.replace(mediaContainerPattern, '<span id="post-media" class="article-heading-anchor"></span>$1')
     }
   }
 

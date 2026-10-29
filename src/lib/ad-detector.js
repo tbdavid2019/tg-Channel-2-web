@@ -9,13 +9,15 @@ export const CLEF_FALLBACK_URL = 'https://clef.aiurl.tw/v1/systemone'
 export const CLEF_TIMEOUT_MS = 30000
 
 /**
- * Fast synchronous heuristic classifier for known promo tags and open-source tool sharing.
- * Returns true (definitely ad), false (definitely tool / content sharing), or null (requires Clef evaluation).
+ * Fast synchronous heuristic classifier for known promo tags, open-source tool sharing,
+ * and first-party channel shopping / discount updates.
+ * Returns true (definitely ad), false (definitely organic content / tool sharing), or null (requires Clef evaluation).
  *
  * @param {string} text
+ * @param {string} [channel] - Optional channel handle for first-party ownership validation
  * @returns {boolean|null}
  */
-export function fastHeuristicCheck(text) {
+export function fastHeuristicCheck(text, channel = '') {
   if (!text || typeof text !== 'string') return null
 
   // 1. Explicit commercial / cross-promotion triggers (instant true)
@@ -31,6 +33,22 @@ export function fastHeuristicCheck(text) {
     return false
   }
 
+  // 3. First-party organic content & shopping / discount channel news without spam triggers (instant false)
+  const cleanChan = (channel || '').toLowerCase().replace(/^@/, '').trim()
+  if (cleanChan) {
+    // If text mentions channel's own domain or brand (e.g. daybuy.tw for daybuy, david888.com for oliservice)
+    if (cleanChan.length >= 3 && text.toLowerCase().includes(cleanChan)) {
+      return false
+    }
+
+    // Specific to shopping deal / store news channels (e.g. daybuy / Costco deals)
+    if (cleanChan === 'daybuy' || /(?:好市多|costco|新品情報|優惠情報|特展情報)/i.test(text)) {
+      return false
+    }
+  } else if (/(?:好市多|costco|新品情報|優惠情報|特展情報)/i.test(text)) {
+    return false
+  }
+
   return null
 }
 
@@ -39,10 +57,11 @@ export function fastHeuristicCheck(text) {
  *
  * @param {string} text - The post text content to evaluate
  * @param {object} [options]
+ * @param {string} [options.channel] - Channel handle for contextual understanding
  * @param {string} [options.primaryUrl] - Custom primary URL override
  * @param {string} [options.fallbackUrl] - Custom fallback URL override
  * @param {number} [options.timeoutMs] - Timeout in milliseconds (default 30s)
- * @param {number} [options.threshold] - Probability threshold for ad (default 0.70)
+ * @param {number} [options.threshold] - Probability threshold for ad (default 0.75)
  * @returns {Promise<boolean>} - true if classified as ad, false otherwise
  */
 export async function detectIsAd(text, options = {}) {
@@ -56,24 +75,26 @@ export async function detectIsAd(text, options = {}) {
   const primaryUrl = options.primaryUrl || process.env.CLEF_PRIMARY_URL || CLEF_PRIMARY_URL
   const fallbackUrl = options.fallbackUrl || process.env.CLEF_FALLBACK_URL || CLEF_FALLBACK_URL
   const timeoutMs = options.timeoutMs || CLEF_TIMEOUT_MS
-  const threshold = options.threshold ?? 0.70
+  const threshold = options.threshold ?? 0.75
+  const channel = options.channel || ''
 
-  // 0. Instant heuristic detection for explicit promo tags and typical sponsor patterns
+  // 0. Instant heuristic detection for explicit promo tags, tool sharing, and store news
   if (!options.skipHeuristics) {
-    const heuristic = fastHeuristicCheck(text)
+    const heuristic = fastHeuristicCheck(text, channel)
     if (heuristic !== null) {
       return heuristic
     }
   }
 
+  const channelHeader = channel ? `Channel: @${channel.replace(/^@/, '')}\n` : ''
   const payload = {
     model: 'clef-flash',
-    state: clean.slice(0, 1000),
+    state: `${channelHeader}Post: ${clean}`.slice(0, 1000),
     questions: {
       is_ad: {
         type: 'noul',
         instructions:
-          'Determine if this Telegram post is an explicit commercial ad, paid sponsor, bot promotion, VPN/proxy service promotion, casino/gambling ad, crypto shilling, or channel cross-promotion (#互推/#系统推送/#引流). Free software, game, or tool resource sharing by the channel author is NOT an ad. Is it a commercial advertisement or promotional push?',
+          'Determine if this Telegram post is an intrusive third-party commercial ad, paid sponsor, bot promotion, VPN/proxy service, casino/gambling, crypto shilling, or external cross-promotion (#互推/#系统推送/#引流). The channel author sharing their own organic content, news, store discounts, deal roundups, product arrivals, or own website links is NOT an ad. Is it an intrusive third-party advertisement or spam promotion?',
       },
     },
   }

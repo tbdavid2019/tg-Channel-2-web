@@ -129,6 +129,17 @@ test('injectSectionAnchors correctly injects post-media anchor before media elem
   assert.ok(result.includes('<span id="post-media" class="article-heading-anchor"></span><img src="test.jpg"'))
 })
 
+test('injectSectionAnchors preserves button markup and does not inject into tag attributes', () => {
+  const photoWrapHtml = '<div class="image-list-container image-list-odd"><button class="image-preview-button image-preview-wrap" popovertarget="modal-4253-0" popovertargetaction="show"><img src="test.jpg" /></button></div>'
+  const sections = [
+    { id: 'post-media', title: '多媒體附件', isLandmark: true },
+  ]
+  const result = injectSectionAnchors(photoWrapHtml, sections)
+  assert.ok(!result.includes('<button <span'), 'Must not inject span inside button tag attributes')
+  assert.ok(result.includes('<span id="post-media" class="article-heading-anchor"></span><div class="image-list-container'), 'Span must precede the outer media container')
+  assert.ok(result.includes('class="image-preview-button image-preview-wrap"'))
+})
+
 test('buildTimelineToc generates structured navigation items for posts list', () => {
   const posts = [
     {
