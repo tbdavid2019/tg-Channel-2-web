@@ -1,6 +1,7 @@
 ---
 import { getRandomChannel } from '../lib/recommendations'
 import { getEnv } from '../lib/env'
+import { Dices, RotateCw, ArrowRight } from 'lucide-astro'
 
 const { currentHandle = '' } = Astro.props
 const initialChannel = getRandomChannel(currentHandle)
@@ -17,10 +18,13 @@ function getChannelHref(handle) {
 <div class="sidebar-card random-recommend-card" id="random-recommend-card" data-any-channel={anyChannel ? 'true' : 'false'} data-reader-base={readerBase}>
   <div class="random-card-header">
     <div class="random-title-wrap">
-      <span class="random-badge" data-i18n="randomRecommendBadge">🎲 隨機探索</span>
+      <span class="random-badge">
+        <Dices size={14} class="random-badge-icon" aria-hidden="true" />
+        <span data-i18n="randomRecommendBadge">隨機探索</span>
+      </span>
     </div>
     <button type="button" class="random-reroll-btn" id="random-reroll-btn" title="換一個" data-i18n-title="randomReroll">
-      <span class="reroll-icon" id="random-reroll-icon" aria-hidden="true">🔄</span>
+      <RotateCw size={14} class="reroll-icon" id="random-reroll-icon" aria-hidden="true" />
       <span class="reroll-text" data-i18n="randomChange">換一個</span>
     </button>
   </div>
@@ -36,7 +40,10 @@ function getChannelHref(handle) {
       </div>
       <div class="random-card-footer">
         <span class="random-category-tag" id="random-category-tag">#{initialChannel.category || '精選'}</span>
-        <span class="random-action-btn" data-i18n="randomReadNow">立即閱讀 →</span>
+        <span class="random-action-btn">
+          <span data-i18n="randomReadNow">立即閱讀</span>
+          <ArrowRight size={13} style="display: inline-block; vertical-align: middle; margin-left: 2px;" />
+        </span>
       </div>
     </a>
   </div>

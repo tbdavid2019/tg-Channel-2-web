@@ -7,6 +7,7 @@ import {
   extractArticleSections,
   buildTimelineToc,
 } from '../lib/telegram/toc'
+import { ArrowLeft, ArrowUp, ExternalLink, BookOpen, X } from 'lucide-astro'
 
 const { channel, posts = [], isItem = false } = Astro.props
 
@@ -109,7 +110,11 @@ if (isItem && primaryPost) {
     <!-- Top Back Link -->
     <div class="toc-back-wrapper">
       <a href={backUrl} class="toc-back-link">
-        <span class="toc-back-arrow" aria-hidden="true">{backArrow}</span>
+        {isItem || isAnyChannel ? (
+          <ArrowLeft size={15} class="toc-back-arrow" aria-hidden="true" />
+        ) : (
+          <ArrowUp size={15} class="toc-back-arrow" aria-hidden="true" />
+        )}
         <span class="toc-back-label" data-i18n={isItem ? 'backToChannel' : (isAnyChannel ? 'allChannels' : 'backToTop')}>
           {backLabel}
         </span>
@@ -130,7 +135,7 @@ if (isItem && primaryPost) {
           title={`在 Telegram 開啟 ${channelTitle}`}
         >
           <span class="toc-source-name">{channelTitle}</span>
-          <span class="toc-ext-icon" aria-hidden="true">↗</span>
+          <ExternalLink size={13} class="toc-ext-icon" aria-hidden="true" />
         </a>
         <div class="toc-source-domain">{displayDomain}</div>
       </div>
@@ -186,7 +191,7 @@ if (isItem && primaryPost) {
       aria-expanded="false"
       aria-label="開啟文章目錄"
     >
-      <span class="mobile-toc-fab-icon" aria-hidden="true">📑</span>
+      <BookOpen size={16} class="mobile-toc-fab-icon" aria-hidden="true" />
       <span class="mobile-toc-fab-text" data-i18n="mobileTocToggle">目錄</span>
       <span class="mobile-toc-fab-count">{tocItems.length}</span>
     </button>
@@ -204,7 +209,7 @@ if (isItem && primaryPost) {
     >
       <div class="mobile-toc-sheet-header">
         <div class="mobile-toc-sheet-title">
-          <span class="mobile-toc-sheet-icon" aria-hidden="true">📑</span>
+          <BookOpen size={18} class="mobile-toc-sheet-icon" aria-hidden="true" />
           <span data-i18n={isItem ? 'articleTocLabel' : 'pageTocLabel'}>
             {isItem ? '本文目錄' : '本頁目錄'}
           </span>
@@ -216,7 +221,7 @@ if (isItem && primaryPost) {
           id="mobile-toc-close-btn"
           aria-label="關閉目錄"
         >
-          ✕
+          <X size={18} />
         </button>
       </div>
 

@@ -51,6 +51,9 @@ importers:
       '@astrojs/rss':
         specifier: ^4.0.19
         version: 4.0.19
+      '@lucide/astro':
+        specifier: ^1.63.0
+        version: 1.63.0(astro@5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1))
       '@sentry/astro':
         specifier: ^10.32.1
         version: 10.32.1(astro@5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1))
@@ -66,6 +69,9 @@ importers:
       lru-cache:
         specifier: ^11.2.4
         version: 11.2.4
+      lucide-astro:
+        specifier: ^0.556.0
+        version: 0.556.0(astro@5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1))
       marked:
         specifier: ^15.0.12
         version: 15.0.12
@@ -1381,6 +1387,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@lucide/astro@1.63.0':
+    resolution: {integrity: sha512-u/edquBZ8WqGE3yEh/DMoLZ7/jgKxBcKcGb//DYkm6/6ZTzYXwuAwhKWLCx5R5iyJN6nJBxLhOh3kmyWqe6/qw==}
+    peerDependencies:
+      astro: ^4 || ^5 || ^6 || ^7
 
   '@mapbox/node-pre-gyp@2.0.0':
     resolution: {integrity: sha512-llMXd39jtP0HpQLVI37Bf1m2ADlEb35GYSh1SDSLsBhR+5iCxiNGlT31yqbNtVHygHAtMy6dWFERpU2JgufhPg==}
@@ -4254,6 +4265,12 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lucide-astro@0.556.0:
+    resolution: {integrity: sha512-ugMjPb45AMfkLCaduNSbyy5NQEKvB1TxVVMmUS4S6L807PMESnX0Qp+DIKHjbyjJmPXOyLRbrzvR3YikTK7brg==}
+    deprecated: 'Deprecated: Use `@lucide/astro`'
+    peerDependencies:
+      astro: '>=2.7.1'
 
   luxon@3.7.2:
     resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
@@ -7203,6 +7220,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@lucide/astro@1.63.0(astro@5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1))':
+    dependencies:
+      astro: 5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1)
 
   '@mapbox/node-pre-gyp@2.0.0':
     dependencies:
@@ -10766,6 +10787,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-astro@0.556.0(astro@5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1)):
+    dependencies:
+      astro: 5.18.2(@netlify/blobs@10.7.13)(@types/node@24.10.1)(@vercel/functions@3.10.4(ws@8.22.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.1)
 
   luxon@3.7.2: {}
 

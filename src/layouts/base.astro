@@ -7,6 +7,7 @@ import { uiTranslations } from '../lib/i18n'
 import backToTopIcon from '../assets/back-to-top.svg'
 import PopularChannels from '../components/popular-channels.astro'
 import RandomRecommendation from '../components/random-recommendation.astro'
+import { Globe, Search, Zap, X } from 'lucide-astro'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
 const { channel } = Astro.props
@@ -175,7 +176,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
       <aside id="lang-prompt-banner" class="lang-prompt-banner" style="display: none;" aria-label="語言偏好提示">
         <div class="lang-prompt-inner">
           <div class="lang-prompt-content">
-            <span class="lang-prompt-icon" aria-hidden="true">🌐</span>
+            <Globe size={18} class="lang-prompt-icon" aria-hidden="true" />
             <div class="lang-prompt-text-group">
               <p id="lang-prompt-message" class="lang-prompt-text"></p>
               <p id="lang-prompt-sub" class="lang-prompt-sub"></p>
@@ -184,7 +185,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
           <div class="lang-prompt-actions">
             <button type="button" id="lang-prompt-keep" class="lang-prompt-btn lang-prompt-btn-primary"></button>
             <button type="button" id="lang-prompt-detected" class="lang-prompt-btn lang-prompt-btn-secondary"></button>
-            <button type="button" id="lang-prompt-close" class="lang-prompt-close-btn" aria-label="關閉提示" title="關閉">✕</button>
+            <button type="button" id="lang-prompt-close" class="lang-prompt-close-btn" aria-label="關閉提示" title="關閉"><X size={15} /></button>
           </div>
         </div>
       </aside>
@@ -206,7 +207,7 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
                 <label class="sidebar-card-title search-label" for="site-search" data-i18n="searchLabel">搜尋文章與標籤</label>
                 <div class="sidebar-search-row">
                   <input id="site-search" type="search" name="q" placeholder="輸入文章關鍵字或標籤" data-i18n-placeholder="searchPlaceholder" required />
-                  <button type="submit" class="sidebar-search-btn" aria-label="搜尋" title="搜尋">🔍</button>
+                  <button type="submit" class="sidebar-search-btn" aria-label="搜尋" title="搜尋"><Search size={15} /></button>
                 </div>
               </form>
             </div>
@@ -286,7 +287,10 @@ const navs = (getEnv(import.meta.env, Astro, 'NAVS') || '')
             )}
             <li>
               <button type="button" class="footer-action-link" id="footer-quick-channel-btn">
-                <span data-i18n="quickChannelNav">⚡ 快速開啟頻道 (⌘K)</span>
+                <span class="footer-zap-link">
+                  <Zap size={13} style="display: inline-block; vertical-align: middle; margin-right: 4px;" />
+                  <span data-i18n="quickChannelNav">快速開啟頻道 (⌘K)</span>
+                </span>
               </button>
             </li>
           </ul>

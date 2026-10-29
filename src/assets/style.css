@@ -527,6 +527,25 @@ a:hover {
   transform: translateY(-1px);
 }
 
+.ad-pill-icon {
+  flex-shrink: 0;
+  stroke: var(--clay);
+}
+
+.ad-collapsed-icon {
+  flex-shrink: 0;
+  stroke: var(--clay);
+}
+
+.ad-expand-icon {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.ad-expand-btn.is-expanded .ad-expand-icon {
+  transform: rotate(180deg);
+}
+
 .ad-expand-btn.is-expanded {
   background: rgba(23, 50, 77, 0.08);
   color: var(--deep-blue);

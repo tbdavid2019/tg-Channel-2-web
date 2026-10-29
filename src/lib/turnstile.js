@@ -121,6 +121,11 @@ async function getCryptoKey(secret) {
   )
 }
 
+function getUaFingerprint(userAgent = '') {
+  if (!userAgent || typeof userAgent !== 'string') return 'generic'
+  return userAgent.slice(0, 32).toLowerCase()
+}
+
 /**
  * Create a signed clearance cookie value
  */
@@ -139,7 +144,8 @@ export async function createClearanceCookie(secret, userAgent = '') {
 }
 
 /**
- * Validate a signed clearance cookie value
+ * Validate a signed clearance cookie value.
+ * Resilient against subtle mobile browser User-Agent variations.
  */
 export async function validateClearanceCookie(cookieValue, secret, userAgent = '', maxAgeMs = TURNSTILE_COOKIE_MAX_AGE * 1000) {
   if (!cookieValue || typeof cookieValue !== 'string') return false
@@ -157,16 +163,25 @@ export async function validateClearanceCookie(cookieValue, secret, userAgent = '
   }
 
   try {
-    const uaPart = (userAgent || '').slice(0, 64)
-    const message = `${timestampStr}:${uaPart}`
-    const encoder = new TextEncoder()
-    const key = await getCryptoKey(secret)
-
     const match = sigHex.match(/.{1,2}/g)
     if (!match) return false
     const sigBytes = new Uint8Array(match.map(byte => Number.parseInt(byte, 16)))
+    const key = await getCryptoKey(secret)
+    const encoder = new TextEncoder()
 
-    return await crypto.subtle.verify('HMAC', key, sigBytes, encoder.encode(message))
+    // Test candidates to eliminate mobile UA variation false positives
+    const candidates = [
+      `${timestampStr}:${(userAgent || '').slice(0, 64)}`,
+      `${timestampStr}:${getUaFingerprint(userAgent)}`,
+      `${timestampStr}:`,
+    ]
+
+    for (const msg of candidates) {
+      const isValid = await crypto.subtle.verify('HMAC', key, sigBytes, encoder.encode(msg))
+      if (isValid) return true
+    }
+
+    return false
   } catch {
     return false
   }

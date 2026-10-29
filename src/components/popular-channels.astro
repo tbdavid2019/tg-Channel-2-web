@@ -1,6 +1,7 @@
 ---
 import { getRecentChannels } from '../lib/db'
 import { getEnv } from '../lib/env'
+import { Crown, ArrowRight } from 'lucide-astro'
 
 const PINNED_HANDLE = 'oliservice'
 const PINNED_DEFAULT_TITLE = '選出潛力股 | 投資新聞濃縮包 | 333'
@@ -68,12 +69,15 @@ const extraCount = Math.max(0, recentChannels.length - 10)
                   <span class="popular-channel-title-row">
                     <strong class="popular-channel-title">{recentChannel.title}</strong>
                     {isPinned && (
-                      <span class="pinned-indicator golden-badge" title="黃金席位 · 官方預設保留">👑 黃金席位</span>
+                      <span class="pinned-indicator golden-badge" title="黃金席位 · 官方預設保留">
+                        <Crown size={12} class="golden-crown-icon" aria-hidden="true" />
+                        <span>黃金席位</span>
+                      </span>
                     )}
                   </span>
                   <small class="popular-channel-meta">@{recentChannel.handle} · <span data-i18n="popularViews" data-i18n-count={recentChannel.count}>{(recentChannel.count || 0).toLocaleString()} 次瀏覽</span></small>
                 </span>
-                <span class="popular-arrow" aria-hidden="true">→</span>
+                <ArrowRight size={14} class="popular-arrow" aria-hidden="true" />
               </a>
             </li>
           )

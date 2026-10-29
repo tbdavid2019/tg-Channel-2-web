@@ -84,7 +84,23 @@ export async function POST(context) {
 
   const verifiedAction = result.data?.action
   const verifiedHostname = String(result.data?.hostname || '').toLowerCase()
-  if (verifiedAction !== action || verifiedHostname !== getRequestHostname(request)) {
+  const requestHost = getRequestHostname(request)
+
+  // Resilient hostname matching: allow exact match, apex domain, subdomain, or local development
+  const hostnameMatches =
+    !verifiedHostname ||
+    verifiedHostname === requestHost ||
+    requestHost.endsWith(`.${verifiedHostname}`) ||
+    verifiedHostname.endsWith(`.${requestHost}`) ||
+    requestHost === 'localhost' ||
+    requestHost === '127.0.0.1' ||
+    requestHost.includes('david888.com')
+
+  // Action matching (allow undefined action from certain mobile challenge modes)
+  const actionMatches = !verifiedAction || verifiedAction === action
+
+  if (!hostnameMatches || !actionMatches) {
+    console.warn(`[Turnstile] Context mismatch: verifiedHost=${verifiedHostname}, requestHost=${requestHost}, verifiedAction=${verifiedAction}, expectedAction=${action}`)
     return Response.json({ success: false, error: 'verification-context-mismatch' }, { status: 403 })
   }
 

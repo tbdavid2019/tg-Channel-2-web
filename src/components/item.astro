@@ -5,6 +5,7 @@ import dayjs from '../lib/dayjs'
 import { getEnv } from '../lib/env'
 import { sanitizeContent } from '../lib/telegram/sanitize'
 import { extractArticleSections, injectSectionAnchors, extractPostExcerpt } from '../lib/telegram/toc'
+import { ShieldAlert, ShieldCheck, ChevronDown } from 'lucide-astro'
 
 const locale = getEnv(import.meta.env, Astro, 'LOCALE')
 const timezone = getEnv(import.meta.env, Astro, 'TIMEZONE')
@@ -47,8 +48,9 @@ const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
       </a>
     </div>
     {post.isAd && (
-      <span class="ad-pill" title="此貼文經 AI 決策模型判定為推廣/廣告內容" data-i18n="adBadge">
-        🛡️ 推廣內容
+      <span class="ad-pill" title="此貼文經 AI 決策模型判定為推廣/廣告內容">
+        <ShieldAlert size={12} class="ad-pill-icon" aria-hidden="true" />
+        <span data-i18n="adBadge">推廣內容</span>
       </span>
     )}
   </div>
@@ -57,7 +59,7 @@ const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
     <div class="ad-collapsed-card">
       <div class="ad-collapsed-header">
         <div class="ad-collapsed-meta">
-          <span class="ad-collapsed-icon" aria-hidden="true">🛡️</span>
+          <ShieldCheck size={16} class="ad-collapsed-icon" aria-hidden="true" />
           <span class="ad-collapsed-badge" data-i18n="adFilteredTag">已自動過濾推廣內容</span>
         </div>
         <span class="ad-collapsed-excerpt">{adExcerpt}</span>
@@ -69,7 +71,7 @@ const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
         aria-expanded="false"
       >
         <span class="ad-expand-text" data-i18n="expandAd">展開查看</span>
-        <span class="ad-expand-icon" aria-hidden="true">▾</span>
+        <ChevronDown size={14} class="ad-expand-icon" aria-hidden="true" />
       </button>
     </div>
     <div class="ad-collapsible-wrapper" id={`ad-body-${post.id}`} style="display: none;">
@@ -143,17 +145,13 @@ const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
         btn.setAttribute('aria-expanded', 'true')
         btn.classList.add('is-expanded')
         const text = btn.querySelector('.ad-expand-text')
-        const icon = btn.querySelector('.ad-expand-icon')
         if (text) text.textContent = '收合內容'
-        if (icon) icon.textContent = '▴'
       } else {
         targetEl.style.display = 'none'
         btn.setAttribute('aria-expanded', 'false')
         btn.classList.remove('is-expanded')
         const text = btn.querySelector('.ad-expand-text')
-        const icon = btn.querySelector('.ad-expand-icon')
         if (text) text.textContent = '展開查看'
-        if (icon) icon.textContent = '▾'
       }
     })
 

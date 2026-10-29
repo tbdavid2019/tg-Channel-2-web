@@ -1,6 +1,7 @@
 ---
 import { getEnv, assetUrl } from '../lib/env'
 import { sanitizeDescription } from '../lib/telegram/sanitize'
+import { Zap, Dices, X, ArrowRight } from 'lucide-astro'
 import rss from '../assets/rss.svg'
 import podcast from '../assets/podcast.svg'
 import twitter from '../assets/twitter.svg'
@@ -134,13 +135,13 @@ if (postMatch) {
         aria-expanded="false"
         title="輸入並開啟任意 Telegram 公開頻道 (快捷鍵 ⌘K / Ctrl+K)"
       >
-        <span class="open-channel-icon" aria-hidden="true">⚡</span>
+        <Zap size={14} class="open-channel-icon" aria-hidden="true" />
         <span class="open-channel-text">開啟頻道</span>
         <kbd class="open-channel-kbd">⌘K</kbd>
       </button>
 
       <a href="/random" class="header-random-link" title="隨機探索 Telegram 公開頻道" data-i18n-title="randomRecommendTitle">
-        <span class="random-dice" aria-hidden="true">🎲</span>
+        <Dices size={15} class="random-dice" aria-hidden="true" />
         <span class="random-text" data-i18n="randomShort">隨機推薦</span>
       </a>
 
@@ -236,13 +237,13 @@ if (postMatch) {
   <div class="quick-channel-panel">
     <div class="quick-channel-head">
       <div class="quick-channel-title-group">
-        <span class="quick-channel-brand-icon" aria-hidden="true">⚡</span>
+        <Zap size={22} class="quick-channel-brand-icon" aria-hidden="true" />
         <div>
           <h2 id="quick-channel-heading" class="quick-channel-heading">瀏覽 Telegram 公開頻道</h2>
           <p class="quick-channel-desc">輸入頻道 username 或連結，立即在線閱讀</p>
         </div>
       </div>
-      <button type="button" class="quick-channel-close-btn" id="quick-channel-close" aria-label="關閉視窗">✕</button>
+      <button type="button" class="quick-channel-close-btn" id="quick-channel-close" aria-label="關閉視窗"><X size={18} /></button>
     </div>
 
     <form id="quick-channel-form" class="quick-channel-form" autocomplete="off">
@@ -258,7 +259,7 @@ if (postMatch) {
           required
         />
         <button type="submit" class="quick-channel-go-btn">
-          前往閱讀 →
+          前往閱讀 <ArrowRight size={15} style="display: inline-block; vertical-align: middle; margin-left: 2px;" />
         </button>
       </div>
       <p id="quick-channel-feedback" class="quick-channel-feedback" style="display: none;"></p>

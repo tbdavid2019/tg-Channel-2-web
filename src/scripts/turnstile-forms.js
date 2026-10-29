@@ -1,5 +1,5 @@
 const protectedFormSelector = 'form[data-turnstile-action]'
-const TURNSTILE_COOKIE_NAME = 'tg_turnstile_cleared'
+const TURNSTILE_COOKIE_NAME = 'tg_turnstile_pass'
 
 let globalWidgetId = null
 let currentToken = null
@@ -36,9 +36,10 @@ function getGlobalContainer() {
   if (!container) {
     container = document.createElement('div')
     container.id = 'cf-turnstile-global'
-    container.style.cssText = 'display:none;position:fixed;bottom:16px;right:16px;z-index:99999;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);'
     document.body.append(container)
   }
+  container.style.cssText =
+    'display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;max-width:calc(100vw - 32px);padding:8px;background:var(--card-bg, #fff9e8);border:1px solid var(--card-border, #ddc58b);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);'
   return container
 }
 
