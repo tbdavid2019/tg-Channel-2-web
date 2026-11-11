@@ -50,7 +50,7 @@
     "prettier-plugin-astro": "^1.1.2",
     "simple-git-hooks": "^2.14.0",
     "std-env": "^4.3.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "wrangler": "^4.156.2",
     "workerd": "^1.20261103.1"
   },
