@@ -33,7 +33,7 @@
     "@antfu/eslint-config": "^10.0.0",
     "@astrojs/cloudflare": "^14.4.4",
     "@astrojs/netlify": "^8.2.11",
-    "@astrojs/node": "^11.1.9",
+    "@astrojs/node": "^11.1.11",
     "@astrojs/vercel": "^11.0.18",
     "@edgeone/astro": "^1.1.5",
     "@types/prismjs": "^1.26.6",
