@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-12
+
+### Security
+
+- **Node.js 執行期環境升級至 Node.js 24 (`v24.22.3`)**:
+  - `Dockerfile` 多階段映像基底升級為 `node:24.22.3-slim` 與 `node:24.22.3-alpine`。
+  - `.node-version` 更新為 `v24.22.3`。
+  - 完整防護 Node.js 官方 2026-11-11 安全公告修復之多項 High severity 安全性漏洞。
+
+
 ## 2026-10-28
 
 ### Added
