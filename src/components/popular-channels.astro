@@ -47,7 +47,6 @@ const extraCount = Math.max(0, recentChannels.length - 10)
   recentChannels && recentChannels.length > 0 && (
     <section class="popular-channels" aria-labelledby="popular-aside-title">
       <div class="popular-heading">
-        <p class="eyebrow" data-i18n="popularKicker">DISCOVERY</p>
         <h2 id="popular-aside-title" data-i18n="popularTitle">近 7 天熱門頻道</h2>
         <p data-i18n="popularDescription">曾有人瀏覽過的公開頻道，依近 7 天使用次數排序。</p>
       </div>
@@ -92,8 +91,13 @@ const extraCount = Math.max(0, recentChannels.length - 10)
             aria-expanded="false"
             data-extra-count={extraCount}
           >
-            <span class="popular-more-text" data-i18n="popularMoreToggle">
-              查看更多頻道 (展開 {extraCount} 個遺珠)
+            <span
+              class="popular-more-text"
+              data-i18n="popularMoreToggle"
+              data-i18n-expanded="popularCollapseToggle"
+              data-i18n-count={extraCount}
+            >
+              展開更多頻道 ({extraCount})
             </span>
             <span class="popular-more-arrow" aria-hidden="true">↓</span>
           </button>
@@ -107,7 +111,8 @@ const extraCount = Math.max(0, recentChannels.length - 10)
   function setupPopularToggle() {
     const toggleBtn = document.getElementById('popular-more-toggle')
     const container = toggleBtn?.closest('.popular-channels')
-    if (!toggleBtn || !container) return
+    if (!toggleBtn || !container || toggleBtn.dataset.bound === 'true') return
+    toggleBtn.dataset.bound = 'true'
 
     toggleBtn.addEventListener('click', () => {
       const isExpanded = container.classList.toggle('is-expanded')
@@ -116,10 +121,10 @@ const extraCount = Math.max(0, recentChannels.length - 10)
       const arrowEl = toggleBtn.querySelector('.popular-more-arrow')
       const count = toggleBtn.dataset.extraCount || ''
       if (isExpanded) {
-        if (textEl) textEl.textContent = '收合熱門清單'
+        if (textEl) textEl.textContent = window.__tgTranslate?.('popularCollapseToggle') || '收合清單'
         if (arrowEl) arrowEl.textContent = '↑'
       } else {
-        if (textEl) textEl.textContent = `查看更多頻道 (展開 ${count} 個遺珠)`
+        if (textEl) textEl.textContent = window.__tgTranslate?.('popularMoreToggle', { count }) || `展開更多頻道 (${count})`
         if (arrowEl) arrowEl.textContent = '↓'
       }
     })
@@ -130,6 +135,7 @@ const extraCount = Math.max(0, recentChannels.length - 10)
   } else {
     setupPopularToggle()
   }
+  document.addEventListener('astro:page-load', setupPopularToggle)
 </script>
 
 <style>
@@ -177,6 +183,7 @@ const extraCount = Math.max(0, recentChannels.length - 10)
     justify-content: center;
     gap: 6px;
     width: 100%;
+    min-height: 40px;
     padding: 8px 12px;
     border: 1px solid var(--input-border);
     border-radius: 8px;
@@ -184,8 +191,9 @@ const extraCount = Math.max(0, recentChannels.length - 10)
     color: var(--deep-blue);
     font-size: 0.8125rem;
     font-weight: 700;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
 
   .popular-more-btn:hover {
@@ -199,15 +207,6 @@ const extraCount = Math.max(0, recentChannels.length - 10)
     font-weight: 700;
   }
 
-  .popular-heading .eyebrow {
-    margin: 0 0 6px;
-    color: var(--clay);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-  }
-
   .popular-heading h2 {
     margin: 0;
     color: var(--deep-blue);
@@ -215,6 +214,7 @@ const extraCount = Math.max(0, recentChannels.length - 10)
     font-size: 1.125rem;
     font-weight: 700;
     line-height: 1.35;
+    text-wrap: balance;
   }
 
   .popular-heading p:last-child {
@@ -261,6 +261,7 @@ const extraCount = Math.max(0, recentChannels.length - 10)
     font-family: var(--font-mono);
     font-size: 0.875rem;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
   .popular-channel-copy {

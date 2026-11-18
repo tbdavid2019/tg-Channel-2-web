@@ -1,11 +1,13 @@
 ---
 import List from '../components/list.astro'
+import ChannelSearchForm from '../components/channel-search-form.astro'
 import { getChannelInfo } from '../lib/telegram'
 import { normalizeTelegramTarget } from '../lib/telegram/normalize'
 import { getEnv } from '../lib/env'
+import { Info } from 'lucide-astro'
+
 const ANYCHANNEL = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
 const turnstileEnabled = Boolean(Astro.locals.TURNSTILE_ENABLED && Astro.locals.TURNSTILE_SITE_KEY)
-const turnstileSiteKey = Astro.locals.TURNSTILE_SITE_KEY
 
 // 若表單提交（或網址帶有 ?channel=），使用者未輸入時預設導向 oliservice
 if (ANYCHANNEL && Astro.url.searchParams.has('channel')) {
@@ -25,21 +27,15 @@ const channel = ANYCHANNEL
   ANYCHANNEL ? (
     <List channel={channel} after={false} showCalendar={false}>
       <section class="reader-hero" aria-labelledby="reader-title">
-        <p class="eyebrow" data-i18n="readerKicker">公開 Telegram 閱讀器</p>
         <h1 id="reader-title" data-i18n="homepageHeading">把頻道內容，讀成清楚的時間線</h1>
         <p class="reader-lede" data-i18n="homepageLead">輸入公開頻道的 username 或連結，直接查看貼文、圖片與日期分組。</p>
 
-        <form action="/" method="get" class="channel-form" toolname="navigate-channel" tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀" data-turnstile-action={turnstileEnabled ? 'channel_search' : undefined}>
-          <label class="channel-label" for="channel-input" data-i18n="channelInputLabel">輸入要閱讀的頻道或群組</label>
-          <div class="channel-form-row">
-            <input id="channel-input" type="text" name="channel" placeholder="@oliservice、oliservice 或 https://t.me/oliservice" data-i18n-placeholder="channelInputPlaceholder" autocomplete="off" spellcheck="false" class="channel-input" aria-describedby="channel-help channel-error" />
-            <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
-          </div>
-          <p id="channel-help" class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
-          <p id="channel-error" class="channel-error" role="alert"></p>
-        </form>
+        <ChannelSearchForm idPrefix="channel" anyChannel={true} turnstileEnabled={turnstileEnabled} redirectMode="direct" />
 
-        <p class="reader-note"><span class="reader-note-mark" aria-hidden="true">i</span> <span data-i18n="publicNote">公開頻道可顯示貼文；私人、邀請連結與沒有公開預覽的群組會顯示支援狀態。</span></p>
+        <p class="reader-note">
+          <Info size={18} class="reader-note-icon" aria-hidden="true" />
+          <span data-i18n="publicNote">公開頻道可顯示貼文；私人、邀請連結與沒有公開預覽的群組會顯示支援狀態。</span>
+        </p>
       </section>
 
       <section class="reader-points" aria-label="使用方式" data-i18n-aria-label="usage">
@@ -71,21 +67,6 @@ const channel = ANYCHANNEL
     box-shadow: var(--shadows);
   }
 
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    background: var(--canvas);
-    border: 1px solid var(--card-border);
-    border-radius: 999px;
-    color: var(--deep-blue);
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 700;
-    margin: 0 0 16px;
-    letter-spacing: 0.04em;
-  }
-
   .reader-hero h1 {
     margin: 0;
     color: var(--deep-blue);
@@ -94,6 +75,8 @@ const channel = ANYCHANNEL
     font-weight: 800;
     line-height: 1.25;
     letter-spacing: -0.025em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
   }
 
   .reader-lede {
@@ -102,97 +85,7 @@ const channel = ANYCHANNEL
     color: var(--text-muted);
     font-size: 1rem;
     line-height: 1.65;
-  }
-
-  .channel-form {
-    max-width: 100%;
-  }
-
-  .channel-label {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--deep-blue);
-    font-size: 0.9375rem;
-    font-weight: 700;
-  }
-
-  .channel-form-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-  }
-
-  .channel-input {
-    min-height: 52px;
-    min-width: 0;
-    padding: 12px 18px;
-    border: 1.5px solid var(--input-border);
-    border-radius: var(--radius-sm);
-    background: var(--input-bg);
-    color: var(--text);
-    font-family: var(--font-ui);
-    font-size: 1rem;
-    transition: all 0.15s ease;
-  }
-
-  .channel-input::placeholder {
-    color: var(--text-muted);
-    opacity: 0.75;
-  }
-
-  .channel-input:focus {
-    outline: 3px solid var(--primary);
-    outline-offset: 1px;
-    border-color: var(--deep-blue);
-  }
-
-  .channel-input[aria-invalid='true'] {
-    border-color: var(--clay);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--clay) 20%, transparent);
-  }
-
-  .channel-submit {
-    min-height: 52px;
-    padding: 12px 28px;
-    border: 1.5px solid var(--input-border);
-    border-radius: var(--radius-sm);
-    background: var(--primary);
-    color: var(--ink);
-    cursor: pointer;
-    font-family: var(--font-ui);
-    font-size: 1rem;
-    font-weight: 700;
-    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .channel-submit:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 176, 16, 0.35);
-  }
-
-  .channel-submit:active {
-    transform: translateY(1px);
-  }
-
-  .channel-help,
-  .channel-error {
-    margin: 10px 0 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .channel-help {
-    color: var(--text-muted);
-  }
-
-  .channel-error:empty {
-    display: none;
-  }
-
-  .channel-error {
-    color: var(--clay);
-    font-weight: 600;
+    text-wrap: pretty;
   }
 
   .reader-note {
@@ -203,28 +96,19 @@ const channel = ANYCHANNEL
     padding-top: 18px;
     border-top: 1px solid var(--card-border-subtle);
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: var(--text-meta);
     line-height: 1.5;
   }
 
-  .reader-note-mark {
-    display: inline-grid;
+  .reader-note-icon {
     flex: 0 0 auto;
-    width: 22px;
-    height: 22px;
-    place-items: center;
-    border: 1.5px solid var(--deep-blue);
-    border-radius: 50%;
     color: var(--deep-blue);
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 700;
   }
 
   /* 3-Step feature guide matching 2md.aiurl.tw cards */
   .reader-points {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
     margin-top: 24px;
   }
@@ -237,13 +121,14 @@ const channel = ANYCHANNEL
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius);
-    box-shadow: 0 2px 8px rgba(43, 37, 26, 0.04);
+    box-shadow: var(--card-shadow-sm);
   }
 
   .step-number {
     font-family: var(--font-brand);
     font-weight: 800;
     font-size: 1rem;
+    font-variant-numeric: tabular-nums;
     color: var(--deep-blue);
     background: var(--canvas);
     border: 1px solid var(--card-border);
@@ -262,61 +147,20 @@ const channel = ANYCHANNEL
 
   .reader-point strong {
     color: var(--deep-blue);
-    font-size: 0.9375rem;
+    font-size: var(--text-ui);
     font-weight: 700;
   }
 
   .reader-point span:last-child {
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: var(--text-meta);
     line-height: 1.45;
   }
 
   @media screen and (max-width: 640px) {
-    .channel-form-row {
-      grid-template-columns: 1fr;
-    }
-
-    .channel-submit {
-      width: 100%;
-    }
-
     .reader-points {
       grid-template-columns: 1fr;
       gap: 10px;
     }
   }
 </style>
-
-<script>
-  import { normalizeTelegramTarget } from '../lib/telegram/normalize'
-
-  const form = document.querySelector('.channel-form')
-  const input = document.querySelector('#channel-input')
-  const error = document.querySelector('#channel-error')
-
-  form?.addEventListener('submit', (event) => {
-    event.preventDefault()
-    const rawVal = (input instanceof HTMLInputElement ? input.value : (input?.value || '')).trim()
-    const targetVal = rawVal || 'oliservice'
-    const target = normalizeTelegramTarget(targetVal)
-
-    if (!target.ok) {
-      if (input) input.setAttribute('aria-invalid', 'true')
-      if (error) {
-        error.dataset.i18n = target.code === 'invite' ? 'errorInvite' : target.code === 'private' ? 'errorPrivate' : 'errorInvalid'
-        error.textContent = target.code === 'invite'
-          ? '邀請連結不能讀取公開歷史，請改輸入公開頻道 username。'
-          : target.code === 'private'
-            ? '私人連結不能讀取公開歷史，請改輸入公開頻道 username。'
-            : '請輸入 @username、username，或完整的 t.me 公開連結。'
-        window.dispatchEvent(new CustomEvent('telegram-language-change'))
-      }
-      return
-    }
-
-    if (input) input.setAttribute('aria-invalid', 'false')
-    if (error) error.textContent = ''
-    window.location.assign(`/${encodeURIComponent(target.handle)}/`)
-  })
-</script>

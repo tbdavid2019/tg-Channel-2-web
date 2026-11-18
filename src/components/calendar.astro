@@ -73,11 +73,11 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
 
 <div class="calendar-container">
   <div class="calendar-header">
-    <a href={prevLink} class="nav-btn" title="上個月" data-i18n-title="previousMonth">&lt;</a>
+    <a href={prevLink} class="nav-btn" aria-label="上個月" data-i18n-aria-label="previousMonth" title="上個月" data-i18n-title="previousMonth">&lt;</a>
     <span class="calendar-title" data-i18n-month={currentMonth.format('YYYY-MM')}>
       {currentMonth.format('YYYY年M月')}
     </span>
-    <a href={nextLink} class="nav-btn" title="下個月" data-i18n-title="nextMonth">&gt;</a>
+    <a href={nextLink} class="nav-btn" aria-label="下個月" data-i18n-aria-label="nextMonth" title="下個月" data-i18n-title="nextMonth">&gt;</a>
   </div>
   
   <div class="calendar-grid">
@@ -135,8 +135,8 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
   
   .nav-btn {
     display: inline-grid;
-    min-width: 36px;
-    min-height: 36px;
+    min-width: 38px;
+    min-height: 38px;
     place-items: center;
     text-decoration: none;
     color: var(--deep-blue);
@@ -145,7 +145,7 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
     background: var(--input-bg);
     border: 1.5px solid var(--card-border);
     border-radius: 6px;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
   
   .nav-btn:hover {
@@ -156,7 +156,7 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
 
   .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 4px;
   }
 
@@ -178,10 +178,11 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
     justify-content: center;
     padding: 4px 2px;
     font-size: var(--text-ui, 0.9375rem);
+    font-variant-numeric: tabular-nums;
     line-height: 1;
     border-radius: 8px;
     color: var(--text-muted);
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .calendar-day.empty {
@@ -206,7 +207,7 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
     background: var(--primary);
     color: var(--ink);
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(43, 37, 26, 0.12);
+    box-shadow: var(--card-shadow-sm);
   }
 
   .calendar-day.has-post .post-indicator {
@@ -239,7 +240,7 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
     }
 
     .calendar-day {
-      min-height: 36px;
+      min-height: 40px;
       font-size: 0.875rem;
       border-radius: 6px;
     }
@@ -249,8 +250,8 @@ const nextLink = `?month=${nextMonth.format('YYYY-MM')}`
     }
 
     .nav-btn {
-      min-width: 32px;
-      min-height: 32px;
+      min-width: 40px;
+      min-height: 40px;
     }
   }
 </style>

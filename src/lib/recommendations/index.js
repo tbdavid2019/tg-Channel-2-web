@@ -185,13 +185,10 @@ export async function syncRecommendations() {
 
       for (const url of urlsToTry) {
         try {
-          const controller = new AbortController()
-          const timeout = setTimeout(() => controller.abort(), 12000)
           const res = await fetch(url, {
             headers: { 'User-Agent': 'Mozilla/5.0 (Telegram-Channel-Reader/1.0)' },
-            signal: controller.signal,
+            signal: AbortSignal.timeout(12000),
           })
-          clearTimeout(timeout)
 
           if (res.ok) {
             fetchedText = await res.text()

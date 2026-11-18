@@ -180,7 +180,7 @@ if (isItem && primaryPost) {
   </div>
 </nav>
 
-<!-- Mobile / Tablet TOC Floating Trigger & Slide-out Sheet -->
+<!-- Mobile / Tablet TOC Floating Trigger & Native <dialog> Sheet -->
 {tocItems.length > 0 && (
   <div class="mobile-toc-root">
     <button
@@ -188,40 +188,37 @@ if (isItem && primaryPost) {
       class="mobile-toc-fab"
       id="mobile-toc-fab-btn"
       aria-haspopup="dialog"
-      aria-expanded="false"
+      aria-controls="mobile-toc-sheet"
       aria-label="開啟文章目錄"
+      data-i18n-aria-label="mobileTocToggle"
     >
       <BookOpen size={16} class="mobile-toc-fab-icon" aria-hidden="true" />
       <span class="mobile-toc-fab-text" data-i18n="mobileTocToggle">目錄</span>
       <span class="mobile-toc-fab-count">{tocItems.length}</span>
     </button>
 
-    <div class="mobile-toc-backdrop" id="mobile-toc-backdrop" aria-hidden="true" style="display: none;"></div>
-
-    <aside
-      class="mobile-toc-sheet"
+    <dialog
+      class="mobile-toc-dialog"
       id="mobile-toc-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="文章目錄導覽"
-      aria-hidden="true"
-      style="display: none;"
+      aria-labelledby="mobile-toc-title"
+      closedby="any"
     >
       <div class="mobile-toc-sheet-header">
-        <div class="mobile-toc-sheet-title">
+        <h2 class="mobile-toc-sheet-title" id="mobile-toc-title">
           <BookOpen size={18} class="mobile-toc-sheet-icon" aria-hidden="true" />
           <span data-i18n={isItem ? 'articleTocLabel' : 'pageTocLabel'}>
             {isItem ? '本文目錄' : '本頁目錄'}
           </span>
-          <span class="mobile-toc-badge">{tocItems.length} 篇</span>
-        </div>
+          <span class="mobile-toc-badge" data-i18n="articleCount" data-i18n-count={tocItems.length}>{tocItems.length} 篇</span>
+        </h2>
         <button
           type="button"
           class="mobile-toc-close-btn"
           id="mobile-toc-close-btn"
           aria-label="關閉目錄"
+          data-i18n-aria-label="closeToc"
         >
-          <X size={18} />
+          <X size={18} aria-hidden="true" />
         </button>
       </div>
 
@@ -248,21 +245,16 @@ if (isItem && primaryPost) {
           ))}
         </div>
       </div>
-    </aside>
+    </dialog>
   </div>
 )}
 
 <script>
-  // High-performance TOC Controller with Zero Scroll Loop and Protected Mobile Sheet
+  // High-performance TOC Controller with Native <dialog> and Zero Scroll Loop
   function initToc() {
-    // 清理舊的監聽器，確保 idempotent
     if (window.__tocScrollHandler) {
       window.removeEventListener('scroll', window.__tocScrollHandler);
       window.__tocScrollHandler = null;
-    }
-    if (window.__tocKeydownHandler) {
-      document.removeEventListener('keydown', window.__tocKeydownHandler);
-      window.__tocKeydownHandler = null;
     }
 
     // 1. 清理可能因 ViewTransition 殘留的重複 mobile-toc-root，保留唯一單一實體
@@ -281,82 +273,63 @@ if (isItem && primaryPost) {
     if (allLinks.length === 0) return;
 
     // 快取目錄對應的目標 DOM 元素，避免在每個 scroll frame 反覆 document.getElementById
-    const targetElements = [];
+    const targetElements: HTMLElement[] = [];
     desktopLinks.forEach((l) => {
       const id = l.getAttribute('data-target');
       const el = id ? document.getElementById(id) : null;
       if (el) targetElements.push(el);
     });
 
-    // Mobile sheet controls (從當前 activeRoot 取得，確保唯一且無衝突)
     const fab = (activeRoot?.querySelector('#mobile-toc-fab-btn') || document.getElementById('mobile-toc-fab-btn')) as HTMLElement | null;
-    const sheet = (activeRoot?.querySelector('#mobile-toc-sheet') || document.getElementById('mobile-toc-sheet')) as HTMLElement | null;
-    const backdrop = (activeRoot?.querySelector('#mobile-toc-backdrop') || document.getElementById('mobile-toc-backdrop')) as HTMLElement | null;
+    const sheet = (activeRoot?.querySelector('#mobile-toc-sheet') || document.getElementById('mobile-toc-sheet')) as HTMLDialogElement | null;
     const closeBtn = (activeRoot?.querySelector('#mobile-toc-close-btn') || document.getElementById('mobile-toc-close-btn')) as HTMLElement | null;
     const sidebarContainer = document.querySelector('#toc-container');
 
-    let closeTimer = null;
-
     function openMobileSheet() {
-      if (!sheet || !backdrop || !fab) return;
-      if (closeTimer) {
-        clearTimeout(closeTimer);
-        closeTimer = null;
-      }
-      backdrop.style.display = 'block';
-      sheet.style.display = 'flex';
-      void sheet.offsetHeight; // force reflow for smooth transform animation
-      sheet.classList.add('is-open');
-      backdrop.classList.add('is-open');
-      sheet.setAttribute('aria-hidden', 'false');
-      fab.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
+      if (!sheet || sheet.open) return;
+      sheet.showModal();
     }
 
     function closeMobileSheet() {
-      if (!sheet || !backdrop || !fab) return;
-      sheet.classList.remove('is-open');
-      backdrop.classList.remove('is-open');
-      sheet.setAttribute('aria-hidden', 'true');
-      fab.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-      closeTimer = setTimeout(() => {
-        if (!sheet.classList.contains('is-open')) {
-          sheet.style.display = 'none';
-          backdrop.style.display = 'none';
-        }
-      }, 260);
+      if (!sheet || !sheet.open) return;
+      sheet.close();
     }
 
     if (fab) {
       fab.onclick = () => {
-        const isOpen = sheet?.classList.contains('is-open');
-        if (isOpen) closeMobileSheet();
+        if (sheet?.open) closeMobileSheet();
         else openMobileSheet();
       };
     }
 
     if (closeBtn) closeBtn.onclick = closeMobileSheet;
-    if (backdrop) backdrop.onclick = closeMobileSheet;
 
-    window.__tocKeydownHandler = (e) => {
-      if (e.key === 'Escape' && sheet?.classList.contains('is-open')) {
-        closeMobileSheet();
-      }
-    };
-    document.addEventListener('keydown', window.__tocKeydownHandler);
+    // Light dismiss fallback for browsers lacking <dialog closedby="any">
+    if (sheet && !('closedBy' in HTMLDialogElement.prototype) && sheet.dataset.lightDismissBound !== 'true') {
+      sheet.dataset.lightDismissBound = 'true';
+      const outside = (e: PointerEvent) => {
+        const r = sheet.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      let pressedOutside = false;
+      sheet.addEventListener('pointerdown', (e) => {
+        pressedOutside = outside(e);
+      });
+      sheet.addEventListener('pointerup', (e) => {
+        if (pressedOutside && outside(e)) closeMobileSheet();
+      });
+    }
 
     // 活躍標記管理器：絕不調用 scrollIntoView()！
-    // 僅在目錄側欄內部做 scrollTop 滾動，避免干擾使用者與 window
-    function setActive(targetId) {
+    function setActive(targetId: string) {
       if (!targetId) return;
 
-      let activeDesktopLink = null;
+      let activeDesktopLink: HTMLElement | null = null;
 
       desktopLinks.forEach((link) => {
         if (link.getAttribute('data-target') === targetId) {
           link.classList.add('is-active');
-          activeDesktopLink = link;
+          activeDesktopLink = link as HTMLElement;
         } else {
           link.classList.remove('is-active');
         }
@@ -386,16 +359,29 @@ if (isItem && primaryPost) {
 
     // 點擊目錄項目平滑滾動（扣除 header 84px offset）
     allLinks.forEach((link) => {
+      const linkEl = link as HTMLElement;
+      if (linkEl.dataset.tocBound === 'true') return;
+      linkEl.dataset.tocBound = 'true';
+
       link.addEventListener('click', (e) => {
         const targetId = link.getAttribute('data-target');
         const targetEl = targetId ? document.getElementById(targetId) : null;
 
         if (targetEl) {
           e.preventDefault();
+          const wasDialogOpen = Boolean(sheet?.open);
           closeMobileSheet();
 
           const top = targetEl.getBoundingClientRect().top + window.scrollY - 84;
-          window.scrollTo({ top, behavior: 'smooth' });
+          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          window.scrollTo({ top, behavior: reducedMotion ? 'auto' : 'smooth' });
+
+          if (wasDialogOpen) {
+            if (!targetEl.hasAttribute('tabindex')) {
+              targetEl.setAttribute('tabindex', '-1');
+            }
+            targetEl.focus({ preventScroll: true });
+          }
 
           history.pushState(null, '', `#${targetId}`);
           setActive(targetId);
@@ -415,7 +401,7 @@ if (isItem && primaryPost) {
         if (targetElements.length === 0) return;
 
         const headerOffset = 90;
-        let activeTargetId = null;
+        let activeTargetId: string | null = null;
 
         if (window.scrollY < 80) {
           activeTargetId = targetElements[0].id;

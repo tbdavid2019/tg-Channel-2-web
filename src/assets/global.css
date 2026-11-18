@@ -11,9 +11,36 @@
   padding: 0 !important;
   margin: -1px !important;
   overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
   white-space: nowrap !important;
   border: 0 !important;
+}
+
+/* Skip Link for Keyboard Navigation */
+.skip-link {
+  position: absolute;
+  top: -120px;
+  left: 16px;
+  z-index: 3000;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--deep-blue);
+  background: var(--primary);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: var(--text-meta);
+  text-decoration: none;
+  box-shadow: var(--shadows);
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+  outline: 3px solid var(--deep-blue);
+  outline-offset: 2px;
 }
 
 /* Turnstile Widget & Status */
@@ -24,7 +51,7 @@
 }
 
 .turnstile-status {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--text-muted);
   font-size: 0.8125rem;
   line-height: 1.5;
@@ -44,22 +71,93 @@
   .tag,
   .nav-btn,
   .lang-pill-btn,
-  .header-random-link {
+  .header-random-link,
+  .header-open-channel-btn,
+  .lang-prompt-close-btn,
+  .calendar-day.has-post {
     min-height: 44px;
+  }
+
+  .header-open-channel-btn,
+  .header-random-link,
+  .lang-prompt-close-btn,
+  .nav-btn {
+    min-width: 44px;
   }
 }
 
-/* Reduced Motion */
+/* Reduced Motion: disable spatial movement & animations while preserving color feedback */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+  .skip-link,
+  .brand-badge,
+  .header-open-channel-btn,
+  .sidebar-search-btn,
+  .aside-switch,
+  .channel-submit,
+  .state-telegram-link,
+  a.page,
+  .calendar-day.has-post,
+  .toc-back-link,
+  .popular-arrow,
+  .random-action-btn,
+  .footer-back-to-top-link,
+  .ad-expand-btn,
+  .ad-expand-icon,
+  .reroll-icon,
+  .back-to-top-fab,
+  .mobile-toc-fab,
+  .mobile-toc-dialog,
+  .quick-channel-dialog {
+    transition-property: color, background-color, border-color, opacity !important;
+    animation: none !important;
+  }
+
+  .brand-badge:hover,
+  .header-open-channel-btn:hover,
+  .sidebar-search-btn:hover,
+  .aside-switch:hover,
+  .channel-submit:hover,
+  .channel-submit:active,
+  .state-telegram-link:hover,
+  a.page:hover,
+  .calendar-day.has-post:hover,
+  .toc-back-link:hover,
+  .popular-channel-link:hover .popular-arrow,
+  .random-channel-link:hover .random-action-btn,
+  .footer-back-to-top-link:hover,
+  .ad-expand-btn:hover,
+  .back-to-top-fab:hover,
+  .back-to-top-fab:active,
+  .mobile-toc-fab:hover,
+  .mobile-toc-fab:active,
+  .reroll-icon.is-spinning {
+    transform: none !important;
+  }
+}
+
+/* Reduced Transparency: solid surface fallbacks for translucent blur regions */
+@media (prefers-reduced-transparency: reduce) {
+  .site-header {
+    background: var(--card-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .mobile-toc-fab {
+    background: var(--card-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .quick-channel-dialog::backdrop,
+  .mobile-toc-dialog::backdrop,
+  .modal {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--backdrop-solid);
   }
 }

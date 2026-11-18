@@ -4,6 +4,7 @@ import Header from '../components/header.astro'
 import Calendar from '../components/calendar.astro'
 import Item from '../components/item.astro'
 import TocSidebar from '../components/toc-sidebar.astro'
+import { ArrowLeft, ArrowRight } from 'lucide-astro'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
@@ -89,8 +90,9 @@ const afterCursor = posts[0]?.id
   <div class="pages-container">
     {
       before && beforeCursor > 1 ? (
-      <a href={`${SITE_URL}before/${beforeCursor}`} title="更早的文章" data-i18n-title="olderPosts" class="page">
-          <span data-i18n="olderPosts">← 更早的文章</span>
+        <a href={`${SITE_URL}before/${beforeCursor}`} title="更早的文章" data-i18n-title="olderPosts" class="page">
+          <ArrowLeft size={15} aria-hidden="true" />
+          <span data-i18n="olderPosts">更早的文章</span>
         </a>
       ) : (
         <span class="page-placeholder">&nbsp;</span>
@@ -107,7 +109,8 @@ const afterCursor = posts[0]?.id
     {
       after && afterCursor ? (
         <a href={`${SITE_URL}after/${afterCursor}`} title="更新文章" data-i18n-title="newerPosts" class="page">
-          <span data-i18n="newerPosts">更新文章 →</span>
+          <span data-i18n="newerPosts">更新文章</span>
+          <ArrowRight size={15} aria-hidden="true" />
         </a>
       ) : (
         <span class="page-placeholder">&nbsp;</span>

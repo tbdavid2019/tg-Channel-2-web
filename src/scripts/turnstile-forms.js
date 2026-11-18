@@ -76,7 +76,7 @@ function acquireTurnstileToken(action = 'channel_search') {
             sitekey: siteKey,
             action,
             size: 'flexible',
-            theme: 'auto',
+            theme: 'light',
             callback(token) {
               currentToken = token
               container.style.display = 'none'
@@ -148,23 +148,18 @@ document.addEventListener('submit', async (event) => {
 
   try {
     const token = await acquireTurnstileToken(action)
-    if (!token) {
-      // Degraded / fail-open fallback: let request proceed so user is never stuck
-      form.dataset.turnstileVerified = 'true'
-      form.requestSubmit()
-      return
-    }
+    if (token) {
+      // Verify token with backend
+      const response = await fetch('/api/turnstile-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action }),
+      })
 
-    // Verify token with backend
-    const response = await fetch('/api/turnstile-verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, action }),
-    })
-
-    const result = await response.json()
-    if (response.ok && result.success) {
-      markClearance()
+      const result = await response.json()
+      if (response.ok && result.success) {
+        markClearance()
+      }
     }
   } catch (err) {
     console.warn('[Turnstile] Verification error, proceeding with fallback:', err)

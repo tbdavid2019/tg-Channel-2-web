@@ -4,7 +4,7 @@ import Header from '../../components/header.astro'
 import Calendar from '../../components/calendar.astro'
 import Item from '../../components/item.astro'
 import TocSidebar from '../../components/toc-sidebar.astro'
-import { Calendar as CalendarIcon, ArrowLeft } from 'lucide-astro'
+import { Calendar as CalendarIcon, ArrowLeft, ArrowRight } from 'lucide-astro'
 import { getChannelInfo } from '../../lib/telegram'
 import { savePosts, getPostIdsByDate, getAdjacentDates } from '../../lib/db'
 import dayjs from 'dayjs'
@@ -102,19 +102,21 @@ const seo = { noindex: true }
   <div class="pages-container">
     {adjacentDates.nextDate ? (
       <a href={`${SITE_URL}date/${adjacentDates.nextDate}`} title="前一天" class="page">
-        ← {dayjs(adjacentDates.nextDate).format('M/D')}
+        <ArrowLeft size={15} aria-hidden="true" />
+        <span>{dayjs(adjacentDates.nextDate).format('M/D')}</span>
       </a>
     ) : (
       <span class="page-placeholder">&nbsp;</span>
     )}
 
     <div class="pages-info">
-      <a href={SITE_URL} class="home-link" data-i18n="backHome">← 返回首頁</a>
+      <a href={SITE_URL} class="home-link" data-i18n="backHome">返回首頁</a>
     </div>
 
     {adjacentDates.prevDate ? (
       <a href={`${SITE_URL}date/${adjacentDates.prevDate}`} title="後一天" class="page">
-        {dayjs(adjacentDates.prevDate).format('M/D')} →
+        <span>{dayjs(adjacentDates.prevDate).format('M/D')}</span>
+        <ArrowRight size={15} aria-hidden="true" />
       </a>
     ) : (
       <span class="page-placeholder">&nbsp;</span>
@@ -135,6 +137,7 @@ const seo = { noindex: true }
     margin: 0;
     font-size: var(--text-h2, 1.25rem);
     color: var(--primary-color);
+    text-wrap: balance;
   }
 
   .post-count {

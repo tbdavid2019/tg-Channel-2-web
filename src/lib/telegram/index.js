@@ -40,21 +40,22 @@ function getVideoStickers($, item, { staticProxy, index }) {
 function getImageStickers($, item, { staticProxy, index }) {
   return $(item).find('.tgme_widget_message_sticker')?.map((_index, image) => {
     const url = $(image)?.attr('data-webp')
-    return `<img class="sticker" src="${staticProxy + url}" style="width: 256px;" alt="Sticker" loading="${index > 15 ? 'eager' : 'lazy'}" />`
+    return `<img class="sticker" src="${staticProxy + url}" style="width: 256px;" alt="Sticker" loading="${index > 15 ? 'eager' : 'lazy'}" decoding="async" />`
   })?.get()?.join('')
 }
 
 function getImages($, item, { staticProxy, id, index, title }) {
   const safeTitle = escapeAttr(title)
+  const fallbackLabelAttr = safeTitle ? '' : ' aria-label="圖片預覽" data-i18n-aria-label="expandImageFallback"'
   const images = $(item).find('.tgme_widget_message_photo_wrap')?.map((_index, photo) => {
     const url = $(photo).attr('style').match(/url\(["'](.*?)["']/)?.[1]
     const popoverId = `modal-${id}-${_index}`
     return `
-      <button class="image-preview-button image-preview-wrap" popovertarget="${popoverId}" popovertargetaction="show">
-        <img src="${staticProxy + url}" alt="${safeTitle}" loading="${index > 15 ? 'eager' : 'lazy'}" />
+      <button type="button" class="image-preview-button image-preview-wrap" popovertarget="${popoverId}" popovertargetaction="show"${fallbackLabelAttr}>
+        <img src="${staticProxy + url}" alt="${safeTitle}" loading="${index > 15 ? 'eager' : 'lazy'}" decoding="async" />
       </button>
-      <button class="image-preview-button modal" id="${popoverId}" popovertarget="${popoverId}" popovertargetaction="hide" popover>
-        <img class="modal-img" src="${staticProxy + url}" alt="${safeTitle}" loading="lazy" />
+      <button type="button" class="image-preview-button modal" id="${popoverId}" popovertarget="${popoverId}" popovertargetaction="hide" popover aria-label="關閉圖片預覽" data-i18n-aria-label="closeImagePreview">
+        <img class="modal-img" src="${staticProxy + url}" alt="${safeTitle}" loading="lazy" decoding="async" />
       </button>
     `
   })?.get()
@@ -225,7 +226,7 @@ export async function getChannelInfo(Astro, { before = '', after = '', q = '', t
       recordChannelVisit(cachedResult)
     }
     console.info('Match Cache', { before, after, q, type, id, channelName: channel })
-    return JSON.parse(JSON.stringify(cachedResult))
+    return structuredClone(cachedResult)
   }
 
   // In ANYCHANNEL mode, don't use proxy - direct CDN access works better

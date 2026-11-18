@@ -1,0 +1,248 @@
+---
+interface Props {
+  idPrefix?: string
+  anyChannel?: boolean
+  readerBase?: string
+  turnstileEnabled?: boolean
+  redirectMode?: 'direct' | 'query'
+  className?: string
+}
+
+const {
+  idPrefix = 'channel',
+  anyChannel = true,
+  readerBase = 'https://telegram.david888.com',
+  turnstileEnabled = false,
+  redirectMode = 'direct',
+  className = '',
+} = Astro.props
+
+const inputId = `${idPrefix}-input`
+const helpId = `${idPrefix}-help`
+const errorId = `${idPrefix}-error`
+const formId = `${idPrefix}-form`
+---
+
+<search>
+  <form
+    action="/"
+    method="get"
+    id={formId}
+    class={`channel-form ${className}`.trim()}
+    toolname="navigate-channel"
+    tooldescription="輸入 Telegram 頻道或群組 username 進行公開閱讀"
+    data-any-channel={anyChannel ? 'true' : 'false'}
+    data-reader-base={readerBase}
+    data-redirect-mode={redirectMode}
+    data-turnstile-action={turnstileEnabled ? 'channel_search' : undefined}
+  >
+    <label class="channel-label" for={inputId} data-i18n="channelInputLabel">輸入要閱讀的頻道或群組</label>
+    <div class="channel-form-row">
+      <input
+        id={inputId}
+        type="text"
+        name="channel"
+        placeholder="@oliservice、oliservice 或 https://t.me/oliservice"
+        data-i18n-placeholder="channelInputPlaceholder"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        enterkeyhint="go"
+        class="channel-input"
+        aria-describedby={`${helpId} ${errorId}`}
+      />
+      <button type="submit" class="channel-submit" data-i18n="startReading">開始閱讀</button>
+    </div>
+    <p id={helpId} class="channel-help" data-i18n="supportedInput">支援 @username、裸 username，或公開 t.me 連結。</p>
+    <p id={errorId} class="channel-error" role="alert" aria-live="assertive"></p>
+  </form>
+</search>
+
+<script>
+  import { normalizeTelegramTarget } from '../lib/telegram/normalize'
+
+  function setupChannelSearchForms() {
+    document.querySelectorAll<HTMLFormElement>('form.channel-form[data-redirect-mode]').forEach((form) => {
+      if (form.dataset.bound === 'true') return
+      form.dataset.bound = 'true'
+
+      const input = form.querySelector<HTMLInputElement>('input[name="channel"]')
+      const error = form.querySelector<HTMLElement>('.channel-error')
+
+      input?.addEventListener('input', () => {
+        if (input.getAttribute('aria-invalid') === 'true') {
+          input.setAttribute('aria-invalid', 'false')
+          if (error) {
+            error.textContent = ''
+            delete error.dataset.i18n
+          }
+        }
+      })
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        const rawVal = (input?.value || '').trim()
+        const targetVal = rawVal || 'oliservice'
+        const target = normalizeTelegramTarget(targetVal)
+
+        if (!target.ok) {
+          if (input) {
+            input.setAttribute('aria-invalid', 'true')
+            input.focus()
+          }
+          if (error) {
+            error.dataset.i18n = target.code === 'invite' ? 'errorInvite' : target.code === 'private' ? 'errorPrivate' : 'errorInvalid'
+            error.textContent = target.code === 'invite'
+              ? '邀請連結不能讀取公開歷史，請改輸入公開頻道 username。'
+              : target.code === 'private'
+                ? '私人連結不能讀取公開歷史，請改輸入公開頻道 username。'
+                : '請輸入 @username、username，或完整的 t.me 公開連結。'
+            window.dispatchEvent(new CustomEvent('telegram-language-change'))
+          }
+          return
+        }
+
+        if (input) input.setAttribute('aria-invalid', 'false')
+        if (error) {
+          error.textContent = ''
+          delete error.dataset.i18n
+        }
+
+        const redirectMode = form.dataset.redirectMode || 'direct'
+        const isAnyChannel = form.dataset.anyChannel === 'true'
+        const readerBase = (form.dataset.readerBase || 'https://telegram.david888.com').replace(/\/+$/, '')
+
+        if (redirectMode === 'query') {
+          const targetPath = isAnyChannel
+            ? `/?channel=${encodeURIComponent(target.handle)}`
+            : `${readerBase}/?channel=${encodeURIComponent(target.handle)}`
+          window.location.assign(targetPath)
+        } else {
+          window.location.assign(`/${encodeURIComponent(target.handle)}/`)
+        }
+      })
+    })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupChannelSearchForms)
+  } else {
+    setupChannelSearchForms()
+  }
+  document.addEventListener('astro:page-load', setupChannelSearchForms)
+</script>
+
+<style>
+  .channel-form {
+    max-width: 100%;
+  }
+
+  .channel-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--deep-blue);
+    font-size: var(--text-ui);
+    font-weight: 700;
+  }
+
+  .channel-form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .channel-input {
+    min-height: 52px;
+    min-width: 0;
+    padding: 12px 18px;
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  .channel-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.8;
+  }
+
+  .channel-input:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 1px;
+    border-color: var(--deep-blue);
+  }
+
+  .channel-input[aria-invalid='true'] {
+    border-color: var(--clay);
+    box-shadow: 0 0 0 3px var(--clay-ring);
+  }
+
+  .channel-submit {
+    min-height: 52px;
+    padding: 12px 28px;
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    background: var(--primary);
+    color: var(--ink);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .channel-submit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--saffron-shadow);
+  }
+
+  .channel-submit:active {
+    transform: translateY(1px);
+  }
+
+  .channel-submit:disabled {
+    background: var(--canvas);
+    color: var(--text-muted);
+    border-color: var(--card-border);
+    box-shadow: none;
+    transform: none;
+    cursor: progress;
+  }
+
+  .channel-help,
+  .channel-error {
+    margin: 10px 0 0;
+    font-size: var(--text-meta);
+    line-height: 1.5;
+  }
+
+  .channel-help {
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+
+  .channel-error:empty {
+    display: none;
+  }
+
+  .channel-error {
+    color: var(--clay);
+    font-weight: 600;
+  }
+
+  @media screen and (max-width: 640px) {
+    .channel-form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .channel-submit {
+      width: 100%;
+    }
+  }
+</style>

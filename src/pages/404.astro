@@ -1,0 +1,115 @@
+---
+import Layout from '../layouts/base.astro'
+import Header from '../components/header.astro'
+import ChannelSearchForm from '../components/channel-search-form.astro'
+import { getEnv } from '../lib/env'
+import { ArrowLeft } from 'lucide-astro'
+
+Astro.response.status = 404
+
+const anyChannel = getEnv(import.meta.env, Astro, 'ANYCHANNEL') === 'true'
+const readerBase = getEnv(import.meta.env, Astro, 'READER_URL') || 'https://telegram.david888.com'
+const turnstileEnabled = Boolean(Astro.locals.TURNSTILE_ENABLED && Astro.locals.TURNSTILE_SITE_KEY)
+
+const displayChannel = {
+  handle: '',
+  title: '888 Telegram 頻道瀏覽器',
+  description: '找不到這個頁面',
+  posts: [],
+  seo: { title: '404', noindex: true },
+}
+---
+
+<Layout channel={displayChannel}>
+  <Header slot="header" channel={displayChannel} />
+
+  <section class="not-found-card" aria-labelledby="not-found-heading">
+    <h1 id="not-found-heading" data-i18n="notFoundTitle">找不到這個頁面</h1>
+    <p class="not-found-desc" data-i18n="notFoundDescription">
+      網址可能已變更或不存在。您可以直接輸入公開 Telegram 頻道 username 開始閱讀，或回到首頁。
+    </p>
+
+    <div class="not-found-form">
+      <ChannelSearchForm
+        idPrefix="notfound-channel"
+        anyChannel={anyChannel}
+        readerBase={readerBase}
+        turnstileEnabled={turnstileEnabled}
+        redirectMode={anyChannel ? 'direct' : 'query'}
+      />
+    </div>
+
+    <div class="not-found-actions">
+      <a href="/" class="not-found-home-link">
+        <ArrowLeft size={15} aria-hidden="true" />
+        <span data-i18n="backHome">返回首頁</span>
+      </a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .not-found-card {
+    max-width: 72ch;
+    padding: clamp(28px, 5vw, 52px) clamp(20px, 4vw, 44px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadows);
+  }
+
+  .not-found-card h1 {
+    margin: 0 0 16px;
+    color: var(--deep-blue);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.8vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .not-found-desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  .not-found-form {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--card-border-subtle);
+  }
+
+  .not-found-actions {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--card-border-subtle);
+  }
+
+  .not-found-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 1.5px solid var(--deep-blue);
+    border-radius: var(--radius-sm);
+    background: var(--deep-blue);
+    color: var(--warm-cream);
+    font-weight: 700;
+    font-size: var(--text-ui);
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .not-found-home-link:hover {
+    background: var(--primary);
+    border-color: var(--input-border);
+    color: var(--ink);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+</style>

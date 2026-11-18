@@ -70,7 +70,7 @@ const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
         data-toggle-target={`ad-body-${post.id}`}
         aria-expanded="false"
       >
-        <span class="ad-expand-text" data-i18n="expandAd">展開查看</span>
+        <span class="ad-expand-text" data-i18n="expandAd" data-i18n-expanded="collapseAd">展開查看</span>
         <ChevronDown size={14} class="ad-expand-icon" aria-hidden="true" />
       </button>
     </div>
@@ -145,13 +145,13 @@ const adExcerpt = post.isAd ? extractPostExcerpt(post, 42) : ''
         btn.setAttribute('aria-expanded', 'true')
         btn.classList.add('is-expanded')
         const text = btn.querySelector('.ad-expand-text')
-        if (text) text.textContent = '收合內容'
+        if (text) text.textContent = window.__tgTranslate?.('collapseAd') || '收合內容'
       } else {
         targetEl.style.display = 'none'
         btn.setAttribute('aria-expanded', 'false')
         btn.classList.remove('is-expanded')
         const text = btn.querySelector('.ad-expand-text')
-        if (text) text.textContent = '展開查看'
+        if (text) text.textContent = window.__tgTranslate?.('expandAd') || '展開查看'
       }
     })
 

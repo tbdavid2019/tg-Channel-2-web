@@ -32,7 +32,7 @@ function getChannelHref(handle) {
   <div class="random-card-body">
     <a href={getChannelHref(initialChannel.handle)} class="random-channel-link" id="random-channel-link">
       <div class="random-channel-info">
-        <h4 class="random-channel-title" id="random-channel-title">{initialChannel.title}</h4>
+        <h2 class="random-channel-title" id="random-channel-title">{initialChannel.title}</h2>
         <span class="random-channel-handle" id="random-channel-handle">@{initialChannel.handle}</span>
         {initialChannel.description && (
           <p class="random-channel-desc" id="random-channel-desc">{initialChannel.description}</p>
@@ -42,7 +42,7 @@ function getChannelHref(handle) {
         <span class="random-category-tag" id="random-category-tag">#{initialChannel.category || '精選'}</span>
         <span class="random-action-btn">
           <span data-i18n="randomReadNow">立即閱讀</span>
-          <ArrowRight size={13} style="display: inline-block; vertical-align: middle; margin-left: 2px;" />
+          <ArrowRight size={13} aria-hidden="true" />
         </span>
       </div>
     </a>
@@ -99,12 +99,12 @@ function getChannelHref(handle) {
     padding: 18px 18px;
     box-shadow: var(--shadows);
     margin-bottom: 20px;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .random-recommend-card:hover {
     border-color: var(--input-border);
-    box-shadow: 0 4px 14px rgba(43, 37, 26, 0.08);
+    box-shadow: var(--card-shadow-hover);
   }
 
   .random-card-header {
@@ -117,6 +117,9 @@ function getChannelHref(handle) {
   }
 
   .random-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--ink);
@@ -131,15 +134,16 @@ function getChannelHref(handle) {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    min-height: 36px;
     background: var(--input-bg);
     border: 1.5px solid var(--card-border);
     border-radius: 6px;
-    padding: 4px 9px;
+    padding: 4px 10px;
     color: var(--deep-blue);
     font-size: 0.8125rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     font-family: inherit;
   }
 
@@ -207,16 +211,19 @@ function getChannelHref(handle) {
 
   .random-category-tag {
     font-size: 0.75rem;
-    font-family: var(--font-mono);
+    font-family: var(--font-ui);
     font-weight: 600;
     color: var(--clay);
     background: var(--canvas);
     border: 1px solid var(--card-border);
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 4px;
   }
 
   .random-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--deep-blue);
