@@ -36,4 +36,7 @@ pnpm-debug.log*
 /data/
 /src/data/posts.json
 
+# local deployment notes
+local.md
+
 

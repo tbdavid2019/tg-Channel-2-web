@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-11-18
+
+### Added
+
+- **共用頻道搜尋元件 (`src/components/channel-search-form.astro`)**：抽離首頁與錯誤狀態頁重複的表單樣式與驗證腳本，整合 `<search>` landmark、明確 `<label>`、`aria-describedby`、`aria-invalid` 狀態管理與 `normalizeTelegramTarget()` 導向邏輯。
+- **自訂 404 頁面 (`src/pages/404.astro`)**：為未匹配路由回傳 HTTP `404`，提供頻道搜尋表單與返回首頁導覽。
+- **自託管品牌字型 (`public/fonts/Outfit-Latin.woff2`)**：搭配既有的 `JetBrainsMono-Medium.woff2` 自託管 `@font-face`（`font-display: swap`）並透過 `<link rel="preload" crossorigin>` 預載，移除外部 Google Fonts 跨網域請求。
+
+### Changed
+
+- **原生 `<dialog>` 與無障礙互動升級 (`src/components/header.astro`, `src/components/toc-sidebar.astro`, `src/layouts/base.astro`, `src/assets/global.css`)**：
+  - 將 `#quick-channel-dialog` 與 `#mobile-toc-sheet` 改為原生 `<dialog>` 搭配 `showModal()`、`closedby="any"` 與 Safari 指標點擊外部關閉 fallback，並以 `overscroll-behavior: contain` 取代 `body { overflow: hidden }`。
+  - 新增 `.skip-link`（跳至 `#main-container`）、統一 `h1 → h2` 標題階層、為行動端純圖示按鈕補齊 `aria-label` 與 `44px` 觸控命中區。
+  - 將 Header 社群圖示由 `filter: invert(...)` 改為 CSS `mask` + `currentColor`，並將 `base.astro` 內嵌 `<svg>` 統一改用 `lucide-astro` 元件。
+  - 移除 `global.css` 全域 `0.01ms !important` reduced-motion 覆寫，改為僅停用位移／縮放／旋轉動畫並保留色彩回饋；補上 `@media (prefers-reduced-transparency: reduce)` 實心背景 fallback。
+- **設計系統收斂與現代 Web API (`src/assets/style.css`, `src/assets/item.css`, `src/lib/recommendations/index.js`, `src/lib/telegram/index.js`, `src/scripts/turnstile-forms.js`)**：
+  - 消除 27 處 `transition: all` 與純白 `#fff`，將散落色票收斂至 `:root` tokens；刪除重複的 `.lang-prompt-*` 樣式與舊版 `#modal` 死碼；移除多餘英文 eyebrow、標籤改回 `--font-ui`、加上 `text-wrap: balance/pretty` 與 `tabular-nums`；將 Turnstile widget 鎖定為 `theme: 'light'`。
+  - 以 `AbortSignal.timeout(12000)` 取代手動 `AbortController` + `setTimeout`，以 `structuredClone()` 取代 `JSON.parse(JSON.stringify())`，並移除實驗性 `grid-template-rows: masonry`。
+
+### Fixed
+
+- **三方 Code Review（Codex / OMP / OpenCode）收斂修復**：
+  - 修正 `src/pages/[channel]/index.astro` 對無效或無公開預覽單段路徑回傳 HTTP `404`（上游連線失敗回傳 `503`），並移除 `channel-state.astro` 外層過寬的 `aria-live="polite"`。
+  - 對齊字型 `<link rel="preload">` 與 `@font-face` URL（去除不一致的 `?v=` 參數），避免雙倍字型下載；移除 `.item` 的 `content-visibility: auto` 避免 TOC 錨點跳轉偏移。
+  - 修正 `toc-sidebar.astro` 行動版 `<dialog>` 跳轉後未將焦點移至目標元素與重複綁定事件問題；修正 `turnstile-forms.js` fail-open 分支重複呼叫 `requestSubmit()`；補齊全站中英文切換鍵值與貼文圖片按鈕 `data-i18n-aria-label`（`src/lib/i18n.js`, `src/lib/telegram/sanitize.js`）。
+
+### Deployed
+
+- UI 與現代化改版以 commit `0783ef8` 推送至 `master` 並通過 GitHub Actions（Run `#44266191224`）建置；已於正式主機 `10.9.0.9` 更新 `broadcastchannel1` / `broadcastchannel2` / `broadcastchannel3` 至映像 `287cfdc8e5c2`，並實測 `telegram.david888.com`、`stock.david888.com`、`cost.david888.com` 回應 HTTP 200、無效路徑回傳 HTTP 404。
+
+
 ## 2026-11-12
 
 ### Security
